@@ -1,9 +1,17 @@
 module MyTypes where
 
+open import Data.Nat
+
 infixr 30 _⇒_
 data Type : Set where
   ı : Type
   _⇒_ : Type -> Type -> Type
+
+
+⟦_⟧ : Type → Set
+⟦ ı ⟧ = ℕ
+⟦ σ ⇒ τ ⟧ = ⟦ σ ⟧ → ⟦ τ ⟧
+
 
 data _≠_ : Type -> Type -> Set where
   base-not-func : {σ τ : Type} →  ı ≠ σ ⇒ τ

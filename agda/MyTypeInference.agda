@@ -2,6 +2,8 @@ module MyTypeInference where
 
 open import Data.Nat renaming (ℕ to Nat)
 open import Data.List renaming (_∷_ to _::_)
+open import Data.Unit
+open import Data.Product
 
 open import MyList
 open import MyTypes
@@ -9,10 +11,23 @@ open import MyExpressions
 
 Cxt = List Type
 
+⟦_⟧c : Cxt → Set
+⟦ [] ⟧c = ⊤
+⟦ σ :: Γ ⟧c = ⟦ σ ⟧ × ⟦ Γ ⟧c
+
+
 data Term (Γ : Cxt) : Type -> Set where
   var : forall {τ } -> τ ∈ Γ -> Term Γ τ
   _$_ : forall {σ τ} -> Term Γ (σ ⇒ τ) -> Term Γ σ -> Term Γ τ
   lam : forall σ {τ} -> Term (σ :: Γ) τ -> Term Γ (σ ⇒ τ)
+
+
+⟦_⟧t : {Γ : Cxt} → {σ : Type} → Term Γ σ → ⟦ Γ ⟧c → ⟦ σ ⟧
+⟦ var hd ⟧t ρ = proj₁ ρ
+⟦ var (tl x) ⟧t ρ = ⟦ var x ⟧t (proj₂ ρ)
+⟦ t $ u ⟧t ρ = (⟦ t ⟧t ρ) (⟦ u ⟧t ρ)
+⟦ lam σ t ⟧t ρ =  λ x →  ⟦ t ⟧t ( x , ρ )
+
 
 erase : forall {Γ τ } -> Term Γ τ -> Raw
 erase (var x) = var (index x)

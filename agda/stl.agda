@@ -4,6 +4,10 @@ open import Data.Nat renaming (ℕ to Nat)
 open import Data.List renaming (_∷_ to _::_)
 open import Data.Bool renaming (_≟_ to _b≟_)
 
+open import Data.Unit
+open import Data.Product
+
+open import MyList
 open import MyTypes
 open import MyExpressions
 open import MyTypeInference
@@ -86,3 +90,6 @@ tz = beta-test gz ez
 
 
  
+ 
+
+zz = ⟦ (var hd)  $ (var (tl hd)) ⟧t ( (λ x → x * x) ,  ( 3 ,  tt )) 
