@@ -17,11 +17,13 @@ data VType : Set where
   nat : VType
   bool : VType
   _⇒_ : VType → VType → VType
+  _∏_ : VType → VType → VType
   
 ⟦_⟧v : VType → Set
 ⟦ nat ⟧v = ℕ
 ⟦ bool ⟧v = Bool
 ⟦ t ⇒ u ⟧v = ⟦ t ⟧v → ⟦ u ⟧v
+⟦ t ∏ u ⟧v = ⟦ t ⟧v × ⟦ u ⟧v
 
 data CType : VType → Set where
   val : ∀ {σ} → VType → CType σ
@@ -44,6 +46,9 @@ data VTerm (Γ : Ctx) : VType → Set where
   tt ff : VTerm Γ bool
   zz : VTerm Γ nat
   ss : VTerm Γ nat → VTerm Γ nat
+  ⟨_,_⟩ : ∀ {σ τ} → VTerm Γ σ → VTerm Γ τ → VTerm Γ (σ ∏ τ)
+  fst : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
+  snd : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
   var : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
   -- how to use CTerm's here? Mutual definition...?
   _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → VTerm Γ τ
@@ -64,21 +69,19 @@ proj (there x) ρ = proj x (proj₂ ρ)
 ⟦ tt ⟧t ρ = true
 ⟦ ff ⟧t ρ = false
 ⟦ zz ⟧t ρ = zero
-⟦ (ss t) ⟧t ρ = suc (⟦ t ⟧t ρ)
-⟦ (var x) ⟧t ρ = proj x ρ
-⟦ (t $ u) ⟧t ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
-⟦ (lam σ t) ⟧t ρ = λ x → ⟦ t ⟧t (x , ρ)
+⟦ ss t ⟧t ρ = suc (⟦ t ⟧t ρ)
+⟦ ⟨ t , u ⟩ ⟧t ρ = ⟦ t ⟧t ρ , ⟦ u ⟧t ρ
+⟦ fst p ⟧t ρ = proj₁ (⟦ p ⟧t ρ)
+⟦ snd p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
+⟦ var x ⟧t ρ = proj x ρ
+⟦ t $ u ⟧t ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
+⟦ lam σ t ⟧t ρ = λ x → ⟦ t ⟧t (x , ρ)
 
 ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → ⟦ σ ⟧v
-⟦ (val v) ⟧ ρ = ⟦ v ⟧t ρ
+⟦ val v ⟧ ρ = ⟦ v ⟧t ρ
 ⟦ if b then m else n fi ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
 
 p1 = ⟦ val (var here) ⟧ (1 , top)
 p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
-
-{-
-p1 = ⟦ (var here) $ (var (there here)) ⟧t ( (λ x → x * x) , (3 , top) ) 
-p2 = ⟦ ss (ss zz) ⟧t top
-p3 = ⟦ if tt then (var here) else (var (there here)) fi ⟧t (1 , (0 , top))
-
--}
+p3 = ⟦ val ((var here) $ (var (there here))) ⟧ ( (λ x → x * x) , (3 , top) ) 
+p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top 
