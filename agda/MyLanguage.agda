@@ -59,6 +59,9 @@ data VTerm (Γ : Ctx) : VType → Set where
 data CTerm (Γ : Ctx) : VType → Set where
   val : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
   if_then_else_fi : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
+  prec : ∀ {σ} → VTerm Γ nat →
+         CTerm Γ σ →
+         CTerm Γ (σ ⇒ σ) →  CTerm Γ σ
 
 proj : {Γ : Ctx} → {σ : VType} → σ ∈ Γ → ⟦ Γ ⟧l → ⟦ σ ⟧v
 proj here ρ = proj₁ ρ
@@ -77,11 +80,39 @@ proj (there x) ρ = proj x (proj₂ ρ)
 ⟦ t $ u ⟧t ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
 ⟦ lam σ t ⟧t ρ = λ x → ⟦ t ⟧t (x , ρ)
 
+
+primrec : {t : Set} → ℕ → t → (t → t) → t
+primrec zero z s = z
+primrec (suc n) z s = s (primrec n z s)
+
 ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → ⟦ σ ⟧v
 ⟦ val v ⟧ ρ = ⟦ v ⟧t ρ
 ⟦ if b then m else n fi ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
+⟦ (prec v m n) ⟧ ρ = primrec (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (⟦ n ⟧ ρ)
+
+
+natify : ∀ {Γ} → ℕ → VTerm Γ nat
+natify zero = zz
+natify (suc n) = ss (natify n)
+
 
 p1 = ⟦ val (var here) ⟧ (1 , top)
 p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
 p3 = ⟦ val ((var here) $ (var (there here))) ⟧ ( (λ x → x * x) , (3 , top) ) 
-p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top 
+p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
+p5 = ⟦ val (lam nat (ss (var here)) $ zz) ⟧ top
+p6 = ⟦ prec (natify 6) (val zz) (val (lam nat (ss (var here)))) ⟧ top
+
+add : ∀ {Γ} → CTerm (nat ∷ nat ∷ Γ) nat
+add = prec (var here)
+           (val (var (there here)))
+           (val (lam nat (ss (var here))))
+mul : ∀ {Γ} → CTerm (nat ∷ nat ∷ Γ) nat            
+mul = prec (var here)
+           (val zz)
+           (val (lam nat {!!}))
+pfact = ⟦ prec (var here)
+               (val (ss zz))
+               (val (lam nat {!!})) ⟧ (5 , top)
+
+p-add-3-4 = ⟦ add ⟧ (3 , (4 , top))
