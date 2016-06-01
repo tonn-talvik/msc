@@ -131,3 +131,55 @@ fact = lam nat
 p-add-3-4 = ⟦ add $ var here $ var (there here) ⟧ (3 , (4 , top))
 p-mul-3-4 = ⟦ mul $ natify 3 $ natify 4 ⟧ top
 p-fact-5 = ⟦ fact $ natify 5 ⟧ top
+
+is-zero : ∀ {Γ} → CTerm Γ (nat ⇒ bool)
+is-zero = lam nat
+              (prec (var here) (val tt) (lam nat (lam bool (val ff))))
+p-is-zero = ⟦ is-zero $ natify 0 ⟧ top
+
+inc dec : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
+inc = lam nat (val (ss (var here)))
+dec = lam nat (LET 'x' ⇐ prec (var here) (val ⟨ zz , tt ⟩)
+                              (lam nat (lam (nat ∏ bool)
+                                 if snd (var here) then
+                                   val ⟨ zz , ff ⟩
+                                 else
+                                   val ⟨ ss (fst (var here)) , ff ⟩ fi))
+                   IN val (fst (var here)) )
+p-dec = ⟦ dec $ natify 10 ⟧ top
+
+AND OR : ∀ {Γ} → CTerm Γ (bool ⇒ bool ⇒ bool)
+AND = lam bool (lam bool
+        if var here then
+          if var (there here) then
+            val tt
+          else
+            val ff
+          fi
+        else
+          val ff
+        fi)
+
+OR = lam bool (lam bool if var here then val tt else if var (there here) then val tt else val ff fi fi)
+NOT : ∀ {Γ} → CTerm Γ (bool ⇒ bool)
+NOT = lam bool (if var here then val ff else val tt fi)
+p-and = ⟦ AND $ tt $ ff ⟧ top
+
+
+-- infinite program in my language
+--inf : ∀ {Γ} → CTerm Γ nat
+--inf = LET 'x' ⇐ inf IN val (var here)
+
+-- TODO:
+is-eq is-gt : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ bool)
+is-eq = lam nat (lam nat
+          (prec (var here)
+             (LET 'x' ⇐ is-zero $ var (here) IN val (var here))
+             (lam nat (lam bool
+               (LET 'x' ⇐ AND $ tt $ var here IN val (var here))))))
+p-is-eq-3-5 = ⟦ is-eq $ natify 3 $ natify 5 ⟧ top
+p-is-eq-5-3 = ⟦ is-eq $ natify 3 $ natify 5 ⟧ top
+p-is-eq-0-0 = ⟦ is-eq $ natify 0 $ natify 0 ⟧ top
+p-is-eq-3-3 = ⟦ is-eq $ natify 3 $ natify 3 ⟧ top
+
+is-gt = lam nat (lam nat {!!})
