@@ -97,23 +97,37 @@ p1 = ⟦ val (var here) ⟧ (1 , top)
 p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
 p3 = ⟦ (val (var here)) $ (var (there here)) ⟧ ( (λ x → x * x) , (3 , top) ) 
 p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
-p5 = ⟦ (lam nat (val (ss (var here))) $ zz) ⟧ top
+p5 = ⟦ lam nat (val (ss (var here))) $ zz ⟧ top
 p6 = ⟦ prec (natify 6) (val zz) (lam nat (LET 'x' ⇐ val (var here) IN lam nat (val (var (there here))) )) ⟧ top
 
 
-add : ∀ {Γ} → CTerm (nat ∷ nat ∷ Γ) nat
-add = prec (var here)
-           (val (var (there here)))
-           (lam nat (lam nat (val (ss (var here)))))
-{-           
-mul : ∀ {Γ} → CTerm (nat ∷ nat ∷ Γ) nat            
-mul = prec (var here)
-           (val zz)
-           (val (lam nat (lam nat {!!})))
--}
-{-
-pfact = ⟦ prec (var here)
-               (val (ss zz))
-               (val (lam nat {!!})) ⟧ (5 , top)
--}
-p-add-3-4 = ⟦ add ⟧ (3 , (4 , top))
+add : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
+add = lam nat
+          (lam nat
+               (prec (var here)
+                     (val (var (there here)))
+                     (lam nat (lam nat (val (ss (var here)))))))
+
+mul : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
+mul = lam nat
+          (lam nat
+               (prec (var here)
+                     (val zz)
+                     (lam nat
+                          (lam nat
+                               (LET 'x' ⇐ add $ var here
+                                              $ var (there (there (there here)))
+                                    IN val (var here))))))
+
+fact : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
+fact = lam nat
+           (prec (var here)
+                 (val (ss zz))
+                 (lam nat
+                      (lam nat
+                           (LET 'x' ⇐ mul $ var here $ var (there here)
+                                IN val (var here)))))
+
+p-add-3-4 = ⟦ add $ var here $ var (there here) ⟧ (3 , (4 , top))
+p-mul-3-4 = ⟦ mul $ natify 3 $ natify 4 ⟧ top
+p-fact-5 = ⟦ fact $ natify 5 ⟧ top
