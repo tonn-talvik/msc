@@ -115,9 +115,35 @@ mul = lam nat
                      (val zz)
                      (lam nat
                           (lam nat
-                               (LET 'x' ⇐ add $ var here
-                                              $ var (there (there (there here)))
-                                    IN val (var here))))))
+                               (add $ var here
+                                    $ var (there (there (there here))))))))
+
+-- bind function to variable
+mul2 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
+mul2 = lam nat (lam nat
+         (LET '+' ⇐ (lam nat
+                      (prec (var here)
+                            (val (var (there (there here))))
+                            (lam nat (lam nat (val (ss (var here)))))))
+            IN prec (var (there here))
+                    (val zz)
+                    (lam nat (lam nat (val (var (there (there here)))
+                                            $ var here)))))
+p-mul2-3-4 = ⟦ mul2 $ natify 3 $ natify 4 ⟧ top
+
+-- use partially applied function
+mul3 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
+mul3 = lam nat (lam nat
+         (LET '+' ⇐ (lam nat
+                      (prec (var here)
+                            (val (var (there (there here))))
+                            (lam nat (lam nat (val (ss (var here)))))))
+            IN prec (var (there here))
+                    (val zz)
+                    (lam nat (val (var (there here))))))
+
+p-mul3-3-4 = ⟦ mul3 $ natify 3 $ natify 4 ⟧ top
+
 
 fact : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
 fact = lam nat
@@ -167,8 +193,8 @@ p-and = ⟦ AND $ tt $ ff ⟧ top
 
 
 -- infinite program in my language
---inf : ∀ {Γ} → CTerm Γ nat
---inf = LET 'x' ⇐ inf IN val (var here)
+-- inf : ∀ {Γ} → CTerm Γ nat
+-- inf = LET 'x' ⇐ inf IN val (var here)
 
 -- TODO:
 is-eq is-gt : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ bool)
