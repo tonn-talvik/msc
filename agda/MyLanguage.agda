@@ -69,6 +69,8 @@ mutual
     
   data CTerm (Γ : Ctx) : VType → Set where
     val : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
+    fail : ∀ {σ} → CTerm Γ σ
+    choose : ∀ {σ} → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
     if_then_else_fi : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
     _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
     prec : ∀ {σ} → VTerm Γ nat →
@@ -104,6 +106,8 @@ mutual
   
   ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → T ⟦ σ ⟧v
   ⟦ val v ⟧ ρ = η (⟦ v ⟧t ρ)
+  ⟦ fail ⟧ ρ = sfail
+  ⟦ choose t u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
   ⟦ if b then m else n fi ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
   ⟦ prec v m n ⟧ ρ = primrecT (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (λ x → λ y → ⟦ n ⟧ (y , x , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
@@ -123,7 +127,8 @@ p3 = ⟦ (var here) $ (var (there here)) ⟧ ( (λ x → η (x * x)) , (3 , top)
 p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
 p5 = ⟦ lam nat (val (ss (var here))) $ zz ⟧ top
 p6 = ⟦ prec (natify 6) (val zz) ((LET 'x' ⇐ val (var here) IN (val (var (there here))) )) ⟧ top
-
+p7 : ℕ → T ℕ
+p7 n  = ⟦ prec (natify n) (val zz) (choose (val (var here)) (val (ss (ss (var here))))) ⟧ top
 
 add : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
 add = (lam nat (
