@@ -4,7 +4,6 @@ open import Data.Nat
 open import Data.Bool hiding (T)
 open import Data.Unit renaming (tt to top)
 open import Data.Product
-open import Data.Char
 
 open import Data.List
 
@@ -76,7 +75,7 @@ mutual
     prec : ∀ {σ} → VTerm Γ nat →
            CTerm Γ σ →
            CTerm (σ ∷ nat ∷ Γ) σ → CTerm Γ σ
-    LET_⇐_IN_ : ∀ {σ τ} → Char → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
+    LET_IN_ : ∀ {σ τ} → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
 
 proj : {Γ : Ctx} → {σ : VType} → σ ∈ Γ → ⟦ Γ ⟧l → ⟦ σ ⟧v
 proj here ρ = proj₁ ρ
@@ -112,7 +111,7 @@ mutual
   ⟦ prec v m n ⟧ ρ = primrecT (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (λ x → λ y → ⟦ n ⟧ (y , x , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
 
-  ⟦ LET c ⇐ m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
+  ⟦ LET m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
 
 ----------------------------------------------------------------------
 
@@ -126,7 +125,7 @@ p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
 p3 = ⟦ (var here) $ (var (there here)) ⟧ ( (λ x → η (x * x)) , (3 , top) ) 
 p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
 p5 = ⟦ lam nat (val (ss (var here))) $ zz ⟧ top
-p6 = ⟦ prec (natify 6) (val zz) ((LET 'x' ⇐ val (var here) IN (val (var (there here))) )) ⟧ top
+p6 = ⟦ prec (natify 6) (val zz) ((LET val (var here) IN (val (var (there here))) )) ⟧ top
 p7 : ℕ → T ℕ
 p7 n  = ⟦ prec (natify n) (val zz) (choose (val (var here)) (val (ss (ss (var here))))) ⟧ top
 
@@ -136,23 +135,23 @@ add = (lam nat (
                (prec (var here)
                      (val (var (there here)))
                      (val (ss (var here)))))))
-p-add-3-4 = ⟦ LET 'x' ⇐ add $ var (there here) IN var here $ var (there here) ⟧ (3 , (4 , top))
-{-
-mul : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
-mul = val (lam nat (
+p-add-3-4 = ⟦ LET add $ var (there here) IN var here $ var (there here) ⟧ (3 , (4 , top))
+
+mul : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
+mul = (lam nat (
           val (lam nat
                (prec (var here)
                      (val zz)
-                     (
+                     (LET add $ var here IN
                           (
-                               (add $ var here
+                               ( var here
                                     $ var (there (there (there here))))))))))
--}
+p-mul-3-4 = ⟦ LET mul $ natify 3 IN var here $ natify 4 ⟧ top
 {-
 -- bind function to variable
 mul2 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
 mul2 = lam nat (lam nat
-         (LET '+' ⇐ (lam nat
+         (LET (lam nat
                       (prec (var here)
                             (val (var (there (there here))))
                             (lam nat (lam nat (val (ss (var here)))))))
@@ -165,7 +164,7 @@ p-mul2-3-4 = ⟦ mul2 $ natify 3 $ natify 4 ⟧ top
 -- use partially applied function
 mul3 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
 mul3 = lam nat (lam nat
-         (LET '+' ⇐ (lam nat
+         (LET (lam nat
                       (prec (var here)
                             (val (var (there (there here))))
                             (lam nat (lam nat (val (ss (var here)))))))
@@ -187,7 +186,7 @@ fact = lam nat
                                
 
 
-p-mul-3-4 = ⟦ mul $ natify 3 $ natify 4 ⟧ top
+
 p-fact-5 = ⟦ fact $ natify 5 ⟧ top
 
 is-zero : ∀ {Γ} → CTerm Γ (nat ⇒ bool)
@@ -197,7 +196,7 @@ p-is-zero = ⟦ is-zero $ natify 0 ⟧ top
 
 inc dec : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
 inc = lam nat (val (ss (var here)))
-dec = lam nat (LET 'x' ⇐ prec (var here) (val ⟨ zz , tt ⟩)
+dec = lam nat (LET prec (var here) (val ⟨ zz , tt ⟩)
                               (lam nat (lam (nat ∏ bool)
                                  if snd (var here) then
                                    val ⟨ zz , ff ⟩
@@ -226,7 +225,7 @@ p-and = ⟦ AND $ tt $ ff ⟧ top
 
 -- infinite program in my language
 -- inf : ∀ {Γ} → CTerm Γ nat
--- inf = LET 'x' ⇐ inf IN val (var here)
+-- inf = LET inf IN val (var here)
 
 
 -}
