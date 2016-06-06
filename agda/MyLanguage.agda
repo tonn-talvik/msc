@@ -145,7 +145,7 @@ mul = (lam nat (
                      (LET add $ var here IN
                           (
                                ( var here
-                                    $ var (there (there (there here))))))))))
+                                    $ var (there (there (there (there here)))))))))))
 p-mul-3-4 = ⟦ LET mul $ natify 3 IN var here $ natify 4 ⟧ top
 {-
 -- bind function to variable
