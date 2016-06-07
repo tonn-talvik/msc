@@ -123,16 +123,16 @@ natify zero = zz
 natify (suc n) = ss (natify n)
 
 -- binary relations are inequal, if there are pointwise inequalities
-lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁  → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
+lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
 lemma-⇒-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
 
-lemma-⇒-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂  → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
+lemma-⇒-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
 lemma-⇒-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
 
-lemma-∏-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁  → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
+lemma-∏-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
 lemma-∏-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
 
-lemma-∏-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂  → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
+lemma-∏-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂ → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
 lemma-∏-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
 
 -- is ALL of this really required?
@@ -161,11 +161,24 @@ u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
 
+lemma-∉ : (u v : VType) → (Γ : Ctx) → ¬ u ≡ v → ¬ u ∈ Γ → ¬ u ∈ (v ∷ Γ)
+lemma-∉ u .u g ¬p ¬q here = ¬p refl
+lemma-∉ u v g ¬p ¬q (there r) = ¬q r
 
 _∈?_ : (v : VType) → (Γ : Ctx) → Dec (v ∈ Γ)
 v ∈? [] = no (λ ()) -- auto
-v ∈? (x ∷ Γ) = {!!}
+u ∈? (v ∷ Γ) with u ≟ v
+u ∈? (v ∷ Γ) | yes p rewrite p = yes here
+u ∈? (v ∷ Γ) | no ¬p with u ∈? Γ
+u ∈? (v ∷ Γ) | no ¬p | yes q = yes (there q)
+u ∈? (v ∷ Γ) | no ¬p | no ¬q = no (lemma-∉ u v Γ ¬p ¬q)
 
+gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
+g1 = nat ∈? gamma
+g2 = nat ⇒ bool ∈? gamma
+g3 = (bool ∏ nat) ∈? gamma
+
+----------------------------------------------------------------------
 
 p1 = ⟦ val (var here) ⟧ (1 , top)
 p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
