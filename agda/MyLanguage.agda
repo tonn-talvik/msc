@@ -1,8 +1,11 @@
 module MyLanguage where
 
-open import Data.Nat
-open import Data.Bool hiding (T)
-open import Data.Unit renaming (tt to top)
+open import Relation.Nullary
+open import Relation.Binary.Core using (_≡_ ; refl)
+
+open import Data.Nat hiding (_≟_)
+open import Data.Bool hiding (T ; _≟_)
+open import Data.Unit renaming (tt to top) hiding (_≟_)
 open import Data.Product
 
 open import Data.List
@@ -118,6 +121,50 @@ mutual
 natify : ∀ {Γ} → ℕ → VTerm Γ nat
 natify zero = zz
 natify (suc n) = ss (natify n)
+
+-- binary relations are inequal, if there are pointwise inequalities
+lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁  → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
+lemma-⇒-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
+
+lemma-⇒-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂  → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
+lemma-⇒-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
+
+lemma-∏-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁  → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
+lemma-∏-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
+
+lemma-∏-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂  → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
+lemma-∏-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
+
+-- is ALL of this really required?
+_≟_ : (u v : VType) → Dec (u ≡ v)
+nat ≟ nat      = yes refl
+nat ≟ bool     = no (λ ())
+nat ≟ u ⇒ v    = no (λ ())
+nat ≟ (u ∏ v)  = no (λ ())
+bool ≟ nat     = no (λ ())
+bool ≟ bool    = yes refl
+bool ≟ u ⇒ v   = no (λ ())
+bool ≟ (u ∏ v) = no (λ ())
+u ⇒ u₁ ≟ nat = no (λ ())
+u ⇒ u₁ ≟ bool = no (λ ())
+u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ with u₁ ≟ v₁ | u₂ ≟ v₂
+u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | yes q rewrite p | q = yes refl
+u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | no ¬q = no (lemma-⇒-2 u₁ u₂ v₁ v₂ ¬q)
+u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | no ¬p | q = no (lemma-⇒-1 u₁ u₂ v₁ v₂ ¬p)
+u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
+(u ∏ v) ≟ nat = no (λ ())
+(u ∏ v) ≟ bool = no (λ ())
+(u₁ ∏ u₂) ≟ v₁ ⇒ v₂ = no (λ ())
+(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) with u₁ ≟ v₁ | u₂ ≟ v₂
+(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | yes q rewrite p | q = yes refl
+(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | no ¬q = no (lemma-∏-2 u₁ u₂ v₁ v₂ ¬q)
+(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
+(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
+
+
+_∈?_ : (v : VType) → (Γ : Ctx) → Dec (v ∈ Γ)
+v ∈? [] = no (λ ()) -- auto
+v ∈? (x ∷ Γ) = {!!}
 
 
 p1 = ⟦ val (var here) ⟧ (1 , top)
