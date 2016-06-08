@@ -5,6 +5,7 @@ open import Relation.Binary.Core using (_≡_ ; refl)
 
 open import Data.Nat hiding (_≟_)
 open import Data.Bool hiding (T ; _≟_)
+open import Data.Empty
 open import Data.Unit renaming (tt to top) hiding (_≟_)
 open import Data.Product
 
@@ -177,6 +178,26 @@ gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 g1 = nat ∈? gamma
 g2 = nat ⇒ bool ∈? gamma
 g3 = (bool ∏ nat) ∈? gamma
+
+
+truncate : {P : Set} → Dec P → Set
+truncate (yes _) = ⊤
+truncate (no  _) = ⊥
+
+extract : {P : Set} → {d : Dec P} → truncate d → P
+extract {_} {yes p} t = p
+extract {_} {no ¬p} ()
+
+data ScopedVar (Γ : Ctx) : Set where
+  svar : (τ : VType) → {_ : truncate (τ ∈? Γ)} → ScopedVar Γ
+
+svar2var : ∀ {Γ} → ScopedVar Γ → VType
+svar2var (svar τ) = τ
+
+svar2inlist : ∀ {Γ} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
+svar2inlist (svar τ {t}) = extract t
+
+war = svar2inlist {gamma} (svar nat)
 
 ----------------------------------------------------------------------
 
