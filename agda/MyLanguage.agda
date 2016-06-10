@@ -15,6 +15,19 @@ data _∈_ {A : Set}(x : A) : List A → Set where
   here  : ∀ {xs} → x ∈ (x ∷ xs)
   there : ∀ {y xs} → x ∈ xs → x ∈ (y ∷ xs)
 
+data _∈'_ {A : Set} : ℕ → List A → Set where
+  here  : ∀ {x xs} → zero ∈' (x ∷ xs)
+  there : ∀ {n x xs} → n ∈' xs → suc n ∈' (x ∷ xs)
+
+
+lookup : {A : Set} → (n : ℕ) → (xs : List A) → n ∈' xs → A
+lookup .0 .(x ∷ xs) (here {x} {xs}) = x
+lookup .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = lookup n xs p
+
+lookupcorrect :  {A : Set} → (n : ℕ) → (xs : List A) → (p : n ∈' xs) → lookup n xs p ∈ xs
+lookupcorrect .0 .(x ∷ xs) (here {x} {xs}) = here
+lookupcorrect .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = there (lookupcorrect n xs p)
+
 ----------------------------------------------------------------------
 
 T : Set → Set
@@ -174,6 +187,13 @@ u ∈? (v ∷ Γ) | no ¬p with u ∈? Γ
 u ∈? (v ∷ Γ) | no ¬p | yes q = yes (there q)
 u ∈? (v ∷ Γ) | no ¬p | no ¬q = no (lemma-∉ u v Γ ¬p ¬q)
 
+_∈'?_ : (v : ℕ) → (Γ : Ctx) → Dec (v ∈' Γ)
+v ∈'? [] = no (λ ())
+zero ∈'? (x ∷ Γ) = yes here
+suc v ∈'? (x ∷ Γ) with v ∈'? Γ 
+suc v ∈'? (x ∷ Γ) | yes p =  yes (there p)
+suc v ∈'? (x ∷ Γ) | no ¬p =  no {!!}
+
 gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 g1 = nat ∈? gamma
 g2 = nat ⇒ bool ∈? gamma
@@ -189,27 +209,28 @@ extract {_} {yes p} t = p
 extract {_} {no ¬p} ()
 
 data ScopedVar (Γ : Ctx) : Set where
-  svar : (τ : VType) → {_ : truncate (τ ∈? Γ)} → ScopedVar Γ
+  svar : (v : ℕ) → {_ : truncate (v ∈'? Γ)} → ScopedVar Γ
 
-svar2var : ∀ {Γ} → ScopedVar Γ → VType
-svar2var (svar τ) = τ
+
+svar2var : {Γ : Ctx} → ScopedVar Γ → VType
+svar2var (svar v {p}) = lookup v _ ( extract p) 
 
 svar2inlist : {Γ : Ctx} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
-svar2inlist (svar τ {t}) = extract t
-
-war = svar2inlist {gamma} (svar nat)
-war-contra = svar2inlist {gamma} (svar (bool ∏ bool))
-
-varify : {Γ : Ctx} → (τ : VType) → {_ : truncate (τ ∈? Γ)} → VTerm Γ τ
-varify τ {p} = var (svar2inlist (svar τ {p}))
+svar2inlist (svar v {p}) = lookupcorrect v _ (extract p)
 
 
-pv0        = ⟦ val (lam nat (val (varify nat))) ⟧ top
-pv0-contra = ⟦ val (lam nat (val (varify bool))) ⟧ top
-pv1        = ⟦ val (varify nat) ⟧ (1 , top)
-pv1-contra = ⟦ val (varify bool) ⟧ (1 , top)
-pv2        = ⟦ if (varify bool) then val (varify nat) else val (varify nat) fi ⟧ (1 , 2 , false , top)
-pv2-contra = ⟦ if (varify bool) then val (varify nat) else val (varify bool) fi ⟧ (1 , 2 , false , top)
+war = svar2inlist {gamma} (svar 0)
+war-contra = svar2inlist {gamma} (svar 3)
+
+varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
+varify v {p} = var (svar2inlist (svar v {p} ))
+
+pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
+pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
+pv1        = ⟦ val (varify 0) ⟧ (1 , top)
+pv1-contra = ⟦ val (varify 1) ⟧ (1 , top)
+pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , top)
+pv2-contra = ⟦ if (varify 2) then val (varify 0) else val (varify 2) fi ⟧ (1 , 2 , false , top)
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
