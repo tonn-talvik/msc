@@ -197,30 +197,19 @@ svar2var (svar τ) = τ
 svar2inlist : {Γ : Ctx} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
 svar2inlist (svar τ {t}) = extract t
 
--- this is OK
 war = svar2inlist {gamma} (svar nat)
 war-contra = svar2inlist {gamma} (svar (bool ∏ bool))
 
--- these are too imprecise?
-varify : {Γ : Ctx} → (τ : VType) → VTerm Γ τ
-varify τ = var (svar2inlist (svar τ))
-
-varify2 : {Γ : Ctx} → (τ : VType) → τ ∈ Γ
-varify2 τ = svar2inlist (svar τ)
-
-varify3 : {Γ : Ctx} → {τ : VType} → VTerm Γ τ
-varify3 {Γ} {τ} = var (svar2inlist (svar τ))
+varify : {Γ : Ctx} → (τ : VType) → {_ : truncate (τ ∈? Γ)} → VTerm Γ τ
+varify τ {p} = var (svar2inlist (svar τ {p}))
 
 
--- BAD
 pv0        = ⟦ val (lam nat (val (varify nat))) ⟧ top
 pv0-contra = ⟦ val (lam nat (val (varify bool))) ⟧ top
-pv1 = ⟦ val (varify nat) ⟧ (1 , top)
-pv2 = ⟦ if (varify bool) then val (varify nat) else val (varify nat) fi ⟧ (1 , 2 , false , top)
-pv3        = ⟦ val (lam nat (val (var (varify2 nat)))) ⟧ top
-pv3-contra = ⟦ val (lam nat (val (var (varify2 bool)))) ⟧ top
-pv4        = ⟦ val (lam nat (val (var (svar2inlist (svar nat))))) ⟧ top
-pv4-contra = ⟦ val (lam nat (val (var (svar2inlist (svar bool))))) ⟧ top
+pv1        = ⟦ val (varify nat) ⟧ (1 , top)
+pv1-contra = ⟦ val (varify bool) ⟧ (1 , top)
+pv2        = ⟦ if (varify bool) then val (varify nat) else val (varify nat) fi ⟧ (1 , 2 , false , top)
+pv2-contra = ⟦ if (varify bool) then val (varify nat) else val (varify bool) fi ⟧ (1 , 2 , false , top)
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
