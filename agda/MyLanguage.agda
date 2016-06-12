@@ -187,12 +187,15 @@ u ∈? (v ∷ Γ) | no ¬p with u ∈? Γ
 u ∈? (v ∷ Γ) | no ¬p | yes q = yes (there q)
 u ∈? (v ∷ Γ) | no ¬p | no ¬q = no (lemma-∉ u v Γ ¬p ¬q)
 
+lemma-∉' : {Γ : Ctx} → {τ : VType} → (v : ℕ) → ¬ v ∈' Γ → ¬ suc v ∈' (τ ∷ Γ)
+lemma-∉' n p (there q) = p q
+
 _∈'?_ : (v : ℕ) → (Γ : Ctx) → Dec (v ∈' Γ)
 v ∈'? [] = no (λ ())
 zero ∈'? (x ∷ Γ) = yes here
 suc v ∈'? (x ∷ Γ) with v ∈'? Γ 
 suc v ∈'? (x ∷ Γ) | yes p =  yes (there p)
-suc v ∈'? (x ∷ Γ) | no ¬p =  no {!!}
+suc v ∈'? (x ∷ Γ) | no ¬p =  no (lemma-∉' v ¬p)
 
 gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 g1 = nat ∈? gamma
@@ -226,11 +229,10 @@ varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (
 varify v {p} = var (svar2inlist (svar v {p} ))
 
 pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
-pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
+-- pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
 pv1        = ⟦ val (varify 0) ⟧ (1 , top)
-pv1-contra = ⟦ val (varify 1) ⟧ (1 , top)
+-- pv1-contra = ⟦ val (varify 1) ⟧ (1 , top)
 pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , top)
-pv2-contra = ⟦ if (varify 2) then val (varify 0) else val (varify 2) fi ⟧ (1 , 2 , false , top)
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where

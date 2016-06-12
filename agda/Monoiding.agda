@@ -7,7 +7,7 @@ open import Relation.Binary.Core using (_≡_ ; refl)
 record OrderedMonoid : Set where
   field
     M : Set
- 
+    
     _≤M_ : M → M → Set
     reflM : {m : M} → m ≤M m
     transM : {m n o : M} → m ≤M n → n ≤M o → m ≤M o
@@ -46,6 +46,15 @@ ruE {err} = refl
 ruE {ok} = refl
 ruE {errok} = refl
 
+assE : {m n o : E} → (m ·E n) ·E o ≡ m ·E (n ·E o)
+assE {err} = refl
+assE {ok} = refl
+assE {errok} {err} = refl
+assE {errok} {ok} = refl
+assE {errok} {errok} {err} = refl
+assE {errok} {errok} {ok} = refl
+assE {errok} {errok} {errok} = refl
+
 
 ExcEffOM : OrderedMonoid
 ExcEffOM = record { M = E 
@@ -54,8 +63,8 @@ ExcEffOM = record { M = E
                   ; transM = transE
                   ; i = ok
                   ; _·_ = _·E_
-                  ; lu =  refl
+                  ; lu = refl
                   ; ru = ruE 
-                  ; ass = {!!}
+                  ; ass = assE
                   }
 
