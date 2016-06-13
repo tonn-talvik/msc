@@ -15,8 +15,8 @@ data _⊑E_ : E → E → Set where
 
 transE : {m n o : E} → m ⊑E n → n ⊑E o → m ⊑E o
 transE reflE q = q
-transE err⊑Eerrok reflE =  err⊑Eerrok
-transE ok⊑Eerrok reflE =  ok⊑Eerrok
+transE err⊑Eerrok reflE = err⊑Eerrok
+transE ok⊑Eerrok reflE = ok⊑Eerrok
 
 _·E_ : E → E → E
 ok ·E m = m

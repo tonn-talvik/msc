@@ -8,7 +8,8 @@ record OrderedMonoid : Set where
   field
     M : Set
     
-    _⊑_ : M → M → Set -- \sqsubseteq ⊑
+    _⊑_ : M → M → Set -- \leq \sqsubseteq ⊑ 
+    
     reflM : {m : M} → m ⊑ m
     transM : {m n o : M} → m ⊑ n → n ⊑ o → m ⊑ o
 
@@ -18,3 +19,4 @@ record OrderedMonoid : Set where
     ru : { m : M } → m · i ≡ m
     ass : { m n o : M} → (m · n) · o ≡ m · (n · o)
 
+-- https://theorylunch.wordpress.com/2013/12/03/natural-numbers-with-addition-form-a-monoid/
