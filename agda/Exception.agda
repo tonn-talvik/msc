@@ -1,7 +1,8 @@
 module Exception where
 
 open import Relation.Binary.Core using (_≡_ ; refl)
-open import OrderedMonoid
+open import OrderedMonoid 
+open import GradedMonad
 
 data E : Set where
   err : E
@@ -52,3 +53,33 @@ ExcEffOM = record { M = E
                   ; ass = assE
                   }
 
+open import Data.Unit
+open import Data.Maybe
+
+TE : E → Set → Set
+TE err X = ⊤
+TE ok X = X
+TE errok X = Maybe X
+
+ηE : {X : Set} → X → X
+ηE x = x
+
+open OrderedMonoid.OrderedMonoid
+liftE : {e e' : E} {X Y : Set} →
+      (X → TE e' Y) → TE e X → TE (e ·E e') Y
+liftE {err} f x = tt
+liftE {ok} f x = f x
+liftE {errok} {err} f (just x) = tt
+liftE {errok} {ok} f (just x) = just (f x)
+liftE {errok} {errok} f (just x) = f x
+liftE {errok} {err} f nothing = tt
+liftE {errok} {ok} f nothing = nothing
+liftE {errok} {errok} f nothing = nothing
+
+
+ExcEffGM : GradedMonad
+ExcEffGM = record { OM = ExcEffOM
+                  ; T = TE
+                  ; η = ηE
+                  ; lift = liftE
+                  }
