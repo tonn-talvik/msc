@@ -2,6 +2,7 @@ module NonDeterminism where
 
 open import Relation.Binary.Core using (_≡_ ; refl)
 open import OrderedMonoid
+open import GradedMonad
 
 data ND : Set where
   nd0  : ND
@@ -124,4 +125,33 @@ NDEffOM = record { M = ND
                  ; lu = refl
                  ; ru = ruND
                  ; ass = assND
+                 }
+
+open import Data.List
+
+TND : ND → Set → Set
+TND nd X = List X  -- powerset?
+
+ηND : {X : Set} → X → TND (nd1) X
+ηND x = [ x ]
+
+liftND :  {e e' : ND} {X Y : Set} →
+      (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
+-- this is not correct!
+liftND {nd0} f x = []
+liftND {nd01} f [] = []
+liftND {nd01} {nd0} f (x ∷ xs) = []
+liftND {nd01} {_} f (x ∷ xs) = f x
+liftND {nd1} f [] = []
+liftND {nd1} f (x ∷ xs) = f x
+liftND {nd1+} f [] = []
+liftND {nd1+} f (x ∷ xs) = f x
+liftND {ndN} f [] = []
+liftND {ndN} f (x ∷ xs) = f x
+
+NDEffGM : GradedMonad
+NDEffGM = record { OM = NDEffOM
+                 ; T = TND
+                 ; η = ηND
+                 ; lift = liftND
                  }
