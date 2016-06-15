@@ -137,17 +137,9 @@ TND nd X = List X  -- powerset?
 
 liftND :  {e e' : ND} {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
--- this is not correct!
-liftND {nd0} f x = []
-liftND {nd01} f [] = []
-liftND {nd01} {nd0} f (x ∷ xs) = []
-liftND {nd01} {_} f (x ∷ xs) = f x
-liftND {nd1} f [] = []
-liftND {nd1} f (x ∷ xs) = f x
-liftND {nd1+} f [] = []
-liftND {nd1+} f (x ∷ xs) = f x
-liftND {ndN} f [] = []
-liftND {ndN} f (x ∷ xs) = f x
+liftND f [] = []
+liftND f (x ∷ xs) = (f x) ++ (liftND f xs)
+
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
