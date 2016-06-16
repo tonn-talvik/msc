@@ -53,7 +53,7 @@ ndN ⊙ _ = ndN
 
 
 
-ruND : {m : ND} → m ⊙ nd1 ≡ m
+ruND : {m : ND} → m ≡ m ⊙ nd1
 ruND {nd0} = refl
 ruND {nd01} = refl
 ruND {nd1} = refl

@@ -2,6 +2,9 @@
 
 module GradedMonad where
 
+open import Relation.Binary.PropositionalEquality
+open import Function
+
 open import OrderedMonoid
 
 record GradedMonad : Set where
@@ -16,6 +19,20 @@ record GradedMonad : Set where
     η : {X : Set} → X → T i X
     lift : {e e' : M} {X Y : Set} → (X → T e' Y) → (T e X → T (e · e') Y)
 
+    sub : {e e' : M} {X : Set} → e ⊑ e' → T e X → T e' X
 
+    submon : {e e' e'' e''' : M} {X Y : Set} → (p : e ⊑ e'') → (q : e' ⊑ e''') → (f : X → T e' Y) → (c : T e X) → 
+                                             sub (mon p q) (lift f c) ≡ lift (sub q ∘ f) (sub p c) 
 
+  subeq : {e e' : M} {X : Set} → e ≡ e' → T e X → T e' X
+  subeq =  λ { {e} {.e} (refl) → sub reflM } 
 
+  field
+    subrefl : {e : M} {X : Set} → (c : T e X) → sub reflM c ≡ c
+    subtrans : {e e' e'' : M} {X : Set} → (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
+                         sub q (sub p c) ≡ sub (transM p q) c   
+
+    mlaw1 : {e : M} → {X Y : Set} → (f : X → T e Y) → (x : X) → subeq lu (lift f (η x)) ≡ f x
+    mlaw2 : {e : M} → {X : Set} → (c : T e X) → subeq ru c ≡ lift η c
+    mlaw3 : {e e' e'' : M} → {X Y Z : Set} → (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
+                                                       subeq ass (lift g (lift f c)) ≡  lift (lift g ∘ f) c 

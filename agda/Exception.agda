@@ -26,7 +26,7 @@ errok ·E err = err
 errok ·E ok = errok
 errok ·E errok = errok
 
-ruE : {m : E} →  m ·E ok ≡ m
+ruE : {m : E} →  m ≡ m ·E ok 
 ruE {err} = refl
 ruE {ok} = refl
 ruE {errok} = refl
@@ -50,7 +50,7 @@ ExcEffOM = record { M = E
                   ; _·_ = _·E_
                   ; lu = refl
                   ; ru = ruE 
-                  ; ass = assE
+                  ; ass = λ {m} {n} {o} → assE {m} {n} {o}
                   }
 
 open import Data.Unit
@@ -81,5 +81,5 @@ ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
                   ; T = TE
                   ; η = ηE
-                  ; lift = liftE
+                  ; lift = λ {e} {e'} → liftE {e} {e'} 
                   }
