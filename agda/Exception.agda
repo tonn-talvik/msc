@@ -95,13 +95,20 @@ liftE {errok} {err} f nothing = tt
 liftE {errok} {ok} f nothing = nothing
 liftE {errok} {errok} f nothing = nothing
 
+subE : {e e' : M ExcEffOM} {X : Set} →
+         e ⊑E e' → TE e X → TE e' X
+subE {e' = err} p x = tt
+subE {e' = ok} reflE x = x
+subE {e' = errok} reflE x = x
+subE {e' = errok} err⊑Eerrok x = nothing
+subE {e' = errok} ok⊑Eerrok x = just x
 
 ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
                   ; T = TE
                   ; η = ηE
                   ; lift = λ {e} {e'} → liftE {e} {e'}
-                  ; sub = {!!}
+                  ; sub = subE
                   ; submon = {!!}
                   ; subrefl = {!!}
                   ; subtrans = {!!}
