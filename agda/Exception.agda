@@ -41,6 +41,24 @@ assE {errok} {errok} {ok} = refl
 assE {errok} {errok} {errok} = refl
 
 
+monE : {m n m' n' : E} → m ⊑E m' → n ⊑E n' → (m ·E n) ⊑E (m' ·E n')
+monE {m' = err} reflE q = reflE
+monE {m' = ok} reflE q = q
+monE {m' = errok} {err} reflE reflE = reflE
+monE {m' = errok} {err} err⊑Eerrok reflE = reflE
+monE {m' = errok} {err} ok⊑Eerrok reflE = reflE
+monE {m' = errok} {ok} reflE reflE = reflE
+monE {m' = errok} {ok} err⊑Eerrok reflE = err⊑Eerrok
+monE {m' = errok} {ok} ok⊑Eerrok reflE = ok⊑Eerrok
+monE {m' = errok} {errok} reflE reflE = reflE
+monE {m' = errok} {errok} reflE err⊑Eerrok = err⊑Eerrok
+monE {m' = errok} {errok} reflE ok⊑Eerrok = reflE
+monE {m' = errok} {errok} err⊑Eerrok q = err⊑Eerrok
+monE {m' = errok} {errok} ok⊑Eerrok reflE = reflE
+monE {m' = errok} {errok} ok⊑Eerrok err⊑Eerrok = err⊑Eerrok
+monE {m' = errok} {errok} ok⊑Eerrok ok⊑Eerrok = ok⊑Eerrok
+
+
 ExcEffOM : OrderedMonoid
 ExcEffOM = record { M = E 
                   ; _⊑_ = _⊑E_ 
@@ -48,6 +66,7 @@ ExcEffOM = record { M = E
                   ; transM = transE
                   ; i = ok
                   ; _·_ = _·E_
+                  ; mon = monE
                   ; lu = refl
                   ; ru = ruE 
                   ; ass = λ {m} {n} {o} → assE {m} {n} {o}
@@ -81,5 +100,12 @@ ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
                   ; T = TE
                   ; η = ηE
-                  ; lift = λ {e} {e'} → liftE {e} {e'} 
+                  ; lift = λ {e} {e'} → liftE {e} {e'}
+                  ; sub = {!!}
+                  ; submon = {!!}
+                  ; subrefl = {!!}
+                  ; subtrans = {!!}
+                  ; mlaw1 = {!!}
+                  ; mlaw2 = {!!}
+                  ; mlaw3 = {!!}
                   }
