@@ -27,7 +27,7 @@ errok ·E err = err
 errok ·E ok = errok
 errok ·E errok = errok
 
-ruE : {m : E} →  m ≡ m ·E ok 
+ruE : {e : E} →  e ≡ e ·E ok 
 ruE {err} = refl
 ruE {ok} = refl
 ruE {errok} = refl
@@ -81,7 +81,7 @@ TE err X = ⊤
 TE ok X = X
 TE errok X = Maybe X
 
-ηE : {X : Set} → X → X
+ηE : {X : Set} → X → TE ok X
 ηE x = x
 
 open OrderedMonoid.OrderedMonoid
@@ -124,15 +124,6 @@ sub-monE {e'' = errok} {errok} err⊑Eerrok q f c = refl
 sub-monE {e'' = errok} {errok} ok⊑Eerrok reflE f c = refl
 sub-monE {e'' = errok} {errok} ok⊑Eerrok err⊑Eerrok f c = refl
 sub-monE {e'' = errok} {errok} ok⊑Eerrok ok⊑Eerrok f c = refl
-{-           
-sub-monE {err} reflE q f c = refl
-sub-monE {err} err⊑Eerrok reflE f tt = {!!}
-sub-monE {err} err⊑Eerrok err⊑Eerrok f c = refl
-sub-monE {err} err⊑Eerrok ok⊑Eerrok f c = refl
-sub-monE {ok} reflE q f c = refl
-sub-monE {ok} ok⊑Eerrok q f c = {!!}
-sub-monE {errok} p q f c = {!!}
--}
 
 sub-transE : {e e' e'' : E} {X : Set} →
              (p : e ⊑E e') → (q : e' ⊑E e'') → (c : TE e X) → 
@@ -141,6 +132,28 @@ sub-transE reflE q c = refl
 sub-transE err⊑Eerrok reflE c = refl
 sub-transE ok⊑Eerrok reflE c = refl
 
+mlaw1E : {e : E} → {X Y : Set} → (f : X → TE e Y) → (x : X) →
+         liftE {ok} {e} f (ηE x) ≡ f x
+mlaw1E f x = refl
+
+sub-eqE : {e e' : E} {X : Set} → e ≡ e' → TE e X → TE e' X
+sub-eqE {e} {.e} refl = subE {e} reflE
+
+mlaw2E :  {e : E} → {X : Set} → (c : TE e X) →
+          sub-eqE {e} ruE c ≡ liftE {e} {ok} ηE c
+mlaw2E {err} c = refl
+mlaw2E {ok} c = refl
+mlaw2E {errok} (just x) = refl
+mlaw2E {errok} nothing = refl
+
+
+-- liftE {e} {e'} f c : TE (e ·E e') Y
+{-
+mlaw3E : {e e' e'' : E} → {X Y Z : Set} → (f : X → TE e' Y) → (g : Y → TE e'' Z) → (c : TE e X) → 
+         assE (liftE {{!!}} g (liftE {e} {e'} f c)) ≡ {!!} -- liftE (liftE {e} g ∘ f) c
+mlaw3E f g c = {!!}
+-}
+
 ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
                   ; T = TE
@@ -148,9 +161,10 @@ ExcEffGM = record { OM = ExcEffOM
                   ; lift = λ {e} {e'} → liftE {e} {e'}
                   ; sub = subE
                   ; sub-mon = sub-monE
+                  ; sub-eq = sub-eqE
                   ; sub-refl = λ {e} → sub-reflE {e}
                   ; sub-trans = sub-transE
-                  ; mlaw1 = {!!}
-                  ; mlaw2 = {!!}
+                  ; mlaw1 = λ {e} → mlaw1E {e}
+                  ; mlaw2 = λ {e} → mlaw2E {e}
                   ; mlaw3 = {!!}
                   }

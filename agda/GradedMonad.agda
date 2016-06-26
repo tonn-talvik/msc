@@ -24,15 +24,17 @@ record GradedMonad : Set where
     sub-mon : {e e' e'' e''' : M} {X Y : Set} → (p : e ⊑ e'') → (q : e' ⊑ e''') → (f : X → T e' Y) → (c : T e X) → 
                                              sub (mon p q) (lift f c) ≡ lift (sub q ∘ f) (sub p c) 
 
-  subeq : {e e' : M} {X : Set} → e ≡ e' → T e X → T e' X
-  subeq =  λ { {e} {.e} (refl) → sub reflM } 
+    sub-eq : {e e' : M} {X : Set} → e ≡ e' → T e X → T e' X
+-- TODO: declare function here, not in every GradedMonad instance
+--  sub-eq : {e e' : M} {X : Set} → e ≡ e' → T e X → T e' X
+--  sub-eq =  λ { {e} {.e} (refl) → sub reflM } 
 
   field
     sub-refl : {e : M} {X : Set} → (c : T e X) → sub reflM c ≡ c
     sub-trans : {e e' e'' : M} {X : Set} → (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
                          sub q (sub p c) ≡ sub (transM p q) c   
 
-    mlaw1 : {e : M} → {X Y : Set} → (f : X → T e Y) → (x : X) → subeq lu (lift f (η x)) ≡ f x
-    mlaw2 : {e : M} → {X : Set} → (c : T e X) → subeq ru c ≡ lift η c
+    mlaw1 : {e : M} → {X Y : Set} → (f : X → T e Y) → (x : X) → sub-eq lu (lift f (η x)) ≡ f x
+    mlaw2 : {e : M} → {X : Set} → (c : T e X) → sub-eq {e} {e · i} ru c ≡ lift η c
     mlaw3 : {e e' e'' : M} → {X Y Z : Set} → (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
-                                                       subeq ass (lift g (lift f c)) ≡  lift (lift g ∘ f) c 
+                                                       sub-eq ass (lift g (lift f c)) ≡  lift (lift g ∘ f) c 
