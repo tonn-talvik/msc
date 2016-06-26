@@ -1,6 +1,7 @@
 module Exception where
 
 open import Relation.Binary.Core using (_≡_ ; refl)
+open import Function
 open import OrderedMonoid 
 open import GradedMonad
 
@@ -95,13 +96,50 @@ liftE {errok} {err} f nothing = tt
 liftE {errok} {ok} f nothing = nothing
 liftE {errok} {errok} f nothing = nothing
 
-subE : {e e' : M ExcEffOM} {X : Set} →
-         e ⊑E e' → TE e X → TE e' X
-subE {e' = err} p x = tt
-subE {e' = ok} reflE x = x
-subE {e' = errok} reflE x = x
-subE {e' = errok} err⊑Eerrok x = nothing
-subE {e' = errok} ok⊑Eerrok x = just x
+subE : {e e' : E} {X : Set} → e ⊑E e' → TE e X → TE e' X
+subE reflE x = x
+subE err⊑Eerrok x = nothing
+subE ok⊑Eerrok x = just x
+
+
+sub-reflE : {e : E} {X : Set} → (c : TE e X) → subE {e} reflE c ≡ c
+sub-reflE _ = refl
+
+sub-monE : {e e' e'' e''' : E} {X Y : Set} →
+           (p : e ⊑E e'') → (q : e' ⊑E e''') →
+           (f : X → TE e' Y) → (c : TE e X) → 
+           subE (monE p q) (liftE {e} {e'} f c) ≡ liftE {e''} {e'''} (subE q ∘ f) (subE p c)
+sub-monE {e'' = err} reflE q f c = refl
+sub-monE {e'' = ok} reflE q f c = refl
+sub-monE {e'' = errok} {err} p q f c = refl
+sub-monE {e'' = errok} {ok} reflE reflE f c = refl
+sub-monE {e'' = errok} {ok} err⊑Eerrok reflE f c = refl
+sub-monE {e'' = errok} {ok} ok⊑Eerrok reflE f c = refl
+sub-monE {e'' = errok} {errok} reflE reflE f c = refl
+sub-monE {e'' = errok} {errok} reflE err⊑Eerrok f (just x) = refl
+sub-monE {e'' = errok} {errok} reflE err⊑Eerrok f nothing = refl
+sub-monE {e'' = errok} {errok} reflE ok⊑Eerrok f (just x) = refl
+sub-monE {e'' = errok} {errok} reflE ok⊑Eerrok f nothing = refl
+sub-monE {e'' = errok} {errok} err⊑Eerrok q f c = refl
+sub-monE {e'' = errok} {errok} ok⊑Eerrok reflE f c = refl
+sub-monE {e'' = errok} {errok} ok⊑Eerrok err⊑Eerrok f c = refl
+sub-monE {e'' = errok} {errok} ok⊑Eerrok ok⊑Eerrok f c = refl
+{-           
+sub-monE {err} reflE q f c = refl
+sub-monE {err} err⊑Eerrok reflE f tt = {!!}
+sub-monE {err} err⊑Eerrok err⊑Eerrok f c = refl
+sub-monE {err} err⊑Eerrok ok⊑Eerrok f c = refl
+sub-monE {ok} reflE q f c = refl
+sub-monE {ok} ok⊑Eerrok q f c = {!!}
+sub-monE {errok} p q f c = {!!}
+-}
+
+sub-transE : {e e' e'' : E} {X : Set} →
+             (p : e ⊑E e') → (q : e' ⊑E e'') → (c : TE e X) → 
+             subE q (subE p c) ≡ subE (transE p q) c
+sub-transE reflE q c = refl
+sub-transE err⊑Eerrok reflE c = refl
+sub-transE ok⊑Eerrok reflE c = refl
 
 ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
@@ -109,9 +147,9 @@ ExcEffGM = record { OM = ExcEffOM
                   ; η = ηE
                   ; lift = λ {e} {e'} → liftE {e} {e'}
                   ; sub = subE
-                  ; submon = {!!}
-                  ; subrefl = {!!}
-                  ; subtrans = {!!}
+                  ; sub-mon = sub-monE
+                  ; sub-refl = λ {e} → sub-reflE {e}
+                  ; sub-trans = sub-transE
                   ; mlaw1 = {!!}
                   ; mlaw2 = {!!}
                   ; mlaw3 = {!!}

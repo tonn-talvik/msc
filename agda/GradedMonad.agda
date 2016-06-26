@@ -21,15 +21,15 @@ record GradedMonad : Set where
 
     sub : {e e' : M} {X : Set} → e ⊑ e' → T e X → T e' X
 
-    submon : {e e' e'' e''' : M} {X Y : Set} → (p : e ⊑ e'') → (q : e' ⊑ e''') → (f : X → T e' Y) → (c : T e X) → 
+    sub-mon : {e e' e'' e''' : M} {X Y : Set} → (p : e ⊑ e'') → (q : e' ⊑ e''') → (f : X → T e' Y) → (c : T e X) → 
                                              sub (mon p q) (lift f c) ≡ lift (sub q ∘ f) (sub p c) 
 
   subeq : {e e' : M} {X : Set} → e ≡ e' → T e X → T e' X
   subeq =  λ { {e} {.e} (refl) → sub reflM } 
 
   field
-    subrefl : {e : M} {X : Set} → (c : T e X) → sub reflM c ≡ c
-    subtrans : {e e' e'' : M} {X : Set} → (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
+    sub-refl : {e : M} {X : Set} → (c : T e X) → sub reflM c ≡ c
+    sub-trans : {e e' e'' : M} {X : Set} → (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
                          sub q (sub p c) ≡ sub (transM p q) c   
 
     mlaw1 : {e : M} → {X Y : Set} → (f : X → T e Y) → (x : X) → subeq lu (lift f (η x)) ≡ f x
