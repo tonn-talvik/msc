@@ -146,13 +146,26 @@ mlaw2E {ok} c = refl
 mlaw2E {errok} (just x) = refl
 mlaw2E {errok} nothing = refl
 
+mlaw3E : {e e' e'' : E} → {X Y Z : Set} →
+         (f : X → TE e' Y) → (g : Y → TE e'' Z) → (c : TE e X) → 
+         sub-eqE {(e ·E e') ·E e''} {e ·E (e' ·E e'')}
+                 (assE {e} {e'} {e''})
+                 (liftE {e ·E e'} {e''} g (liftE {e} {e'} f c))
+         ≡ liftE {e} {e' ·E e''} ((liftE {e'} {e''} g) ∘ f) c
+mlaw3E {err} f g c = refl
+mlaw3E {ok} f g c = refl
+mlaw3E {errok} {err} f g x = refl
+mlaw3E {errok} {ok} {err} f g x = refl
+mlaw3E {errok} {ok} {ok} f g (just x) = refl
+mlaw3E {errok} {ok} {ok} f g nothing = refl
+mlaw3E {errok} {ok} {errok} f g (just x) = refl
+mlaw3E {errok} {ok} {errok} f g nothing = refl
+mlaw3E {errok} {errok} {err} f g x = refl
+mlaw3E {errok} {errok} {ok} f g (just x) = refl
+mlaw3E {errok} {errok} {ok} f g nothing = refl
+mlaw3E {errok} {errok} {errok} f g (just x) = refl
+mlaw3E {errok} {errok} {errok} f g nothing = refl
 
--- liftE {e} {e'} f c : TE (e ·E e') Y
-{-
-mlaw3E : {e e' e'' : E} → {X Y Z : Set} → (f : X → TE e' Y) → (g : Y → TE e'' Z) → (c : TE e X) → 
-         assE (liftE {{!!}} g (liftE {e} {e'} f c)) ≡ {!!} -- liftE (liftE {e} g ∘ f) c
-mlaw3E f g c = {!!}
--}
 
 ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
@@ -166,5 +179,5 @@ ExcEffGM = record { OM = ExcEffOM
                   ; sub-trans = sub-transE
                   ; mlaw1 = λ {e} → mlaw1E {e}
                   ; mlaw2 = λ {e} → mlaw2E {e}
-                  ; mlaw3 = {!!}
+                  ; mlaw3 = λ {e} {e'} {e''} → mlaw3E {e} {e'} {e''}
                   }
