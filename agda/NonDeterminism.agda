@@ -115,16 +115,112 @@ assND {ndN} {ndN} {nd1} = refl
 assND {ndN} {ndN} {nd1+} = refl
 assND {ndN} {ndN} {ndN} = refl
 
+monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+monND {m' = nd0} reflND q = reflND
+monND {m' = nd01} {nd0} reflND reflND = reflND
+monND {m' = nd01} {nd0} 0⊑01 reflND = reflND
+monND {m' = nd01} {nd0} 1⊑01 reflND = reflND
+monND {m' = nd01} {nd01} reflND reflND = reflND
+monND {m' = nd01} {nd01} reflND 0⊑01 = 0⊑01
+monND {m' = nd01} {nd01} reflND 1⊑01 = reflND
+monND {m' = nd01} {nd01} 0⊑01 q = 0⊑01
+monND {m' = nd01} {nd01} 1⊑01 q = q
+monND {m' = nd01} {nd1} reflND reflND = reflND
+monND {m' = nd01} {nd1} 0⊑01 reflND = 0⊑01
+monND {m' = nd01} {nd1} 1⊑01 reflND = 1⊑01 -- auto: monND p 1⊑01
+monND {m' = nd01} {nd1+} reflND reflND = reflND
+monND {m' = nd01} {nd1+} reflND 1⊑1+ = 01⊑N
+monND {m' = nd01} {nd1+} 0⊑01 q = 0⊑N
+monND {m' = nd01} {nd1+} 1⊑01 reflND = 1+⊑N
+monND {m' = nd01} {nd1+} 1⊑01 1⊑1+ = 1⊑N
+monND {m' = nd01} {ndN} reflND reflND = reflND
+monND {m' = nd01} {ndN} reflND 01⊑N = 01⊑N
+monND {m' = nd01} {ndN} reflND 1+⊑N = reflND
+monND {m' = nd01} {ndN} reflND 0⊑N = 0⊑N
+monND {m' = nd01} {ndN} reflND 1⊑N = 01⊑N
+monND {m' = nd01} {ndN} 0⊑01 q = 0⊑N
+monND {m' = nd01} {ndN} 1⊑01 q = q
+monND {m' = nd1} reflND q = q
+monND {m' = nd1+} {nd0} reflND reflND = reflND
+monND {m' = nd1+} {nd0} 1⊑1+ reflND = reflND
+monND {m' = nd1+} {nd01} reflND reflND = reflND
+monND {m' = nd1+} {nd01} reflND 0⊑01 = 0⊑N
+monND {m' = nd1+} {nd01} reflND 1⊑01 = 1+⊑N
+monND {m' = nd1+} {nd01} 1⊑1+ reflND = 01⊑N
+monND {m' = nd1+} {nd01} 1⊑1+ 0⊑01 = 0⊑N
+monND {m' = nd1+} {nd01} 1⊑1+ 1⊑01 = 1⊑N
+monND {m' = nd1+} {nd1} reflND reflND = reflND
+monND {m' = nd1+} {nd1} 1⊑1+ reflND = 1⊑1+
+monND {m' = nd1+} {nd1+} reflND reflND = reflND
+monND {m' = nd1+} {nd1+} reflND 1⊑1+ = reflND
+monND {m' = nd1+} {nd1+} 1⊑1+ q = q
+monND {m' = nd1+} {ndN} reflND reflND = reflND
+monND {m' = nd1+} {ndN} reflND 01⊑N = reflND
+monND {m' = nd1+} {ndN} reflND 1+⊑N = 1+⊑N
+monND {m' = nd1+} {ndN} reflND 0⊑N = 0⊑N
+monND {m' = nd1+} {ndN} reflND 1⊑N = 1+⊑N
+monND {m' = nd1+} {ndN} 1⊑1+ q = q
+monND {m' = ndN} {nd0} reflND reflND = reflND
+monND {m' = ndN} {nd0} 01⊑N reflND = reflND
+monND {m' = ndN} {nd0} 1+⊑N reflND = reflND
+monND {m' = ndN} {nd0} 0⊑N q = reflND
+monND {m' = ndN} {nd0} 1⊑N q = q
+monND {m' = ndN} {nd01} reflND reflND = reflND
+monND {m' = ndN} {nd01} reflND 0⊑01 = 0⊑N
+monND {m' = ndN} {nd01} reflND 1⊑01 = reflND
+monND {m' = ndN} {nd01} 01⊑N reflND = 01⊑N
+monND {m' = ndN} {nd01} 01⊑N 0⊑01 = 0⊑N
+monND {m' = ndN} {nd01} 01⊑N 1⊑01 = 01⊑N
+monND {m' = ndN} {nd01} 1+⊑N reflND = reflND
+monND {m' = ndN} {nd01} 1+⊑N 0⊑01 = 0⊑N
+monND {m' = ndN} {nd01} 1+⊑N 1⊑01 = 1+⊑N
+monND {m' = ndN} {nd01} 0⊑N q = 0⊑N
+monND {m' = ndN} {nd01} 1⊑N reflND = 01⊑N
+monND {m' = ndN} {nd01} 1⊑N 0⊑01 = 0⊑N
+monND {m' = ndN} {nd01} 1⊑N 1⊑01 = 1⊑N
+monND {m' = ndN} {nd1} reflND reflND = reflND
+monND {m' = ndN} {nd1} 01⊑N reflND = 01⊑N
+monND {m' = ndN} {nd1} 1+⊑N reflND = 1+⊑N
+monND {m' = ndN} {nd1} 0⊑N q = 0⊑N
+monND {m' = ndN} {nd1} 1⊑N reflND = 1⊑N
+monND {m' = ndN} {nd1+} reflND reflND = reflND
+monND {m' = ndN} {nd1+} reflND 1⊑1+ = reflND
+monND {m' = ndN} {nd1+} 01⊑N reflND = reflND
+monND {m' = ndN} {nd1+} 01⊑N 1⊑1+ = 01⊑N
+monND {m' = ndN} {nd1+} 1+⊑N reflND = 1+⊑N
+monND {m' = ndN} {nd1+} 1+⊑N 1⊑1+ = 1+⊑N
+monND {m' = ndN} {nd1+} 0⊑N q = 0⊑N
+monND {m' = ndN} {nd1+} 1⊑N reflND = 1+⊑N
+monND {m' = ndN} {nd1+} 1⊑N 1⊑1+ = 1⊑N
+monND {m' = ndN} {ndN} reflND reflND = reflND
+monND {m' = ndN} {ndN} reflND 01⊑N = reflND
+monND {m' = ndN} {ndN} reflND 1+⊑N = reflND
+monND {m' = ndN} {ndN} reflND 0⊑N = 0⊑N
+monND {m' = ndN} {ndN} reflND 1⊑N = reflND
+monND {m' = ndN} {ndN} 01⊑N reflND = reflND
+monND {m' = ndN} {ndN} 01⊑N 01⊑N = 01⊑N
+monND {m' = ndN} {ndN} 01⊑N 1+⊑N = reflND
+monND {m' = ndN} {ndN} 01⊑N 0⊑N = 0⊑N
+monND {m' = ndN} {ndN} 01⊑N 1⊑N = 01⊑N
+monND {m' = ndN} {ndN} 1+⊑N reflND = reflND
+monND {m' = ndN} {ndN} 1+⊑N 01⊑N = reflND
+monND {m' = ndN} {ndN} 1+⊑N 1+⊑N = 1+⊑N
+monND {m' = ndN} {ndN} 1+⊑N 0⊑N = 0⊑N
+monND {m' = ndN} {ndN} 1+⊑N 1⊑N = 1+⊑N
+monND {m' = ndN} {ndN} 0⊑N q = 0⊑N
+monND {m' = ndN} {ndN} 1⊑N q = q
+
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
                  ; _⊑_ = _⊑ND_
                  ; reflM = reflND
                  ; transM = transND
                  ; i = nd1
-                 ; _·_ = _⊙_
+                 ; _·_ = _⊙_ -- \odot ⊙
+                 ; mon = monND
                  ; lu = refl
                  ; ru = ruND
-                 ; ass = assND
+                 ; ass = λ {m} {n} {o} → assND {m} {n} {o}
                  }
 
 open import Data.List
@@ -138,12 +234,20 @@ TND nd X = List X  -- powerset?
 liftND :  {e e' : ND} {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
 liftND f [] = []
-liftND f (x ∷ xs) = (f x) ++ (liftND f xs)
+liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
 
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
                  ; η = ηND
-                 ; lift = liftND
+                 ; lift = λ {e} {e'} → liftND {e} {e'}
+                 ; sub = {!!}
+                 ; sub-mon = {!!}
+                 ; sub-eq = {!!}
+                 ; sub-refl = {!!}
+                 ; sub-trans = {!!}
+                 ; mlaw1 = {!!}
+                 ; mlaw2 = {!!}
+                 ; mlaw3 = {!!}
                  }
