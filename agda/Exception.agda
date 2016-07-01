@@ -136,8 +136,12 @@ mlaw1E : {e : E} → {X Y : Set} → (f : X → TE e Y) → (x : X) →
          liftE {ok} {e} f (ηE x) ≡ f x
 mlaw1E f x = refl
 
+
 sub-eqE : {e e' : E} {X : Set} → e ≡ e' → TE e X → TE e' X
-sub-eqE {e} {.e} refl = subE {e} reflE
+sub-eqE = subeq {E} {TE}
+
+--sub-eqE : {e e' : E} {X : Set} → e ≡ e' → TE e X → TE e' X
+--sub-eqE {e} {.e} refl = subE {e} reflE
 
 mlaw2E :  {e : E} → {X : Set} → (c : TE e X) →
           sub-eqE {e} ruE c ≡ liftE {e} {ok} ηE c
@@ -174,7 +178,6 @@ ExcEffGM = record { OM = ExcEffOM
                   ; lift = λ {e} {e'} → liftE {e} {e'}
                   ; sub = subE
                   ; sub-mon = sub-monE
-                  ; sub-eq = sub-eqE
                   ; sub-refl = λ {e} → sub-reflE {e}
                   ; sub-trans = sub-transE
                   ; mlaw1 = λ {e} → mlaw1E {e}
