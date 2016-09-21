@@ -18,7 +18,7 @@ infix 5 _∈_
 
 data _∈_ {X : Set} : X → List X → Set where
   here : {x : X} → {xs : List X} → x ∈ (x ∷ xs)
-  there : {x x' : X} → {xs : List X} → x ∈ xs → x ∈ x' ∷ xs
+  there : {x x' : X} → {xs : List X} → x ∈ xs → x ∈ (x' ∷ xs)
  
   
 record Listable (X : Set) : Set where
@@ -79,19 +79,17 @@ extract {_} {yes p} t = p
 extract {_} {no ¬p} ()
 
 
+--lemma-different-points : {X Y : Set} → {x y : X} → (f : X → Y)
 
+
+-- Hint: Fin.Finiteness:lstblEq
 lstbl2deceq : {X : Set} → Listable X → DecEq X
-lstbl2deceq (l , c) x x' with c x | c x'
-lstbl2deceq (.(x ∷ xs) , c) x .x | here {.x} {xs} | here =  yes refl
-lstbl2deceq (.(x ∷ xs) , c) x x' | here {.x} {xs} | there p' = {!!}
-lstbl2deceq (.(x'' ∷ xs) , c) x x' | there {.x} {x''} {xs} p | p' = {!!}
-
+lstbl2deceq lstbl = {!!}
 
 
 lemma1 : {X : Set} → (P : X → Set) → (p : Listable X) → 
          let open Listable in All P (list p) → (x : X) → P x
-lemma1 = {!!}
- 
+lemma1 P lstbl all x = {!!}
 
 lemma2 : {X : Set} → (P : X → Set) → ((x : X) → Dec (P x)) → ((xs : List X) → Dec (All P xs)) 
 lemma2 = {!!} 
