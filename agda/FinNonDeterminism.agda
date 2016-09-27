@@ -4,6 +4,7 @@ open import Relation.Binary.PropositionalEquality hiding (inspect)
 
 open import Data.Product
 open import Data.List
+open import Relation.Nullary
 
 ------------------------------------------------------
 -- Paper from http://cs.ioc.ee/~denis/finset/
@@ -73,6 +74,50 @@ assND = ∥-∥-yes (Π m ∈ NDListbl ∙
                    Π o ∈ NDListbl ∙
                    ( ((m ⊙ n) ⊙ o) ?nd= (m ⊙ (n ⊙ o)) ))
 
+-----------------------------------------------------------
+
+data _⊑ND_ : ND → ND → Set where
+  reflND : {m : ND} → m ⊑ND m
+  top : {m : ND} → m ⊑ND ndN
+  0⊑01 : nd0 ⊑ND nd01
+  1⊑01 : nd1 ⊑ND nd01
+  1⊑1+ : nd1 ⊑ND nd1+
+
+
+transND : {m n o : ND} → m ⊑ND n → n ⊑ND o → m ⊑ND o
+transND reflND q = q
+transND _ top = top
+transND p reflND = p
+
+_?⊑ND_ : (m : ND) → (n : ND) → Dec (m ⊑ND n)
+nd0 ?⊑ND nd0 = yes reflND
+nd0 ?⊑ND nd01 = yes 0⊑01
+nd0 ?⊑ND nd1 = no (λ ())
+nd0 ?⊑ND nd1+ = no (λ ())
+nd0 ?⊑ND ndN = yes top
+nd01 ?⊑ND nd0 = no (λ ())
+nd01 ?⊑ND nd01 = yes reflND
+nd01 ?⊑ND nd1 = no (λ ())
+nd01 ?⊑ND nd1+ = no (λ ())
+nd01 ?⊑ND ndN = yes top
+nd1 ?⊑ND nd0 = no (λ ())
+nd1 ?⊑ND nd01 = yes 1⊑01
+nd1 ?⊑ND nd1 = yes reflND
+nd1 ?⊑ND nd1+ = yes 1⊑1+
+nd1 ?⊑ND ndN = yes top
+nd1+ ?⊑ND nd0 = no (λ ())
+nd1+ ?⊑ND nd01 = no (λ ())
+nd1+ ?⊑ND nd1 = no (λ ())
+nd1+ ?⊑ND nd1+ = yes reflND
+nd1+ ?⊑ND ndN = yes top
+ndN ?⊑ND nd0 = no (λ ())
+ndN ?⊑ND nd01 = no (λ ())
+ndN ?⊑ND nd1 = no (λ ())
+ndN ?⊑ND nd1+ = no (λ ())
+ndN ?⊑ND ndN = yes reflND 
+
+monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+monND = {!!}
 
 {-
 NDEffOM : OrderedMonoid
