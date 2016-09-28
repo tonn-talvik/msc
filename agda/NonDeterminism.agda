@@ -228,7 +228,16 @@ NDEffOM = record { M = ND
 open import Data.List
 
 TND : ND → Set → Set
-TND nd X = List X  -- powerset? vector?
+TND nd X = List X  -- powerset? Use BoundedVec instead?
+
+{-
+open import Data.Nat
+open import Data.BoundedVec renaming (_∷_ to _∷b_; [] to []b )
+bv1 bv2 : BoundedVec ℕ 2
+bv1 = zero ∷b []b
+bv2 = zero ∷b zero ∷b []b
+-}
+
 
 ηND : {X : Set} → X → TND (nd1) X
 ηND x = [ x ]
@@ -238,19 +247,9 @@ liftND :  {e e' : ND} {X Y : Set} →
 liftND f [] = []
 liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
 
--- Is this correct? TND is too broad?
+-- Is this correct? Isn't TND too broad?
 subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
 subND p x = x
-{-
-subND reflND x = x
-subND 0⊑01 x = [] -- x
-subND 1⊑01 x = x
-subND 1⊑1+ x = x
-subND 01⊑N x = x
-subND 1+⊑N x = x
-subND 0⊑N x = [] -- x
-subND 1⊑N x = x
--}
 
 sub-reflND : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
 sub-reflND _ = refl
@@ -259,21 +258,7 @@ sub-monND : {e e' e'' e''' : ND} {X Y : Set} →
             (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
             (f : X → TND e' Y) → (c : TND e X) → 
             subND (monND p q) (liftND {e} {e'} f c) ≡ liftND {e''} {e'''} (subND q ∘ f) (subND p c)
---sub-monND {e} reflND q f c = sub-reflND {e} (liftND f c)
-sub-monND {nd0} reflND q f c = sub-reflND {nd0} (liftND f c)
-sub-monND {nd0} 0⊑01 reflND f c = {!!}
-sub-monND {nd0} 0⊑01 0⊑01 f c = {!!}
-sub-monND {nd0} 0⊑01 1⊑01 f c = {!!}
-sub-monND {nd0} 0⊑01 1⊑1+ f c = {!!}
-sub-monND {nd0} 0⊑01 01⊑N f c = {!!}
-sub-monND {nd0} 0⊑01 1+⊑N f c = {!!}
-sub-monND {nd0} 0⊑01 0⊑N f c = {!!}
-sub-monND {nd0} 0⊑01 1⊑N f c = {!!}
-sub-monND {nd0} 0⊑N q f c = {!!}
-sub-monND {nd01} p q f c = {!!}
-sub-monND {nd1} p q f c = {!!}
-sub-monND {nd1+} p q f c = {!!}
-sub-monND {ndN} p q f c = {!!}
+sub-monND p q f c = refl
 
 
 
@@ -296,6 +281,11 @@ mlaw1ND f x = ++-right-identity (f x)
 sub-eqND : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
 sub-eqND = subeq {ND} {TND}
 
+
+η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND {e} {e'} ηND xs
+η-lift-identity [] = refl
+η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
+
 mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
            sub-eqND {e} ruND c ≡ liftND {e} {nd1} ηND c
 mlaw2ND {nd0} [] = refl
@@ -303,7 +293,11 @@ mlaw2ND {nd01} [] = refl
 mlaw2ND {nd1} [] = refl
 mlaw2ND {nd1+} [] = refl
 mlaw2ND {ndN} [] = refl
-mlaw2ND (x ∷ c) = {!!}
+mlaw2ND {nd0} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd01} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
 
 mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
@@ -312,7 +306,8 @@ mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
                    (assND {e} {e'} {e''})
                    (liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c))
           ≡ liftND {e} {e' ⊙ e''} ((liftND {e'} {e''} g) ∘ f) c
-mlaw3ND f g c = {!!}
+mlaw3ND {e} f g c = {!!}
+
 
 
 NDEffGM : GradedMonad
