@@ -299,6 +299,63 @@ mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
+what : {e e' e'' : ND} {X : Set} → sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')} {X}
+                                   (assND {e} {e'} {e''}) []
+                          ≡ []
+what {nd0} = refl
+what {nd01} {nd0} = refl
+what {nd01} {nd01} {nd0} = refl
+what {nd01} {nd01} {nd01} = refl
+what {nd01} {nd01} {nd1} = refl
+what {nd01} {nd01} {nd1+} = refl
+what {nd01} {nd01} {ndN} = refl
+what {nd01} {nd1} = refl
+what {nd01} {nd1+} {nd0} = refl
+what {nd01} {nd1+} {nd01} = refl
+what {nd01} {nd1+} {nd1} = refl
+what {nd01} {nd1+} {nd1+} = refl
+what {nd01} {nd1+} {ndN} = refl
+what {nd01} {ndN} {nd0} = refl
+what {nd01} {ndN} {nd01} = refl
+what {nd01} {ndN} {nd1} = refl
+what {nd01} {ndN} {nd1+} = refl
+what {nd01} {ndN} {ndN} = refl
+what {nd1} = refl
+what {nd1+} {nd0} = refl
+what {nd1+} {nd01} {nd0} = refl
+what {nd1+} {nd01} {nd01} = refl
+what {nd1+} {nd01} {nd1} = refl
+what {nd1+} {nd01} {nd1+} = refl
+what {nd1+} {nd01} {ndN} = refl
+what {nd1+} {nd1} = refl
+what {nd1+} {nd1+} {nd0} = refl
+what {nd1+} {nd1+} {nd01} = refl
+what {nd1+} {nd1+} {nd1} = refl
+what {nd1+} {nd1+} {nd1+} = refl
+what {nd1+} {nd1+} {ndN} = refl
+what {nd1+} {ndN} {nd0} = refl
+what {nd1+} {ndN} {nd01} = refl
+what {nd1+} {ndN} {nd1} = refl
+what {nd1+} {ndN} {nd1+} = refl
+what {nd1+} {ndN} {ndN} = refl
+what {ndN} {nd0} = refl
+what {ndN} {nd01} {nd0} = refl
+what {ndN} {nd01} {nd01} = refl
+what {ndN} {nd01} {nd1} = refl
+what {ndN} {nd01} {nd1+} = refl
+what {ndN} {nd01} {ndN} = refl
+what {ndN} {nd1} = refl
+what {ndN} {nd1+} {nd0} = refl
+what {ndN} {nd1+} {nd01} = refl
+what {ndN} {nd1+} {nd1} = refl
+what {ndN} {nd1+} {nd1+} = refl
+what {ndN} {nd1+} {ndN} = refl
+what {ndN} {ndN} {nd0} = refl
+what {ndN} {ndN} {nd01} = refl
+what {ndN} {ndN} {nd1} = refl
+what {ndN} {ndN} {nd1+} = refl
+what {ndN} {ndN} {ndN} = refl
+
 
 mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
@@ -306,8 +363,8 @@ mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
                    (assND {e} {e'} {e''})
                    (liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c))
           ≡ liftND {e} {e' ⊙ e''} ((liftND {e'} {e''} g) ∘ f) c
-mlaw3ND {e} f g c = {!!}
-
+mlaw3ND {e} {e'} {e''} f g c with liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c)
+... | l = cong (λ cs → (concatMap g cs) ++ l) refl
 
 
 NDEffGM : GradedMonad
