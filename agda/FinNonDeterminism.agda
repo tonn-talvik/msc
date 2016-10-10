@@ -192,14 +192,29 @@ liftND f [] = []
 liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
 -}
 
+subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
+subND reflND x = x
+subND {nd0} top x = []
+subND {nd01} top x = maybe-to-list x
+subND {nd1} top x = [ x ]
+subND {nd1+} top x = x
+subND {ndN} top x = x
+-- How does auto-solve solve these? Maybe constructor definition order?
+subND 0⊑01 x = nothing
+subND 1⊑01 x = just x
+subND 1⊑1+ x = [ x ]
+
+sub-reflND : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
+sub-reflND _ = refl
+
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
                  ; η = ηND
                  ; lift = λ {e} {e'} → liftND {e} {e'}
-                 ; sub = {!!}
+                 ; sub = subND
                  ; sub-mon = {!!}
-                 ; sub-refl = {!!}
+                 ; sub-refl = λ {e} → sub-reflND {e} -- auto-solve: λ {e} {X} c → refl
                  ; sub-trans = {!!}
                  ; mlaw1 = {!!}
                  ; mlaw2 = {!!}
