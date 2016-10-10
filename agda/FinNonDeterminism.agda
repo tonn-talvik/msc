@@ -5,6 +5,8 @@ open import Relation.Binary.PropositionalEquality hiding (inspect ; [_])
 open import Data.Product
 open import Data.List
 open import Relation.Nullary
+open import Data.Empty
+open import Data.Unit
 
 ------------------------------------------------------
 -- Paper from http://cs.ioc.ee/~denis/finset/
@@ -116,8 +118,24 @@ ndN ?⊑ND nd1 = no (λ ())
 ndN ?⊑ND nd1+ = no (λ ())
 ndN ?⊑ND ndN = yes reflND 
 
+-- a.k.a squash ∥_∥
+truncate : {P : Set} → Dec P → Set
+truncate (yes _) = ⊤
+truncate (no  _) = ⊥
+
+-- ∥-∥-yes
+extract : {P : Set} → {d : Dec P} → truncate d → P
+extract {_} {yes p} t = p
+extract {_} {no ¬p} ()
+
+data solveMonND : ND → ND → ND → ND → Set where
+  mon : (m n m' n' : ND) → m ⊑ND m' → n ⊑ND n' → {_ : truncate ((m ⊙ n) ?⊑ND (m' ⊙ n'))} → solveMonND m n m' n'
+
+solveMonND2monND : {m n m' n' : ND} → (sm : solveMonND m n m' n') → (m ⊙ n) ⊑ND (m' ⊙ n')
+solveMonND2monND (mon m n m' n' p q {t}) = extract t
+
 monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-monND = {!!}
+monND {m} {n} {m'} {n'} p q = solveMonND2monND (mon m n m' n' p q)
 
 
 NDEffOM : OrderedMonoid
@@ -135,7 +153,7 @@ NDEffOM = record { M = ND
 
 
 
-open import Data.Unit
+
 open import Data.Maybe
 open import Data.BoundedVec renaming (_∷_ to _∷b_; [] to []b )
 
@@ -153,6 +171,7 @@ maybe-to-list : {X : Set} → Maybe X → List X
 maybe-to-list (just x) = [ x ]
 maybe-to-list nothing = []
 
+-- is this too precise considering the definition of _⊙_ ?
 liftND :  {e e' : ND} {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
 liftND {nd0}  f x = tt

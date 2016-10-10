@@ -54,7 +54,9 @@ nice2nat (N n) = n
 nice2inlist : (n : nicenumber) → nice2nat n ∈ list
 nice2inlist (N n {t}) =  extract t
 
-{-
+
+seventeen : nicenumber
+seventeen = N 17
 twelve : nicenumber
 twelve = N 12
--}
+
