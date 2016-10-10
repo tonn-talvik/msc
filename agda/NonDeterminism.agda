@@ -242,10 +242,10 @@ bv2 = zero ∷b zero ∷b []b
 ηND : {X : Set} → X → TND (nd1) X
 ηND x = [ x ]
 
-liftND :  {e e' : ND} {X Y : Set} →
+liftND :  (e e' : ND) {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
-liftND f [] = []
-liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
+liftND e e' f [] = []
+liftND e e' f (x ∷ xs) = (f x) ++ (liftND e e' f xs)
 
 -- Is this correct? Isn't TND too broad?
 subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
@@ -257,7 +257,7 @@ sub-reflND _ = refl
 sub-monND : {e e' e'' e''' : ND} {X Y : Set} →
             (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
             (f : X → TND e' Y) → (c : TND e X) → 
-            subND (monND p q) (liftND {e} {e'} f c) ≡ liftND {e''} {e'''} (subND q ∘ f) (subND p c)
+            subND (monND p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
 sub-monND p q f c = refl
 
 
@@ -273,7 +273,7 @@ sub-transND r q c = refl
 ++-right-identity (x ∷ xs) = cong (_∷_ x) (++-right-identity xs)
 
 mlaw1ND : {e : ND} → {X Y : Set} → (f : X → TND e Y) → (x : X) →
-          liftND {nd1} {e} f (ηND x) ≡ f x
+          liftND nd1 e f (ηND x) ≡ f x
 mlaw1ND f x = ++-right-identity (f x)
 
 
@@ -282,12 +282,12 @@ sub-eqND : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
 sub-eqND = subeq {ND} {TND}
 
 
-η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND {e} {e'} ηND xs
+η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND e e' ηND xs
 η-lift-identity [] = refl
 η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
 
 mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
-           sub-eqND {e} ruND c ≡ liftND {e} {nd1} ηND c
+           sub-eqND {e} ruND c ≡ liftND e nd1 ηND c
 mlaw2ND {nd0} [] = refl
 mlaw2ND {nd01} [] = refl
 mlaw2ND {nd1} [] = refl
@@ -299,6 +299,8 @@ mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
+
+-- this is not needed anymore?
 what : {e e' e'' : ND} {X : Set} → sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')} {X}
                                    (assND {e} {e'} {e''}) []
                           ≡ []
@@ -361,17 +363,29 @@ mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
           sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
                    (assND {e} {e'} {e''})
-                   (liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c))
-          ≡ liftND {e} {e' ⊙ e''} ((liftND {e'} {e''} g) ∘ f) c
+                   (liftND (e ⊙ e') e'' g (liftND e e' f c))
+          ≡ liftND (e) (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
+mlaw3ND {e} {e'} {e''} f g [] = what {e} {e'} {e''}
+mlaw3ND {e} {e'} {e''} f g (x ∷ c) = {!!}
+
+--mlaw3ND {e} {e'} {e''} f g [] = what {e} {e'} {e''}
+--mlaw3ND {e} {e'} {e''} f g (x ∷ c) = subeq refl liftND --cong (_++_ {!!}) refl
+--mlaw3ND {e} {e'} {e''} f g (x ∷ c) with liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c)
+--... | fx = cong ((concatMap (liftND {e'} {e''} g))) refl
+--... | l = cong (concatMap (liftND {e} {e' ⊙ e''} ((liftND {e'} {e''} g) ∘ f))) refl
+
+{-
+-- this is wrong
 mlaw3ND {e} {e'} {e''} f g c with liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c)
-... | l = cong (λ cs → (concatMap g cs) ++ l) refl
+... | l = cong (λ cs → concatMap g cs) {{!!}} refl
+-}
 
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
                  ; η = ηND
-                 ; lift = λ {e} {e'} → liftND {e} {e'}
+                 ; lift = λ {e} {e'} → liftND e e'
                  ; sub = subND
                  ; sub-mon = sub-monND
                  ; sub-refl = λ {e} → sub-reflND {e}

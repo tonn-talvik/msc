@@ -155,7 +155,7 @@ mlaw3E : {e e' e'' : E} → {X Y Z : Set} →
          sub-eqE {(e ·E e') ·E e''} {e ·E (e' ·E e'')}
                  (assE {e} {e'} {e''})
                  (liftE {e ·E e'} {e''} g (liftE {e} {e'} f c))
-         ≡ liftE {e} {e' ·E e''} ((liftE {e'} {e''} g) ∘ f) c
+         ≡ liftE {e} {e' ·E e''} (λ x → liftE {e'} {e''} g (f x)) c
 mlaw3E {err} f g c = refl
 mlaw3E {ok} f g c = refl
 mlaw3E {errok} {err} f g x = refl
