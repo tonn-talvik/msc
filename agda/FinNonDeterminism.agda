@@ -1,6 +1,6 @@
 module FinNonDeterminism where
 
-open import Relation.Binary.PropositionalEquality hiding (inspect)
+open import Relation.Binary.PropositionalEquality hiding (inspect ; [_])
 
 open import Data.Product
 open import Data.List
@@ -119,7 +119,7 @@ ndN ?⊑ND ndN = yes reflND
 monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
 monND = {!!}
 
-{-
+
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
                  ; _⊑_ = _⊑ND_
@@ -129,24 +129,68 @@ NDEffOM = record { M = ND
                  ; _·_ = _⊙_ -- \odot ⊙
                  ; mon = monND
                  ; lu = refl
-                 ; ru = ruND
-                 ; ass = λ {m} {n} {o} → assND {m} {n} {o}
+                 ; ru = λ {m} → ruND m
+                 ; ass = λ {m} {n} {o} → assND m n o
                  }
 
 
 
+open import Data.Unit
+open import Data.Maybe
+open import Data.BoundedVec renaming (_∷_ to _∷b_; [] to []b )
 
 TND : ND → Set → Set
-TND nd X = List X  -- powerset?
+TND nd0  X = ⊤
+TND nd01 X = Maybe X
+TND nd1  X = X
+TND nd1+ X = List X -- ? lower bounded vec
+TND ndN  X = List X
 
 ηND : {X : Set} → X → TND (nd1) X
-ηND x = [ x ]
+ηND x = x
+
+maybe-to-list : {X : Set} → Maybe X → List X
+maybe-to-list (just x) = [ x ]
+maybe-to-list nothing = []
 
 liftND :  {e e' : ND} {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
+liftND {nd0}  f x = tt
+liftND {nd01} {nd0} f x = tt
+-- bind??? (Data.Maybe.monad {level})._>>=_ 
+liftND {nd01} {nd01} f (just x) = f x
+liftND {nd01} {nd01} f nothing = nothing 
+liftND {nd01} {nd1} f x = Data.Maybe.map f x
+liftND {nd01} {nd1+} f (just x) = f x
+liftND {nd01} {nd1+} f nothing = []
+liftND {nd01} {ndN} f (just x) = f x
+liftND {nd01} {ndN} f nothing = []
+liftND {nd1}  f x = f x
+-- "Absurd"??? But see liftND {nd1+} {nd1} f (x ∷ xs)
+liftND {nd1+} {nd0} f [] = tt
+liftND {nd1+} {nd01} f [] = []
+liftND {nd1+} {nd1} f [] = []
+liftND {nd1+} {nd1+} f [] = []
+liftND {nd1+} {ndN} f [] = []  
+liftND {nd1+} {nd0} f (x ∷ xs) = tt
+liftND {nd1+} {nd01} f (x ∷ xs) = maybe-to-list (f x) ++ liftND {nd1+} {nd01} f xs
+liftND {nd1+} {nd1} f (x ∷ xs) = f x ∷ liftND {nd1+} {nd1} f xs
+liftND {nd1+} {nd1+} f (x ∷ xs) = f x ++ liftND {nd1+} {nd1+} f xs
+liftND {nd1+} {ndN} f (x ∷ xs) = f x ++ liftND {nd1+} {ndN} f xs
+liftND {ndN} {nd0} f [] = tt
+liftND {ndN} {nd01} f [] = []
+liftND {ndN} {nd1} f [] = []
+liftND {ndN} {nd1+} f [] = []
+liftND {ndN} {ndN} f [] = []
+liftND {ndN} {nd0} f (x ∷ xs) = tt
+liftND {ndN} {nd01} f (x ∷ xs) = maybe-to-list (f x) ++ liftND {ndN} {nd01} f xs
+liftND {ndN} {nd1} f (x ∷ xs) = f x ∷ liftND {ndN} {nd1} f xs
+liftND {ndN} {nd1+} f (x ∷ xs) = f x ++ liftND {ndN} {nd1+} f xs
+liftND {ndN} {ndN} f (x ∷ xs) = f x ++ liftND {ndN} {ndN} f xs
+{-
 liftND f [] = []
 liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
-
+-}
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
@@ -155,7 +199,6 @@ NDEffGM = record { OM = NDEffOM
                  ; lift = λ {e} {e'} → liftND {e} {e'}
                  ; sub = {!!}
                  ; sub-mon = {!!}
-                 ; sub-eq = {!!}
                  ; sub-refl = {!!}
                  ; sub-trans = {!!}
                  ; mlaw1 = {!!}
@@ -163,5 +206,5 @@ NDEffGM = record { OM = NDEffOM
                  ; mlaw3 = {!!}
                  }
 
--}
+
 
