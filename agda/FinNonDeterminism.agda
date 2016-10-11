@@ -155,7 +155,7 @@ NDEffOM = record { M = ND
 
 
 open import Data.Maybe
-open import Data.BoundedVec renaming (_∷_ to _∷b_; [] to []b )
+--open import Data.BoundedVec renaming (_∷_ to _∷b_; [] to []b )
 
 TND : ND → Set → Set
 TND nd0  X = ⊤
@@ -226,6 +226,20 @@ subND 1⊑1+ x = [ x ]
 sub-reflND : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
 sub-reflND _ = refl
 
+sub-transND : {e e' e'' : ND} {X : Set} →
+              (p : e ⊑ND e') → (q : e' ⊑ND e'') → (c : TND e X) → 
+              subND q (subND p c) ≡ subND (transND p q) c
+sub-transND reflND q c = refl
+sub-transND top reflND c = refl
+sub-transND top top c = refl
+sub-transND 0⊑01 reflND c = refl
+sub-transND 0⊑01 top c = refl
+sub-transND 1⊑01 reflND c = refl
+sub-transND 1⊑01 top c = refl
+sub-transND 1⊑1+ reflND c = refl
+sub-transND 1⊑1+ top c = refl
+
+
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
@@ -234,7 +248,7 @@ NDEffGM = record { OM = NDEffOM
                  ; sub = subND
                  ; sub-mon = {!!}
                  ; sub-refl = λ {e} → sub-reflND {e} -- auto-solve: λ {e} {X} c → refl
-                 ; sub-trans = {!!}
+                 ; sub-trans = sub-transND
                  ; mlaw1 = {!!}
                  ; mlaw2 = {!!}
                  ; mlaw3 = {!!}
