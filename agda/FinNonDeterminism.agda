@@ -134,10 +134,12 @@ data solveMonND (M N M' N' : ND) : Set where
 solveMonND2monND : {m n m' n' : ND} → (sm : solveMonND m n m' n') → (m ⊙ n) ⊑ND (m' ⊙ n')
 solveMonND2monND (mon p q {t}) = extract t
 
+-- FIXME: this does not solve meta-variables
 monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
 monND p q = solveMonND2monND (mon p q)
 
 rund = λ {m} → ruND m
+assnd = λ {m} {n} {o} → assND m n o
 
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
@@ -149,7 +151,7 @@ NDEffOM = record { M = ND
                  ; mon = monND
                  ; lu = refl
                  ; ru = rund
-                 ; ass = λ {m} {n} {o} → assND m n o
+                 ; ass = λ {m} {n} {o} → assnd {m} {n} {o}
                  }
 
 
@@ -270,6 +272,33 @@ mlaw2ND {nd1+} c = lemma-η-nd1+ c
 mlaw2ND {ndN}  c = lemma-η-ndN c
 
 
+{-
+lemma-lift : sub-eqND assnd (liftND g (liftND f c))
+             ≡ liftND (λ x → liftND g (f x)) c
+-}             
+mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
+          (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
+          sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
+                   (assnd {e} {e'} {e''})
+                   (liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c))
+          ≡ liftND {e} {e' ⊙ e''} (λ x → liftND {e'} {e''} g (f x)) c
+mlaw3ND {nd0} f g c = refl
+mlaw3ND {nd01} {nd0} f g c = refl
+mlaw3ND {nd01} {nd01} {nd0} f g c = refl
+mlaw3ND {nd01} {nd01} {nd01} f g (just x) = refl
+mlaw3ND {nd01} {nd01} {nd01} f g nothing = refl
+mlaw3ND {nd01} {nd01} {nd1} f g c = {!!}
+mlaw3ND {nd01} {nd01} {nd1+} f g c = {!!}
+mlaw3ND {nd01} {nd01} {ndN} f g c = {!!}
+mlaw3ND {nd01} {nd1} f g c = {!!}
+mlaw3ND {nd01} {nd1+} f g c = {!!}
+mlaw3ND {nd01} {ndN} f g c = {!!}
+mlaw3ND {nd1} f g c = {!!}
+mlaw3ND {nd1+} f g c = {!!}
+mlaw3ND {ndN} f g c = {!!}          
+
+
+
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
@@ -281,8 +310,7 @@ NDEffGM = record { OM = NDEffOM
                  ; sub-trans = sub-transND
                  ; mlaw1 = λ {e} → mlaw1ND {e}
                  ; mlaw2 = λ {e} → mlaw2ND {e}
-                 ; mlaw3 = {!!}
+                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND {e} {e'} {e''}
                  }
-
 
 
