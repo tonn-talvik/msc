@@ -128,15 +128,16 @@ extract : {P : Set} → {d : Dec P} → truncate d → P
 extract {_} {yes p} t = p
 extract {_} {no ¬p} ()
 
-data solveMonND : ND → ND → ND → ND → Set where
-  mon : (m n m' n' : ND) → m ⊑ND m' → n ⊑ND n' → {_ : truncate ((m ⊙ n) ?⊑ND (m' ⊙ n'))} → solveMonND m n m' n'
+data solveMonND (M N M' N' : ND) : Set where
+  mon : M ⊑ND M' → N ⊑ND N' → {_ : truncate ((M ⊙ N) ?⊑ND (M' ⊙ N'))} → solveMonND M N M' N'
 
 solveMonND2monND : {m n m' n' : ND} → (sm : solveMonND m n m' n') → (m ⊙ n) ⊑ND (m' ⊙ n')
-solveMonND2monND (mon m n m' n' p q {t}) = extract t
+solveMonND2monND (mon p q {t}) = extract t
 
 monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-monND {m} {n} {m'} {n'} p q = solveMonND2monND (mon m n m' n' p q)
+monND p q = solveMonND2monND (mon p q)
 
+rund = λ {m} → ruND m
 
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
@@ -147,7 +148,7 @@ NDEffOM = record { M = ND
                  ; _·_ = _⊙_ -- \odot ⊙
                  ; mon = monND
                  ; lu = refl
-                 ; ru = λ {m} → ruND m
+                 ; ru = rund
                  ; ass = λ {m} {n} {o} → assND m n o
                  }
 
@@ -240,6 +241,35 @@ sub-transND 1⊑1+ reflND c = refl
 sub-transND 1⊑1+ top c = refl
 
 
+mlaw1ND : {e : ND} → {X Y : Set} → (f : X → TND e Y) → (x : X) →
+          liftND {nd1} {e} f (ηND x) ≡ f x
+mlaw1ND f x = refl
+
+
+sub-eqND : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
+sub-eqND = subeq {ND} {TND}
+
+
+lemma-η-nd1+ : {X : Set} → (c : TND nd1+ X) → sub-eqND {nd1+} rund c ≡ liftND {nd1+} {nd1} ηND c
+lemma-η-nd1+ [] = refl
+lemma-η-nd1+ (x ∷ c) = cong (_∷_ x) (lemma-η-nd1+ c)
+
+
+lemma-η-ndN : {X : Set} → (c : TND ndN X) → sub-eqND {ndN} rund c ≡ liftND {ndN} {nd1} ηND c
+lemma-η-ndN [] = refl
+lemma-η-ndN (x ∷ c) = cong (_∷_ x) (lemma-η-ndN c)
+
+
+mlaw2ND : {e : ND} → {X : Set} → (c : TND e X) →
+          sub-eqND {e} rund c ≡ liftND {e} {nd1} ηND c
+mlaw2ND {nd0}  c = refl
+mlaw2ND {nd01} (just x) = refl
+mlaw2ND {nd01} nothing = refl
+mlaw2ND {nd1}  c = refl
+mlaw2ND {nd1+} c = lemma-η-nd1+ c
+mlaw2ND {ndN}  c = lemma-η-ndN c
+
+
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
@@ -249,8 +279,8 @@ NDEffGM = record { OM = NDEffOM
                  ; sub-mon = {!!}
                  ; sub-refl = λ {e} → sub-reflND {e} -- auto-solve: λ {e} {X} c → refl
                  ; sub-trans = sub-transND
-                 ; mlaw1 = {!!}
-                 ; mlaw2 = {!!}
+                 ; mlaw1 = λ {e} → mlaw1ND {e}
+                 ; mlaw2 = λ {e} → mlaw2ND {e}
                  ; mlaw3 = {!!}
                  }
 
