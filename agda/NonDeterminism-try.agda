@@ -1,8 +1,16 @@
 module NonDeterminism-try where
 
+
+open import Data.List
+open import Relation.Nullary
+
+
 open import Relation.Binary.Core using (_≡_ ; refl)
-open import OrderedMonoid
-open import GradedMonad
+--open import OrderedMonoid
+--open import GradedMonad
+
+open import Finiteness
+
 
 data ND : Set where
   nd0  : ND
@@ -10,6 +18,23 @@ data ND : Set where
   nd1  : ND
   nd1+ : ND
   ndN  : ND
+
+listND : List ND
+listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
+
+cmpltND : (x : ND) → x ∈ listND
+cmpltND nd0 = here
+cmpltND nd01 = there here
+cmpltND nd1 = there (there here)
+cmpltND nd1+ = there (there (there here))
+cmpltND ndN = there (there (there (there here)))
+
+
+lstblND : Listable ND 
+lstblND = record { list = listND
+                 ; complete = cmpltND
+                 }
+
 
 data _⊑ND_ : ND → ND → Set where
   reflND : {m : ND} → m ⊑ND m
@@ -19,13 +44,56 @@ data _⊑ND_ : ND → ND → Set where
   1⊑1+ : nd1 ⊑ND nd1+
 
 
+_?⊑ND_ : (m : ND) → (n : ND) → Dec (m ⊑ND n)
+nd0 ?⊑ND nd0 = yes reflND
+nd0 ?⊑ND nd01 = yes 0⊑01
+nd0 ?⊑ND nd1 = no (λ ())
+nd0 ?⊑ND nd1+ = no (λ ())
+nd0 ?⊑ND ndN = yes top
+nd01 ?⊑ND nd0 = no (λ ())
+nd01 ?⊑ND nd01 = yes reflND
+nd01 ?⊑ND nd1 = no (λ ())
+nd01 ?⊑ND nd1+ = no (λ ())
+nd01 ?⊑ND ndN = yes top
+nd1 ?⊑ND nd0 = no (λ ())
+nd1 ?⊑ND nd01 = yes 1⊑01
+nd1 ?⊑ND nd1 = yes reflND
+nd1 ?⊑ND nd1+ = yes 1⊑1+
+nd1 ?⊑ND ndN = yes top
+nd1+ ?⊑ND nd0 = no (λ ())
+nd1+ ?⊑ND nd01 = no (λ ())
+nd1+ ?⊑ND nd1 = no (λ ())
+nd1+ ?⊑ND nd1+ = yes reflND
+nd1+ ?⊑ND ndN = yes top
+ndN ?⊑ND nd0 = no (λ ())
+ndN ?⊑ND nd01 = no (λ ())
+ndN ?⊑ND nd1 = no (λ ())
+ndN ?⊑ND nd1+ = no (λ ())
+ndN ?⊑ND ndN = yes reflND 
+
+
+
+
+
+reflautom : (m : ND) → m  ⊑ND m
+reflautom = extract (?∀ lstblND (λ m → m ?⊑ND m))
+
+
 transND : {m n o : ND} → m ⊑ND n → n ⊑ND o → m ⊑ND o
 transND reflND q = q
 transND p top = top
 transND p reflND = p
 
 
+transautom : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
+transautom = extract (?∀ lstblND (λ m → 
+                          ?∀ lstblND (λ n → 
+                             ?∀ lstblND (λ o →   
+                                  (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
+
 {-
+
+
 _⊙_ : ND → ND → ND
 nd0 ⊙ n = nd0
 nd01 ⊙ nd0 = nd0
