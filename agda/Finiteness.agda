@@ -67,7 +67,7 @@ postulate funext : {X Y : Set} → FunExt X Y
 deceqfunext : {X Y : Set} → DecEqFun X Y → DecEq (X → Y)
 deceqfunext p f g with p f g 
 deceqfunext p f g | yes q =  yes (funext f g q) 
-deceqfunext p f g | no  q =  no ( λ r → q ( λ x → cong (λ h → h x) {f} {g} r))
+deceqfunext p f g | no ¬q =  no ( λ r → ¬q ( λ x → cong (λ h → h x) {f} {g} r))
 
 
 truncate : {P : Set} → Dec P → Set
@@ -116,41 +116,43 @@ lstbl2deceq (.(_ ∷ _) , p) x y | it (there q) u | it (there q') v  = {! no ?!}
 --trivial : {X : Set} → {x : X} → ¬ x ∈ [] 
 --trivial ()
 
-lemma1 : {X : Set} → (p : Listable X) → (P : X → Set) → 
+lemma1 : {X : Set} → (p : Listable X) → {P : X → Set} → 
          All P (Listable.list p) → (x : X) → P x
-lemma1 p P f x = f (Listable.complete p x)
+lemma1 p f x = f (Listable.complete p x)
 
 
-lemma20 : {X : Set} → (P : X → Set) → (x : X) → (xs : List X) → P x → All P xs → All P (x ∷ xs)
-lemma20 P x  xs p f (here) = p
-lemma20 P x  xs p f (there q) = f q
+lemma20 : {X : Set} → {P : X → Set} → (x : X) → (xs : List X) → P x → All P xs → All P (x ∷ xs)
+lemma20 x xs p f (here) = p
+lemma20 x xs p f (there q) = f q
 
-lemma2 : {X : Set} → (P : X → Set) → ((x : X) → Dec (P x)) → ((xs : List X) → Dec (All P xs)) 
-lemma2 P f [] =  yes (λ ())
-lemma2 P f (x ∷ xs) with f x 
-lemma2 P f (x ∷ xs) | yes p with lemma2 P f xs 
-lemma2 P f (x ∷ xs) | yes p | yes p' = yes (lemma20 P x  xs p p') -- {! yes (λ {y} → λ { here → p ; there {y} {x} {xs} q → p' q })!}
-lemma2 P f (x ∷ xs) | yes p | no ¬p' =  no ( λ q → ¬p' ( λ r → q (there r)) ) 
-lemma2 P f (x ∷ xs) | no ¬p  =  no ( λ q → ¬p (q here) ) 
-
-
-?∀ : {X : Set} → (p : Listable X) → {P : X → Set} 
-       → ((x : X) → Dec (P x)) → Dec ((x : X) → P x)
-?∀ p {P} f with lemma2 P f (Listable.list p) 
-... | yes q = yes (lemma1 p P q)
-... | no ¬q =  no (λ g → ¬q ( λ {x} → λ _ → g x )) 
+lemma2 : {X : Set} → {P : X → Set} →
+         ((x : X) → Dec (P x)) → ((xs : List X) → Dec (All P xs)) 
+lemma2 f [] = yes (λ ())
+lemma2 f (x ∷ xs) with f x 
+...               | yes p with lemma2 f xs 
+...                       | yes p' = yes (lemma20 x xs p p')
+...                       | no ¬p' = no ( λ q → ¬p' ( λ r → q (there r)) ) 
+lemma2 f (x ∷ xs) | no ¬p = no ( λ q → ¬p (q here) ) 
 
 
-decand : {P Q : Set} 
-       → Dec P → Dec Q → Dec (P × Q)
-decand (yes p) (yes q) = yes (p , q)
-decand (yes p) (no ¬q) = no ( λ { (p , q) → ¬q q } ) 
-decand (no ¬p ) q = no ( λ { (p , q) → ¬p p } ) 
+?∀ : {X : Set} → (p : Listable X) → {P : X → Set} →
+     ((x : X) → Dec (P x)) → Dec ((x : X) → P x)
+?∀ p f with lemma2 f (Listable.list p) 
+... | yes q = yes (lemma1 p q)
+... | no ¬q = no (λ g → ¬q ( λ {x} → λ _ → g x )) 
 
-_?→_ : {P Q : Set} → Dec P → Dec Q → Dec (P → Q)
-_        ?→ (yes q) = yes (λ _ → q)
-(no ¬p)  ?→ _ = yes (λ p → ⊥-elim (¬p p) ) 
-(yes p ) ?→ (no ¬q) = no ( λ r →  ¬q ( r p) )
+
+_?∧_ : {P Q : Set} →
+       Dec P → Dec Q → Dec (P × Q)
+(yes p) ?∧ (yes q) = yes (p , q)
+(yes p) ?∧ (no ¬q) = no ( λ { (p , q) → ¬q q } ) 
+(no ¬p) ?∧ q = no ( λ { (p , q) → ¬p p } ) 
+
+_?→_ : {P Q : Set} →
+        Dec P → Dec Q → Dec (P → Q)
+_       ?→ (yes q) = yes (λ _ → q)
+(no ¬p) ?→ _ = yes (λ p → ⊥-elim (¬p p) ) 
+(yes p) ?→ (no ¬q) = no ( λ r →  ¬q ( r p) )
 
 
 --powertopeople : {X Y : Set} → Listable X → DecEq Y → DecEqFun X Y

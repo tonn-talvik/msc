@@ -23,11 +23,11 @@ listND : List ND
 listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
 
 cmpltND : (x : ND) → x ∈ listND
-cmpltND nd0 = here
+cmpltND nd0  = here
 cmpltND nd01 = there here
-cmpltND nd1 = there (there here)
+cmpltND nd1  = there (there here)
 cmpltND nd1+ = there (there (there here))
-cmpltND ndN = there (there (there (there here)))
+cmpltND ndN  = there (there (there (there here)))
 
 
 lstblND : Listable ND 
