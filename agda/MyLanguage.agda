@@ -228,11 +228,14 @@ war-contra = svar2inlist {gamma} (svar 3)
 varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
 varify v {p} = var (svar2inlist (svar v {p} ))
 
+
 pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
 -- pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
 pv1        = ⟦ val (varify 0) ⟧ (1 , top)
 -- pv1-contra = ⟦ val (varify 1) ⟧ (1 , top)
 pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , top)
+pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
+pv3        = ⟦ val (varify 0) ⟧
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
