@@ -36,6 +36,23 @@ lstblND = record { list = listND
                  }
 
 
+_⊙_ : ND → ND → ND
+nd0 ⊙ n = nd0
+nd01 ⊙ nd0 = nd0
+nd01 ⊙ nd01 = nd01
+nd01 ⊙ nd1 = nd01
+nd01 ⊙ nd1+ = ndN
+nd01 ⊙ ndN = ndN
+nd1 ⊙ n = n
+nd1+ ⊙ nd0 = nd0
+nd1+ ⊙ nd01 = ndN
+nd1+ ⊙ nd1 = nd1+
+nd1+ ⊙ nd1+ = nd1+
+nd1+ ⊙ ndN = ndN
+ndN ⊙ nd0 = nd0
+ndN ⊙ _ = ndN
+
+
 data _⊑ND_ : ND → ND → Set where
   reflND : {m : ND} → m ⊑ND m
   top : {m : ND} → m ⊑ND ndN
@@ -74,23 +91,30 @@ ndN ?⊑ND ndN = yes reflND
 
 
 
+?∀ND = ?∀ lstblND
 
 reflautom : (m : ND) → m  ⊑ND m
-reflautom = extract (?∀ lstblND (λ m → m ?⊑ND m))
+reflautom = extract (?∀ND (λ m → m ?⊑ND m))
 
-
+-- transitivity manually
 transND : {m n o : ND} → m ⊑ND n → n ⊑ND o → m ⊑ND o
 transND reflND q = q
 transND p top = top
 transND p reflND = p
 
-
+-- transitivity automatically using typechecker
 transautom : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
-transautom = extract (?∀ lstblND (λ m → 
-                          ?∀ lstblND (λ n → 
-                             ?∀ lstblND (λ o →   
-                                  (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
+transautom = extract (?∀ND (λ m → 
+                        ?∀ND (λ n → 
+                          ?∀ND (λ o →   
+                                  (m ?⊑ND n) ?→ (n ?⊑ND o) ?→ (m ?⊑ND o)))))
 
+monautom : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+monautom = extract (?∀ND (λ m → 
+                      ?∀ND (λ n → 
+                        ?∀ND (λ m' → 
+                          ?∀ND (λ n' →
+                                  (m ?⊑ND m') ?→ (n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n')) )))))
 {-
 
 
