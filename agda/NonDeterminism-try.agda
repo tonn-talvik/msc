@@ -102,44 +102,44 @@ _?≡ND_ = ?≡L lstblND
 -------------------------------------------------------
 
 
-refl-ND : (m : ND) → m ⊑ND m
-refl-ND = extract (?∀ND (λ m → m ?⊑ND m))
+refl-⊑ND : (m : ND) → m ⊑ND m
+refl-⊑ND = extract (?∀ND (λ m → m ?⊑ND m))
 
-trans-ND : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
-trans-ND = extract (?∀ND (λ m → 
-                      ?∀ND (λ n → 
-                        ?∀ND (λ o →   
-                               (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
+trans-⊑ND : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
+trans-⊑ND = extract (?∀ND (λ m → 
+                       ?∀ND (λ n → 
+                         ?∀ND (λ o →   
+                                (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
 
-ru-ND : (m : ND) → m ≡ m ⊙ nd1
-ru-ND = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
+ru-⊙ : (m : ND) → m ≡ m ⊙ nd1
+ru-⊙ = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
 
 
-mon-ND : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-mon-ND = extract (?∀ND (λ m → 
-                    ?∀ND (λ n → 
-                      ?∀ND (λ m' → 
-                        ?∀ND (λ n' →
-                               (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
+mon-⊙ : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+mon-⊙ = extract (?∀ND (λ m → 
+                   ?∀ND (λ n → 
+                     ?∀ND (λ m' → 
+                       ?∀ND (λ n' →
+                              (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
                                   
-ass-ND : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
-ass-ND = extract (?∀ND (λ m → 
-                    ?∀ND (λ n → 
-                      ?∀ND (λ o →
-                             ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
+ass-⊙ : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
+ass-⊙ = extract (?∀ND (λ m → 
+                   ?∀ND (λ n → 
+                     ?∀ND (λ o →
+                            ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
 
 
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
                  ; _⊑_ = _⊑ND_
-                 ; reflM = λ {m} → refl-ND m
-                 ; transM = λ {m} {n} {o} → trans-ND m n o
+                 ; reflM = λ {m} → refl-⊑ND m
+                 ; transM = λ {m} {n} {o} → trans-⊑ND m n o
                  ; i = nd1
                  ; _·_ = _⊙_ -- \odot ⊙
-                 ; mon = λ {m} {n} {m'} {n'} → mon-ND m n m' n'
+                 ; mon = λ {m} {n} {m'} {n'} → mon-⊙ m n m' n'
                  ; lu = refl
-                 ; ru = λ {m} → ru-ND m
-                 ; ass = λ {m} {n} {o} → ass-ND m n o
+                 ; ru = λ {m} → ru-⊙ m
+                 ; ass = λ {m} {n} {o} → ass-⊙ m n o
                  }
                  
 -------------------------------------------------------
@@ -162,21 +162,21 @@ liftND e e' f (x ∷ xs) = (f x) ++ (liftND e e' f xs)
 subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
 subND p x = x
 
-sub-reflND : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
-sub-reflND _ = refl
+subND-refl : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
+subND-refl _ = refl
 
-sub-monND : {e e' e'' e''' : ND} {X Y : Set} →
+subND-mon : {e e' e'' e''' : ND} {X Y : Set} →
             (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
             (f : X → TND e' Y) → (c : TND e X) → 
-            subND (mon-ND e e' e'' e''' p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
-sub-monND p q f c = refl
+            subND (mon-⊙ e e' e'' e''' p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
+subND-mon p q f c = refl
 
 
 
-sub-transND : {e e' e'' : ND} {X : Set} →
+subND-trans : {e e' e'' : ND} {X : Set} →
               (p : e ⊑ND e') → (q : e' ⊑ND e'') → (c : TND e X) → 
-              subND q (subND p c) ≡ subND (trans-ND e e' e'' p q) c
-sub-transND r q c = refl
+              subND q (subND p c) ≡ subND (trans-⊑ND e e' e'' p q) c
+subND-trans r q c = refl
 
 
 ++-right-identity : {X : Set} (xs : List X) → xs ++ [] ≡ xs
@@ -189,8 +189,8 @@ mlaw1ND f x = ++-right-identity (f x)
 
 
 
-sub-eqND : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
-sub-eqND = subeq {ND} {TND}
+subND-eq : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
+subND-eq = subeq {ND} {TND}
 
 
 η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND e e' ηND xs
@@ -198,7 +198,7 @@ sub-eqND = subeq {ND} {TND}
 η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
 
 mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
-           sub-eqND {e} (ru-ND e) c ≡ liftND e nd1 ηND c
+           subND-eq {e} (ru-⊙ e) c ≡ liftND e nd1 ηND c
 mlaw2ND {nd0} [] = refl
 mlaw2ND {nd01} [] = refl
 mlaw2ND {nd1} [] = refl
@@ -212,8 +212,8 @@ mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
 mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
-          sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
-                   (ass-ND e e' e'')
+          subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
+                   (ass-⊙ e e' e'')
                    (liftND (e ⊙ e') e'' g (liftND e e' f c))
           ≡ liftND e (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
 mlaw3ND f g c = {!!}
@@ -224,9 +224,9 @@ NDEffGM = record { OM = NDEffOM
                  ; η = ηND
                  ; lift = λ {e} {e'} → liftND e e'
                  ; sub = subND
-                 ; sub-mon = sub-monND
-                 ; sub-refl = λ {e} → sub-reflND {e}
-                 ; sub-trans = sub-transND
+                 ; sub-mon = subND-mon
+                 ; sub-refl = λ {e} → subND-refl {e}
+                 ; sub-trans = subND-trans
                  ; mlaw1 = λ {e} → mlaw1ND {e}
                  ; mlaw2 = λ {e} → mlaw2ND {e}
                  ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND {e} {e'} {e''}
