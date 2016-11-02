@@ -1,11 +1,12 @@
 module NonDeterminism-try where
 
-
+open import Function
 open import Data.List
 open import Relation.Nullary
 
 
 open import Relation.Binary.Core using (_≡_ ; refl)
+open import Relation.Binary.PropositionalEquality using (cong)
 
 open import Finiteness
 open import OrderedMonoid
@@ -143,7 +144,7 @@ NDEffOM = record { M = ND
                  
 -------------------------------------------------------
 
-{-
+
 open import Data.List
 
 TND : ND → Set → Set
@@ -152,26 +153,84 @@ TND nd X = List X  -- powerset?
 ηND : {X : Set} → X → TND (nd1) X
 ηND x = [ x ]
 
-liftND :  {e e' : ND} {X Y : Set} →
+liftND :  (e e' : ND) {X Y : Set} →
       (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
-liftND f [] = []
-liftND {e} {e'} f (x ∷ xs) = (f x) ++ (liftND {e} {e'} f xs)
+liftND _ _ f [] = []
+liftND e e' f (x ∷ xs) = (f x) ++ (liftND e e' f xs)
 
+-- Is this correct? Isn't TND too broad?
+subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
+subND p x = x
+
+sub-reflND : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
+sub-reflND _ = refl
+
+sub-monND : {e e' e'' e''' : ND} {X Y : Set} →
+            (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
+            (f : X → TND e' Y) → (c : TND e X) → 
+            subND (mon-ND e e' e'' e''' p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
+sub-monND p q f c = refl
+
+
+
+sub-transND : {e e' e'' : ND} {X : Set} →
+              (p : e ⊑ND e') → (q : e' ⊑ND e'') → (c : TND e X) → 
+              subND q (subND p c) ≡ subND (trans-ND e e' e'' p q) c
+sub-transND r q c = refl
+
+
+++-right-identity : {X : Set} (xs : List X) → xs ++ [] ≡ xs
+++-right-identity [] = refl
+++-right-identity (x ∷ xs) = cong (_∷_ x) (++-right-identity xs)
+
+mlaw1ND : {e : ND} → {X Y : Set} → (f : X → TND e Y) → (x : X) →
+          liftND nd1 e f (ηND x) ≡ f x
+mlaw1ND f x = ++-right-identity (f x)
+
+
+
+sub-eqND : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
+sub-eqND = subeq {ND} {TND}
+
+
+η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND e e' ηND xs
+η-lift-identity [] = refl
+η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
+
+mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
+           sub-eqND {e} (ru-ND e) c ≡ liftND e nd1 ηND c
+mlaw2ND {nd0} [] = refl
+mlaw2ND {nd01} [] = refl
+mlaw2ND {nd1} [] = refl
+mlaw2ND {nd1+} [] = refl
+mlaw2ND {ndN} [] = refl
+mlaw2ND {nd0} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd01} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+
+mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
+          (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
+          sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
+                   (ass-ND e e' e'')
+                   (liftND (e ⊙ e') e'' g (liftND e e' f c))
+          ≡ liftND e (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
+mlaw3ND f g c = {!!}
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
                  ; T = TND
                  ; η = ηND
-                 ; lift = λ {e} {e'} → liftND {e} {e'}
-                 ; sub = {!!}
-                 ; sub-mon = {!!}
-                 ; sub-eq = {!!}
-                 ; sub-refl = {!!}
-                 ; sub-trans = {!!}
-                 ; mlaw1 = {!!}
-                 ; mlaw2 = {!!}
-                 ; mlaw3 = {!!}
+                 ; lift = λ {e} {e'} → liftND e e'
+                 ; sub = subND
+                 ; sub-mon = sub-monND
+                 ; sub-refl = λ {e} → sub-reflND {e}
+                 ; sub-trans = sub-transND
+                 ; mlaw1 = λ {e} → mlaw1ND {e}
+                 ; mlaw2 = λ {e} → mlaw2ND {e}
+                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND {e} {e'} {e''}
                  }
 
--}
+
 
