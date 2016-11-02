@@ -35,22 +35,13 @@ lstblND = record { list = listND
                  ; complete = cmpltND
                  }
 
+infix 10 _?≡ND_ 
 
-_⊙_ : ND → ND → ND
-nd0 ⊙ n = nd0
-nd01 ⊙ nd0 = nd0
-nd01 ⊙ nd01 = nd01
-nd01 ⊙ nd1 = nd01
-nd01 ⊙ nd1+ = ndN
-nd01 ⊙ ndN = ndN
-nd1 ⊙ n = n
-nd1+ ⊙ nd0 = nd0
-nd1+ ⊙ nd01 = ndN
-nd1+ ⊙ nd1 = nd1+
-nd1+ ⊙ nd1+ = nd1+
-nd1+ ⊙ ndN = ndN
-ndN ⊙ nd0 = nd0
-ndN ⊙ _ = ndN
+_?≡ND_ : (m : ND) → (n : ND) → Dec (m ≡ n)
+_?≡ND_ = ?≡L lstblND
+
+?∀ND : {P : ND → Set} → ((m : ND) → Dec (P m)) → Dec ((m : ND) → P m)
+?∀ND = ?∀ lstblND
 
 
 data _⊑ND_ : ND → ND → Set where
@@ -91,8 +82,6 @@ ndN ?⊑ND ndN = yes reflND
 
 
 
-?∀ND = ?∀ lstblND
-
 reflautom : (m : ND) → m  ⊑ND m
 reflautom = extract (?∀ND (λ m → m ?⊑ND m))
 
@@ -103,20 +92,12 @@ transND p top = top
 transND p reflND = p
 
 -- transitivity automatically using typechecker
+
 transautom : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
 transautom = extract (?∀ND (λ m → 
-                        ?∀ND (λ n → 
-                          ?∀ND (λ o →   
-                                  (m ?⊑ND n) ?→ (n ?⊑ND o) ?→ (m ?⊑ND o)))))
-
-monautom : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-monautom = extract (?∀ND (λ m → 
-                      ?∀ND (λ n → 
-                        ?∀ND (λ m' → 
-                          ?∀ND (λ n' →
-                                  (m ?⊑ND m') ?→ (n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n')) )))))
-{-
-
+                          ?∀ND (λ n → 
+                             ?∀ND (λ o →   
+                                  (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
 
 _⊙_ : ND → ND → ND
 nd0 ⊙ n = nd0
@@ -143,6 +124,18 @@ ruND {nd1} = refl
 ruND {nd1+} = refl
 ruND {ndN} = refl
 
+ruNDautom : (m : ND) → m ≡ m ⊙ nd1
+ruNDautom = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
+
+
+monautom : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+monautom = extract (?∀ND (λ m → 
+                      ?∀ND (λ n → 
+                        ?∀ND (λ m' → 
+                          ?∀ND (λ n' →
+                                  (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
+
+{-
 assND : {m n o : ND} → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
 assND {nd0} = refl
 assND {nd01} {nd0} = refl
