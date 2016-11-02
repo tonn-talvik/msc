@@ -6,10 +6,10 @@ open import Relation.Nullary
 
 
 open import Relation.Binary.Core using (_≡_ ; refl)
---open import OrderedMonoid
---open import GradedMonad
 
 open import Finiteness
+open import OrderedMonoid
+open import GradedMonad
 
 
 data ND : Set where
@@ -18,31 +18,6 @@ data ND : Set where
   nd1  : ND
   nd1+ : ND
   ndN  : ND
-
-listND : List ND
-listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
-
-cmpltND : (x : ND) → x ∈ listND
-cmpltND nd0  = here
-cmpltND nd01 = there here
-cmpltND nd1  = there (there here)
-cmpltND nd1+ = there (there (there here))
-cmpltND ndN  = there (there (there (there here)))
-
-
-lstblND : Listable ND 
-lstblND = record { list = listND
-                 ; complete = cmpltND
-                 }
-
-infix 10 _?≡ND_ 
-
-_?≡ND_ : (m : ND) → (n : ND) → Dec (m ≡ n)
-_?≡ND_ = ?≡L lstblND
-
-?∀ND : {P : ND → Set} → ((m : ND) → Dec (P m)) → Dec ((m : ND) → P m)
-?∀ND = ?∀ lstblND
-
 
 data _⊑ND_ : ND → ND → Set where
   reflND : {m : ND} → m ⊑ND m
@@ -67,7 +42,7 @@ nd1+ ⊙ ndN = ndN
 ndN ⊙ nd0 = nd0
 ndN ⊙ _ = ndN
 
-
+-------------------------------------------------------
 
 
 _?⊑ND_ : (m : ND) → (n : ND) → Dec (m ⊑ND n)
@@ -99,61 +74,76 @@ ndN ?⊑ND ndN = yes reflND
 
 
 
+listND : List ND
+listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
 
-reflautom : (m : ND) → m  ⊑ND m
-reflautom = extract (?∀ND (λ m → m ?⊑ND m))
-
--- transitivity manually
-transND : {m n o : ND} → m ⊑ND n → n ⊑ND o → m ⊑ND o
-transND reflND q = q
-transND p top = top
-transND p reflND = p
-
--- transitivity automatically using typechecker
-transautom : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
-transautom = extract (?∀ND (λ m → 
-                          ?∀ND (λ n → 
-                             ?∀ND (λ o →   
-                                  (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
-
-ruND : {m : ND} → m ≡ m ⊙ nd1
-ruND {nd0} = refl
-ruND {nd01} = refl
-ruND {nd1} = refl
-ruND {nd1+} = refl
-ruND {ndN} = refl
-
-ruNDautom : (m : ND) → m ≡ m ⊙ nd1
-ruNDautom = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
+cmpltND : (x : ND) → x ∈ listND
+cmpltND nd0  = here
+cmpltND nd01 = there here
+cmpltND nd1  = there (there here)
+cmpltND nd1+ = there (there (there here))
+cmpltND ndN  = there (there (there (there here)))
 
 
-monautom : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-monautom = extract (?∀ND (λ m → 
+lstblND : Listable ND 
+lstblND = record { list = listND
+                 ; complete = cmpltND
+                 }
+
+infix 10 _?≡ND_ 
+
+_?≡ND_ : (m : ND) → (n : ND) → Dec (m ≡ n)
+_?≡ND_ = ?≡L lstblND
+
+?∀ND : {P : ND → Set} → ((m : ND) → Dec (P m)) → Dec ((m : ND) → P m)
+?∀ND = ?∀ lstblND
+
+-------------------------------------------------------
+
+
+refl-ND : (m : ND) → m ⊑ND m
+refl-ND = extract (?∀ND (λ m → m ?⊑ND m))
+
+trans-ND : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
+trans-ND = extract (?∀ND (λ m → 
                       ?∀ND (λ n → 
-                        ?∀ND (λ m' → 
-                          ?∀ND (λ n' →
-                                  (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
+                        ?∀ND (λ o →   
+                               (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
+
+ru-ND : (m : ND) → m ≡ m ⊙ nd1
+ru-ND = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
+
+
+mon-ND : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+mon-ND = extract (?∀ND (λ m → 
+                    ?∀ND (λ n → 
+                      ?∀ND (λ m' → 
+                        ?∀ND (λ n' →
+                               (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
                                   
-assNDautom : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
-assNDautom = extract (?∀ND (λ m → 
-                        ?∀ND (λ n → 
-                          ?∀ND (λ o →
-                            ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
-{-
+ass-ND : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
+ass-ND = extract (?∀ND (λ m → 
+                    ?∀ND (λ n → 
+                      ?∀ND (λ o →
+                             ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
+
 
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
                  ; _⊑_ = _⊑ND_
-                 ; reflM = reflND
-                 ; transM = transND
+                 ; reflM = λ {m} → refl-ND m
+                 ; transM = λ {m} {n} {o} → trans-ND m n o
                  ; i = nd1
                  ; _·_ = _⊙_ -- \odot ⊙
-                 ; mon = monND
+                 ; mon = λ {m} {n} {m'} {n'} → mon-ND m n m' n'
                  ; lu = refl
-                 ; ru = ruND
-                 ; ass = λ {m} {n} {o} → assND {m} {n} {o}
+                 ; ru = λ {m} → ru-ND m
+                 ; ass = λ {m} {n} {o} → ass-ND m n o
                  }
+                 
+-------------------------------------------------------
 
+{-
 open import Data.List
 
 TND : ND → Set → Set
