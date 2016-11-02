@@ -51,6 +51,24 @@ data _⊑ND_ : ND → ND → Set where
   1⊑01 : nd1 ⊑ND nd01
   1⊑1+ : nd1 ⊑ND nd1+
 
+_⊙_ : ND → ND → ND
+nd0 ⊙ n = nd0
+nd01 ⊙ nd0 = nd0
+nd01 ⊙ nd01 = nd01
+nd01 ⊙ nd1 = nd01
+nd01 ⊙ nd1+ = ndN
+nd01 ⊙ ndN = ndN
+nd1 ⊙ n = n
+nd1+ ⊙ nd0 = nd0
+nd1+ ⊙ nd01 = ndN
+nd1+ ⊙ nd1 = nd1+
+nd1+ ⊙ nd1+ = nd1+
+nd1+ ⊙ ndN = ndN
+ndN ⊙ nd0 = nd0
+ndN ⊙ _ = ndN
+
+
+
 
 _?⊑ND_ : (m : ND) → (n : ND) → Dec (m ⊑ND n)
 nd0 ?⊑ND nd0 = yes reflND
@@ -92,30 +110,11 @@ transND p top = top
 transND p reflND = p
 
 -- transitivity automatically using typechecker
-
 transautom : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
 transautom = extract (?∀ND (λ m → 
                           ?∀ND (λ n → 
                              ?∀ND (λ o →   
                                   (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
-
-_⊙_ : ND → ND → ND
-nd0 ⊙ n = nd0
-nd01 ⊙ nd0 = nd0
-nd01 ⊙ nd01 = nd01
-nd01 ⊙ nd1 = nd01
-nd01 ⊙ nd1+ = ndN
-nd01 ⊙ ndN = ndN
-nd1 ⊙ n = n
-nd1+ ⊙ nd0 = nd0
-nd1+ ⊙ nd01 = ndN
-nd1+ ⊙ nd1 = nd1+
-nd1+ ⊙ nd1+ = nd1+
-nd1+ ⊙ ndN = ndN
-ndN ⊙ nd0 = nd0
-ndN ⊙ _ = ndN
-
-
 
 ruND : {m : ND} → m ≡ m ⊙ nd1
 ruND {nd0} = refl
@@ -134,157 +133,13 @@ monautom = extract (?∀ND (λ m →
                         ?∀ND (λ m' → 
                           ?∀ND (λ n' →
                                   (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
-
+                                  
+assNDautom : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
+assNDautom = extract (?∀ND (λ m → 
+                        ?∀ND (λ n → 
+                          ?∀ND (λ o →
+                            ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
 {-
-assND : {m n o : ND} → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
-assND {nd0} = refl
-assND {nd01} {nd0} = refl
-assND {nd01} {nd01} {nd0} = refl
-assND {nd01} {nd01} {nd01} = refl
-assND {nd01} {nd01} {nd1} = refl
-assND {nd01} {nd01} {nd1+} = refl
-assND {nd01} {nd01} {ndN} = refl
-assND {nd01} {nd1} = refl
-assND {nd01} {nd1+} {nd0} = refl
-assND {nd01} {nd1+} {nd01} = refl
-assND {nd01} {nd1+} {nd1} = refl
-assND {nd01} {nd1+} {nd1+} = refl
-assND {nd01} {nd1+} {ndN} = refl
-assND {nd01} {ndN} {nd0} = refl
-assND {nd01} {ndN} {nd01} = refl
-assND {nd01} {ndN} {nd1} = refl
-assND {nd01} {ndN} {nd1+} = refl
-assND {nd01} {ndN} {ndN} = refl
-assND {nd1} = refl
-assND {nd1+} {nd0} = refl
-assND {nd1+} {nd01} {nd0} = refl
-assND {nd1+} {nd01} {nd01} = refl
-assND {nd1+} {nd01} {nd1} = refl
-assND {nd1+} {nd01} {nd1+} = refl
-assND {nd1+} {nd01} {ndN} = refl
-assND {nd1+} {nd1} = refl
-assND {nd1+} {nd1+} {nd0} = refl
-assND {nd1+} {nd1+} {nd01} = refl
-assND {nd1+} {nd1+} {nd1} = refl
-assND {nd1+} {nd1+} {nd1+} = refl
-assND {nd1+} {nd1+} {ndN} = refl
-assND {nd1+} {ndN} {nd0} = refl
-assND {nd1+} {ndN} {nd01} = refl
-assND {nd1+} {ndN} {nd1} = refl
-assND {nd1+} {ndN} {nd1+} = refl
-assND {nd1+} {ndN} {ndN} = refl
-assND {ndN} {nd0} = refl
-assND {ndN} {nd01} {nd0} = refl
-assND {ndN} {nd01} {nd01} = refl
-assND {ndN} {nd01} {nd1} = refl
-assND {ndN} {nd01} {nd1+} = refl
-assND {ndN} {nd01} {ndN} = refl
-assND {ndN} {nd1} = refl
-assND {ndN} {nd1+} {nd0} = refl
-assND {ndN} {nd1+} {nd01} = refl
-assND {ndN} {nd1+} {nd1} = refl
-assND {ndN} {nd1+} {nd1+} = refl
-assND {ndN} {nd1+} {ndN} = refl
-assND {ndN} {ndN} {nd0} = refl
-assND {ndN} {ndN} {nd01} = refl
-assND {ndN} {ndN} {nd1} = refl
-assND {ndN} {ndN} {nd1+} = refl
-assND {ndN} {ndN} {ndN} = refl
-
-monND : {m n m' n' : ND} → m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-monND {m' = nd0} reflND q = reflND
-monND {m' = nd01} {nd0} reflND reflND = reflND
-monND {m' = nd01} {nd0} 0⊑01 reflND = reflND
-monND {m' = nd01} {nd0} 1⊑01 reflND = reflND
-monND {m' = nd01} {nd01} reflND reflND = reflND
-monND {m' = nd01} {nd01} reflND 0⊑01 = 0⊑01
-monND {m' = nd01} {nd01} reflND 1⊑01 = reflND
-monND {m' = nd01} {nd01} 0⊑01 q = 0⊑01
-monND {m' = nd01} {nd01} 1⊑01 q = q
-monND {m' = nd01} {nd1} reflND reflND = reflND
-monND {m' = nd01} {nd1} 0⊑01 reflND = 0⊑01
-monND {m' = nd01} {nd1} 1⊑01 reflND = 1⊑01 -- auto: monND p 1⊑01
-monND {m' = nd01} {nd1+} reflND reflND = reflND
-monND {m' = nd01} {nd1+} reflND 1⊑1+ = 01⊑N
-monND {m' = nd01} {nd1+} 0⊑01 q = 0⊑N
-monND {m' = nd01} {nd1+} 1⊑01 reflND = 1+⊑N
-monND {m' = nd01} {nd1+} 1⊑01 1⊑1+ = 1⊑N
-monND {m' = nd01} {ndN} reflND reflND = reflND
-monND {m' = nd01} {ndN} reflND 01⊑N = 01⊑N
-monND {m' = nd01} {ndN} reflND 1+⊑N = reflND
-monND {m' = nd01} {ndN} reflND 0⊑N = 0⊑N
-monND {m' = nd01} {ndN} reflND 1⊑N = 01⊑N
-monND {m' = nd01} {ndN} 0⊑01 q = 0⊑N
-monND {m' = nd01} {ndN} 1⊑01 q = q
-monND {m' = nd1} reflND q = q
-monND {m' = nd1+} {nd0} reflND reflND = reflND
-monND {m' = nd1+} {nd0} 1⊑1+ reflND = reflND
-monND {m' = nd1+} {nd01} reflND reflND = reflND
-monND {m' = nd1+} {nd01} reflND 0⊑01 = 0⊑N
-monND {m' = nd1+} {nd01} reflND 1⊑01 = 1+⊑N
-monND {m' = nd1+} {nd01} 1⊑1+ reflND = 01⊑N
-monND {m' = nd1+} {nd01} 1⊑1+ 0⊑01 = 0⊑N
-monND {m' = nd1+} {nd01} 1⊑1+ 1⊑01 = 1⊑N
-monND {m' = nd1+} {nd1} reflND reflND = reflND
-monND {m' = nd1+} {nd1} 1⊑1+ reflND = 1⊑1+
-monND {m' = nd1+} {nd1+} reflND reflND = reflND
-monND {m' = nd1+} {nd1+} reflND 1⊑1+ = reflND
-monND {m' = nd1+} {nd1+} 1⊑1+ q = q
-monND {m' = nd1+} {ndN} reflND reflND = reflND
-monND {m' = nd1+} {ndN} reflND 01⊑N = reflND
-monND {m' = nd1+} {ndN} reflND 1+⊑N = 1+⊑N
-monND {m' = nd1+} {ndN} reflND 0⊑N = 0⊑N
-monND {m' = nd1+} {ndN} reflND 1⊑N = 1+⊑N
-monND {m' = nd1+} {ndN} 1⊑1+ q = q
-monND {m' = ndN} {nd0} reflND reflND = reflND
-monND {m' = ndN} {nd0} 01⊑N reflND = reflND
-monND {m' = ndN} {nd0} 1+⊑N reflND = reflND
-monND {m' = ndN} {nd0} 0⊑N q = reflND
-monND {m' = ndN} {nd0} 1⊑N q = q
-monND {m' = ndN} {nd01} reflND reflND = reflND
-monND {m' = ndN} {nd01} reflND 0⊑01 = 0⊑N
-monND {m' = ndN} {nd01} reflND 1⊑01 = reflND
-monND {m' = ndN} {nd01} 01⊑N reflND = 01⊑N
-monND {m' = ndN} {nd01} 01⊑N 0⊑01 = 0⊑N
-monND {m' = ndN} {nd01} 01⊑N 1⊑01 = 01⊑N
-monND {m' = ndN} {nd01} 1+⊑N reflND = reflND
-monND {m' = ndN} {nd01} 1+⊑N 0⊑01 = 0⊑N
-monND {m' = ndN} {nd01} 1+⊑N 1⊑01 = 1+⊑N
-monND {m' = ndN} {nd01} 0⊑N q = 0⊑N
-monND {m' = ndN} {nd01} 1⊑N reflND = 01⊑N
-monND {m' = ndN} {nd01} 1⊑N 0⊑01 = 0⊑N
-monND {m' = ndN} {nd01} 1⊑N 1⊑01 = 1⊑N
-monND {m' = ndN} {nd1} reflND reflND = reflND
-monND {m' = ndN} {nd1} 01⊑N reflND = 01⊑N
-monND {m' = ndN} {nd1} 1+⊑N reflND = 1+⊑N
-monND {m' = ndN} {nd1} 0⊑N q = 0⊑N
-monND {m' = ndN} {nd1} 1⊑N reflND = 1⊑N
-monND {m' = ndN} {nd1+} reflND reflND = reflND
-monND {m' = ndN} {nd1+} reflND 1⊑1+ = reflND
-monND {m' = ndN} {nd1+} 01⊑N reflND = reflND
-monND {m' = ndN} {nd1+} 01⊑N 1⊑1+ = 01⊑N
-monND {m' = ndN} {nd1+} 1+⊑N reflND = 1+⊑N
-monND {m' = ndN} {nd1+} 1+⊑N 1⊑1+ = 1+⊑N
-monND {m' = ndN} {nd1+} 0⊑N q = 0⊑N
-monND {m' = ndN} {nd1+} 1⊑N reflND = 1+⊑N
-monND {m' = ndN} {nd1+} 1⊑N 1⊑1+ = 1⊑N
-monND {m' = ndN} {ndN} reflND reflND = reflND
-monND {m' = ndN} {ndN} reflND 01⊑N = reflND
-monND {m' = ndN} {ndN} reflND 1+⊑N = reflND
-monND {m' = ndN} {ndN} reflND 0⊑N = 0⊑N
-monND {m' = ndN} {ndN} reflND 1⊑N = reflND
-monND {m' = ndN} {ndN} 01⊑N reflND = reflND
-monND {m' = ndN} {ndN} 01⊑N 01⊑N = 01⊑N
-monND {m' = ndN} {ndN} 01⊑N 1+⊑N = reflND
-monND {m' = ndN} {ndN} 01⊑N 0⊑N = 0⊑N
-monND {m' = ndN} {ndN} 01⊑N 1⊑N = 01⊑N
-monND {m' = ndN} {ndN} 1+⊑N reflND = reflND
-monND {m' = ndN} {ndN} 1+⊑N 01⊑N = reflND
-monND {m' = ndN} {ndN} 1+⊑N 1+⊑N = 1+⊑N
-monND {m' = ndN} {ndN} 1+⊑N 0⊑N = 0⊑N
-monND {m' = ndN} {ndN} 1+⊑N 1⊑N = 1+⊑N
-monND {m' = ndN} {ndN} 0⊑N q = 0⊑N
-monND {m' = ndN} {ndN} 1⊑N q = q
 
 NDEffOM : OrderedMonoid
 NDEffOM = record { M = ND
