@@ -1,4 +1,4 @@
-module NonDeterminism-try where
+module NonDeterminism where
 
 open import Function
 open import Data.List

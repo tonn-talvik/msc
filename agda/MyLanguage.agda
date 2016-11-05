@@ -11,6 +11,10 @@ open import Data.Product
 
 open import Data.List
 
+open import Finiteness
+  hiding (_∈_; here; here'; there)
+  renaming (extract to fext)
+
 data _∈_ {A : Set}(x : A) : List A → Set where
   here  : ∀ {xs} → x ∈ (x ∷ xs)
   there : ∀ {y xs} → x ∈ xs → x ∈ (y ∷ xs)
@@ -203,10 +207,6 @@ g2 = nat ⇒ bool ∈? gamma
 g3 = (bool ∏ nat) ∈? gamma
 
 
-truncate : {P : Set} → Dec P → Set
-truncate (yes _) = ⊤
-truncate (no  _) = ⊥
-
 extract : {P : Set} → {d : Dec P} → truncate d → P
 extract {_} {yes p} t = p
 extract {_} {no ¬p} ()
@@ -223,11 +223,10 @@ svar2inlist (svar v {p}) = lookupcorrect v _ (extract p)
 
 
 war = svar2inlist {gamma} (svar 0)
-war-contra = svar2inlist {gamma} (svar 3)
+war-contra = svar2inlist {gamma} (svar 5)
 
 varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
 varify v {p} = var (svar2inlist (svar v {p} ))
-
 
 pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
 -- pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
