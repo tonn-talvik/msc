@@ -12,27 +12,7 @@ open import Data.Product
 open import Data.List
 
 open import Finiteness
-  hiding (_∈_; here; here'; there)
-  renaming (extract to fext)
-
-data _∈_ {A : Set}(x : A) : List A → Set where
-  here  : ∀ {xs} → x ∈ (x ∷ xs)
-  there : ∀ {y xs} → x ∈ xs → x ∈ (y ∷ xs)
-
-data _∈'_ {A : Set} : ℕ → List A → Set where
-  here  : ∀ {x xs} → zero ∈' (x ∷ xs)
-  there : ∀ {n x xs} → n ∈' xs → suc n ∈' (x ∷ xs)
-
-
-lookup : {A : Set} → (n : ℕ) → (xs : List A) → n ∈' xs → A
-lookup .0 .(x ∷ xs) (here {x} {xs}) = x
-lookup .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = lookup n xs p
-
-lookupcorrect :  {A : Set} → (n : ℕ) → (xs : List A) → (p : n ∈' xs) → lookup n xs p ∈ xs
-lookupcorrect .0 .(x ∷ xs) (here {x} {xs}) = here
-lookupcorrect .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = there (lookupcorrect n xs p)
-
-----------------------------------------------------------------------
+  renaming (here to fhere)
 
 T : Set → Set
 T X = List X
@@ -99,7 +79,7 @@ mutual
     LET_IN_ : ∀ {σ τ} → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
 
 proj : {Γ : Ctx} → {σ : VType} → σ ∈ Γ → ⟦ Γ ⟧l → ⟦ σ ⟧v
-proj here ρ = proj₁ ρ
+proj (here' p) ρ rewrite p = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
 
@@ -179,17 +159,24 @@ u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
 
-lemma-∉ : (u v : VType) → (Γ : Ctx) → ¬ u ≡ v → ¬ u ∈ Γ → ¬ u ∈ (v ∷ Γ)
-lemma-∉ u .u g ¬p ¬q here = ¬p refl
-lemma-∉ u v g ¬p ¬q (there r) = ¬q r
 
-_∈?_ : (v : VType) → (Γ : Ctx) → Dec (v ∈ Γ)
-v ∈? [] = no (λ ()) -- auto
-u ∈? (v ∷ Γ) with u ≟ v
-u ∈? (v ∷ Γ) | yes p rewrite p = yes here
-u ∈? (v ∷ Γ) | no ¬p with u ∈? Γ
-u ∈? (v ∷ Γ) | no ¬p | yes q = yes (there q)
-u ∈? (v ∷ Γ) | no ¬p | no ¬q = no (lemma-∉ u v Γ ¬p ¬q)
+------------------------------------------------------------
+
+-- FIXME: could we merge ∈/lookup/lookupcorrect with Finiteness?
+data _∈'_ {A : Set} : ℕ → List A → Set where
+  here  : ∀ {x xs} → zero ∈' (x ∷ xs)
+  there : ∀ {n x xs} → n ∈' xs → suc n ∈' (x ∷ xs)
+
+
+lookup : {A : Set} → (n : ℕ) → (xs : List A) → n ∈' xs → A
+lookup .0 .(x ∷ xs) (here {x} {xs}) = x
+lookup .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = lookup n xs p
+
+lookupcorrect :  {A : Set} → (n : ℕ) → (xs : List A) → (p : n ∈' xs) → lookup n xs p ∈ xs
+lookupcorrect .0 .(x ∷ xs) (here {x} {xs}) = fhere
+lookupcorrect .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = there (lookupcorrect n xs p)
+
+----------------------------------------------------------------------
 
 lemma-∉' : {Γ : Ctx} → {τ : VType} → (v : ℕ) → ¬ v ∈' Γ → ¬ suc v ∈' (τ ∷ Γ)
 lemma-∉' n p (there q) = p q
@@ -198,35 +185,36 @@ _∈'?_ : (v : ℕ) → (Γ : Ctx) → Dec (v ∈' Γ)
 v ∈'? [] = no (λ ())
 zero ∈'? (x ∷ Γ) = yes here
 suc v ∈'? (x ∷ Γ) with v ∈'? Γ 
-suc v ∈'? (x ∷ Γ) | yes p =  yes (there p)
-suc v ∈'? (x ∷ Γ) | no ¬p =  no (lemma-∉' v ¬p)
+suc v ∈'? (x ∷ Γ) | yes p = yes (there p)
+suc v ∈'? (x ∷ Γ) | no ¬p = no (lemma-∉' v ¬p)
 
-gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
-g1 = nat ∈? gamma
-g2 = nat ⇒ bool ∈? gamma
-g3 = (bool ∏ nat) ∈? gamma
-
-
-extract : {P : Set} → {d : Dec P} → truncate d → P
-extract {_} {yes p} t = p
-extract {_} {no ¬p} ()
 
 data ScopedVar (Γ : Ctx) : Set where
   svar : (v : ℕ) → {_ : truncate (v ∈'? Γ)} → ScopedVar Γ
 
+extract' : {P : Set} → {d : Dec P} → truncate d → P
+extract' {_} {yes p} t = p
+extract' {_} {no ¬p} ()
 
 svar2var : {Γ : Ctx} → ScopedVar Γ → VType
-svar2var (svar v {p}) = lookup v _ ( extract p) 
+svar2var (svar v {p}) = lookup v _ (extract' p)
 
 svar2inlist : {Γ : Ctx} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
-svar2inlist (svar v {p}) = lookupcorrect v _ (extract p)
-
-
-war = svar2inlist {gamma} (svar 0)
-war-contra = svar2inlist {gamma} (svar 5)
+svar2inlist (svar v {p}) = lookupcorrect v _ (extract' p)
 
 varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
 varify v {p} = var (svar2inlist (svar v {p} ))
+
+
+
+
+
+----------------------------------------------------------------------
+-- Silly examples
+
+gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
+gamma-inside  = svar2inlist {gamma} (svar 0)
+--gamma-outside = svar2inlist {gamma} (svar 5)
 
 pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
 -- pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
@@ -244,30 +232,33 @@ pv3        = ⟦ val (varify 0) ⟧
 
 ----------------------------------------------------------------------
 
-p1 = ⟦ val (var here) ⟧ (1 , top)
+p1 = ⟦ val (varify 0) ⟧ (1 , top)
 p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
-p3 = ⟦ (var here) $ (var (there here)) ⟧ ( (λ x → η (x * x)) , (3 , top) ) 
+p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , top) ) 
 p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
-p5 = ⟦ lam nat (val (ss (var here))) $ zz ⟧ top
-p6 = ⟦ prec (natify 6) (val zz) ((LET val (var here) IN (val (var (there here))) )) ⟧ top
+p5 = ⟦ lam nat (val (ss (varify 0))) $ zz ⟧ top
+p6 = ⟦ prec (natify 6) (val zz) ((LET val (varify 0) IN (val (varify 1)) )) ⟧ top
 p7 : ℕ → T ℕ
-p7 n  = ⟦ prec (natify n) (val zz) (choose (val (var here)) (val (ss (ss (var here))))) ⟧ top
+p7 n  = ⟦ prec (natify n) (val zz) (choose (val (varify 0)) (val (ss (ss (varify 0))))) ⟧ top
+
 
 add : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
 add = (lam nat (
           val (lam nat
-               (prec (var here)
-                     (val (var (there here)))
-                     (val (ss (var here)))))))
-p-add-3-4 = ⟦ LET add $ var (there here) IN var here $ var (there here) ⟧ (3 , (4 , top))
+               (prec (varify 0)
+                     (val (varify 1))
+                     (val (ss (varify 0)))))))
+p-add-3-4 = ⟦ LET add $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , top))
 
 mul : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
 mul = (lam nat (
           val (lam nat
-               (prec (var here)
+               (prec (varify 0)
                      (val zz)
-                     (LET add $ var here IN
+                     (LET add $ varify 0 IN
                           (
-                               ( var here
-                                    $ var (there (there (there (there here)))))))))))
-p-mul-3-4 = ⟦ LET mul $ natify 3 IN var here $ natify 4 ⟧ top
+                               ( varify 0
+                                    $ varify 4 )))))))
+p-mul-3-4 = ⟦ LET mul $ natify 3 IN varify 0 $ natify 4 ⟧ top
+
+

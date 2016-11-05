@@ -20,9 +20,9 @@ open import Relation.Binary.PropositionalEquality hiding ([_] ; inspect )
 
 infix 5 _∈_ 
 
-data _∈_ {X : Set} : X → List X → Set where
-  here' : {x x' : X} → {xs : List X} → x' ≡ x → x ∈ (x' ∷ xs)
-  there : {x x' : X} → {xs : List X} → x ∈ xs → x ∈ (x' ∷ xs)
+data _∈_ {X : Set} (x : X) : List X → Set where
+  here' : {x' : X} → {xs : List X} → x' ≡ x → x ∈ (x' ∷ xs)
+  there : {x' : X} → {xs : List X} → x ∈ xs → x ∈ (x' ∷ xs)
 
 here : {X : Set} → {x : X} → {xs : List X} → x ∈ (x ∷ xs)
 here = here' refl
@@ -40,8 +40,8 @@ lkp (x ∷ xs) (suc n) = lkp xs n
 
 
 lkpcorrect : {X : Set} → (xs : List X) → {x : X} → (p : x ∈ xs) → lkp xs (idx p) ≡ x
-lkpcorrect .(x' ∷ xs) (here' {x} {x'} {xs} p) = p
-lkpcorrect .(x' ∷ xs) (there {x} {x'} {xs} p) = lkpcorrect xs p
+lkpcorrect .(x' ∷ xs) (here' {x'} {xs} p) = p
+lkpcorrect .(x' ∷ xs) (there {x'} {xs} p) = lkpcorrect xs p
 
 
 _≡F_ : {n : ℕ} → Fin n → Fin n → Set
@@ -67,9 +67,7 @@ module MListable where
     field 
       list : List X
       complete : (x : X) → x ∈ list
-
     
-
 
   idxinj : {X : Set} → (p : Listable X) → let open Listable p in 
          {x y : X} → idx (complete x) ≡ idx (complete y) → x ≡ y
