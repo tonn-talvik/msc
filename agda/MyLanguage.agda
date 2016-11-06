@@ -1,3 +1,4 @@
+{-# OPTIONS --type-in-type #-}
 module MyLanguage where
 
 open import Relation.Nullary
@@ -13,6 +14,9 @@ open import Data.List
 
 open import Finiteness
   renaming (here to fhere)
+--open import GradedMonad
+--open import OrderedMonoid
+open import NonDeterminism
 
 T : Set → Set
 T X = List X

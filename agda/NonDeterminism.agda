@@ -209,95 +209,72 @@ mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
-mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
+open import Data.Nat
+open import Data.Vec
+
+{-
+-- FIXME: yellow submarine
+tail-≡ : {X : Set} {x x' : X} {n : ℕ} {xs xs' : Vec X n} → (x ∷ xs ≡ x' ∷ xs') → xs ≡ xs'
+tail-≡ p = cong tail refl
+
+head-≡ : {X : Set} {x x' : X} {n : ℕ} {xs xs' : Vec X n} → (x ∷ xs ≡ x' ∷ xs') → x ≡ x'
+head-≡ p = cong head refl
+
+
+_?≡vec_ : {X : Set} {n : ℕ} (xs xs' : Vec X n) → {_ : DecEq X} → Dec (xs ≡ xs')
+[] ?≡vec [] = yes refl
+((x ∷ xs) ?≡vec (x' ∷ xs')) {eq} with eq x x'
+((x ∷ xs) ?≡vec (x' ∷ xs')) {eq} | yes p with (xs ?≡vec xs') {eq}
+(x ∷ xs) ?≡vec (x' ∷ xs') | yes p | yes q rewrite p | q = yes refl
+(x ∷ xs) ?≡vec (x' ∷ xs') | yes p | no ¬q rewrite p = no (λ ys → ¬q (tail-≡ ys))
+(x ∷ xs) ?≡vec (x' ∷ xs') | no ¬p = no (λ ys → ¬p (head-≡ ys))
+-}
+
+{-
+_?≡list_ : {X : Set} (xs xs' : List X) → {_ : DecEq X} → Dec (xs ≡ xs')
+[] ?≡list [] = yes refl
+[] ?≡list (_ ∷ _) = no (λ ())
+(_ ∷ _) ?≡list [] = no (λ ())
+((x ∷ xs) ?≡list (x' ∷ xs')) {eq} with eq x x'
+((x ∷ xs) ?≡list (x' ∷ xs')) {eq} | yes p with (xs ?≡list xs') {eq}
+(x ∷ xs) ?≡list (x' ∷ xs') | yes p | yes q rewrite p | q = yes refl
+(x ∷ xs) ?≡list (x' ∷ xs') | yes p | no ¬q rewrite p = no (λ x₁ → {!!})
+(x ∷ xs) ?≡list (x' ∷ xs') | no ¬p = no (λ xx → {!!})
+-}
+
+{-
+decVecEq2decListEq : {X : Set} {n : ℕ} {xs xs' : Vec X n} → Dec (xs ≡ xs') → Dec (toList xs ≡ toList xs')
+decVecEq2decListEq (yes p) rewrite p = yes (cong toList refl)
+decVecEq2decListEq (no ¬p) = no (λ q → ¬p {!!})
+
+-- FIXME: yellow
+
+_?≡list_ : {X : Set} (xs xs' : List X) → {_ : DecEq X} → Dec (xs ≡ xs')
+xs ?≡list xs' = decVecEq2decListEq (fromList {!!} ?≡vec fromList {!!})
+-}
+
+?Empty : {X : Set} (l : List X) → Dec (l ≡ [])
+?Empty [] = yes refl
+?Empty (x ∷ l) = no (λ ())
+what : {X : Set} (e e' e'' : ND) → subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')} {X}
+                                   (ass-⊙ e e' e'') []
+                          ≡ []
+what = extract (?∀ND (λ e →
+                  ?∀ND (λ e' →
+                    ?∀ND (λ e'' → ?Empty
+                      (subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
+                               (ass-⊙ e e' e'') [])))))
+
+{-
+mlaw3ND : (e e' e'' : ND) → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
           subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
                    (ass-⊙ e e' e'')
                    (liftND (e ⊙ e') e'' g (liftND e e' f c))
           ≡ liftND e (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
 --          ≡ liftND e (e' ⊙ e'') (liftND e' e'' g ∘ f) c
-mlaw3ND f g c = {!!}
-
-{-
--- this is not needed anymore?
-what : {e e' e'' : ND} {X : Set} → sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')} {X}
-                                   (assND {e} {e'} {e''}) []
-                          ≡ []
-what {nd0} = refl
-what {nd01} {nd0} = refl
-what {nd01} {nd01} {nd0} = refl
-what {nd01} {nd01} {nd01} = refl
-what {nd01} {nd01} {nd1} = refl
-what {nd01} {nd01} {nd1+} = refl
-what {nd01} {nd01} {ndN} = refl
-what {nd01} {nd1} = refl
-what {nd01} {nd1+} {nd0} = refl
-what {nd01} {nd1+} {nd01} = refl
-what {nd01} {nd1+} {nd1} = refl
-what {nd01} {nd1+} {nd1+} = refl
-what {nd01} {nd1+} {ndN} = refl
-what {nd01} {ndN} {nd0} = refl
-what {nd01} {ndN} {nd01} = refl
-what {nd01} {ndN} {nd1} = refl
-what {nd01} {ndN} {nd1+} = refl
-what {nd01} {ndN} {ndN} = refl
-what {nd1} = refl
-what {nd1+} {nd0} = refl
-what {nd1+} {nd01} {nd0} = refl
-what {nd1+} {nd01} {nd01} = refl
-what {nd1+} {nd01} {nd1} = refl
-what {nd1+} {nd01} {nd1+} = refl
-what {nd1+} {nd01} {ndN} = refl
-what {nd1+} {nd1} = refl
-what {nd1+} {nd1+} {nd0} = refl
-what {nd1+} {nd1+} {nd01} = refl
-what {nd1+} {nd1+} {nd1} = refl
-what {nd1+} {nd1+} {nd1+} = refl
-what {nd1+} {nd1+} {ndN} = refl
-what {nd1+} {ndN} {nd0} = refl
-what {nd1+} {ndN} {nd01} = refl
-what {nd1+} {ndN} {nd1} = refl
-what {nd1+} {ndN} {nd1+} = refl
-what {nd1+} {ndN} {ndN} = refl
-what {ndN} {nd0} = refl
-what {ndN} {nd01} {nd0} = refl
-what {ndN} {nd01} {nd01} = refl
-what {ndN} {nd01} {nd1} = refl
-what {ndN} {nd01} {nd1+} = refl
-what {ndN} {nd01} {ndN} = refl
-what {ndN} {nd1} = refl
-what {ndN} {nd1+} {nd0} = refl
-what {ndN} {nd1+} {nd01} = refl
-what {ndN} {nd1+} {nd1} = refl
-what {ndN} {nd1+} {nd1+} = refl
-what {ndN} {nd1+} {ndN} = refl
-what {ndN} {ndN} {nd0} = refl
-what {ndN} {ndN} {nd01} = refl
-what {ndN} {ndN} {nd1} = refl
-what {ndN} {ndN} {nd1+} = refl
-what {ndN} {ndN} {ndN} = refl
-
-
-mlaw3ND : {e e' e'' : ND} → {X Y Z : Set} →
-          (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
-          sub-eqND {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
-                   (assND {e} {e'} {e''})
-                   (liftND (e ⊙ e') e'' g (liftND e e' f c))
-          ≡ liftND (e) (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
-mlaw3ND {e} {e'} {e''} f g [] = what {e} {e'} {e''}
-mlaw3ND {e} {e'} {e''} f g (x ∷ c) = {!!}
-
---mlaw3ND {e} {e'} {e''} f g [] = what {e} {e'} {e''}
---mlaw3ND {e} {e'} {e''} f g (x ∷ c) = subeq refl liftND --cong (_++_ {!!}) refl
---mlaw3ND {e} {e'} {e''} f g (x ∷ c) with liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c)
---... | fx = cong ((concatMap (liftND {e'} {e''} g))) refl
---... | l = cong (concatMap (liftND {e} {e' ⊙ e''} ((liftND {e'} {e''} g) ∘ f))) refl
-
-
--- this is wrong
--- mlaw3ND {e} {e'} {e''} f g c with liftND {e ⊙ e'} {e''} g (liftND {e} {e'} f c)
---... | l = cong (λ cs → concatMap g cs) {{!!}} refl
-
+mlaw3ND e e' e'' f g [] = what e e' e''
+mlaw3ND e e' e'' f g (c ∷ cs) = {!!}
 -}
 
 NDEffGM : GradedMonad
@@ -311,7 +288,7 @@ NDEffGM = record { OM = NDEffOM
                  ; sub-trans = subND-trans
                  ; mlaw1 = λ {e} → mlaw1ND {e}
                  ; mlaw2 = λ {e} → mlaw2ND {e}
-                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND {e} {e'} {e''}
+--                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND e e' e''
                  }
 
 
