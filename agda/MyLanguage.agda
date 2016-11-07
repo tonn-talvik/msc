@@ -4,13 +4,17 @@ module MyLanguage where
 open import Relation.Nullary
 open import Relation.Binary.Core using (_≡_ ; refl)
 
-open import Data.Nat hiding (_≟_)
-open import Data.Bool hiding (T ; _≟_)
+open import Function hiding (_$_)
+
 open import Data.Empty
 open import Data.Unit hiding (_≟_)
 open import Data.Product
 
+open import Data.Nat hiding (_≟_)
+open import Data.Bool hiding (T ; _≟_)
+open import Data.Fin hiding (lift)
 open import Data.List
+
 
 open import Finiteness
   renaming (here to fhere)
@@ -181,6 +185,12 @@ lookupcorrect :  {A : Set} → (n : ℕ) → (xs : List A) → (p : n ∈' xs) �
 lookupcorrect .0 .(x ∷ xs) (here {x} {xs}) = fhere
 lookupcorrect .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = there (lookupcorrect n xs p)
 
+
+look-where : {A : Set} → (xs : List A) → (n : Fin (length xs)) → lkp xs n ∈ xs
+look-where [] ()
+look-where (x ∷ xs) zero = here' refl
+look-where (x ∷ xs) (suc n) = there (look-where xs n)
+
 ----------------------------------------------------------------------
 
 lemma-∉' : {Γ : Ctx} → {τ : VType} → (v : ℕ) → ¬ v ∈' Γ → ¬ suc v ∈' (τ ∷ Γ)
@@ -211,6 +221,19 @@ varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (
 varify v {p} = VAR (svar2inlist (svar v {p} ))
 
 
+varify' : {Γ : Ctx} → (v : Fin (length Γ)) → VTerm Γ (lkp Γ v)
+varify' {Γ} v = VAR (look-where Γ v)
+
+-- want to have something like this
+varify'' = varify' ∘ fromℕ
+
+--varify''' : {Γ : Ctx} → (n : ℕ) → {_ : n Data.Nat.≤ length Γ} → VTerm Γ (lkp Γ (fromℕ n))
+--varify''' {Γ} n = VAR (look-where Γ (fromℕ n))
+
+_=?=_ : (n : ℕ) → {m : ℕ} (v : Fin m) → Dec (fromℕ n ≡ v)
+n =?= v = ?
+--varify₄ : {Γ : Ctx} → (n : ℕ) → {v : Fin (length Γ)} → {_ : fromℕ n ≡ v} → VTerm Γ (lkp Γ v)
+--varify₄ {Γ} n = VAR (look-where Γ (fromℕ n))
 
 
 
@@ -221,13 +244,15 @@ gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 gamma-inside  = svar2inlist {gamma} (svar 0)
 --gamma-outside = svar2inlist {gamma} (svar 5)
 
-pv0        = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
--- pv0-contra = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
+pv0        = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 0)))) ⟧ tt
+pv0''      = ⟦ VAL (LAM nat (VAL (varify'' 0))) ⟧ tt
+--pv0-contra = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 1)))) ⟧ tt
 pv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
 -- pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
 pv2        = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
 pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
 pv3        = ⟦ VAL (varify 0) ⟧
+--pv3        = ⟦ VAL (varify' (fromℕ 0)) ⟧
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
