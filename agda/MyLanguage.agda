@@ -70,13 +70,13 @@ mutual
     FST : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
     SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
     VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
-    lam : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
+    LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
     
   data CTerm (Γ : Ctx) : VType → Set where
-    val : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
+    VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
     FAIL : ∀ {σ} → CTerm Γ σ
     CHOOSE : ∀ {σ} → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
-    if_then_else_fi : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
+    IF_THEN_ELSE_ : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
     _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
     PREC : ∀ {σ} → VTerm Γ nat →
            CTerm Γ σ →
@@ -107,13 +107,13 @@ mutual
   ⟦ FST p ⟧t ρ = proj₁ (⟦ p ⟧t ρ)
   ⟦ SND p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
   ⟦ VAR x ⟧t ρ = proj x ρ
-  ⟦ lam σ t ⟧t ρ = λ x → ⟦ t ⟧ (x , ρ)
+  ⟦ LAM σ t ⟧t ρ = λ x → ⟦ t ⟧ (x , ρ)
   
   ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → T ⟦ σ ⟧v
-  ⟦ val v ⟧ ρ = η (⟦ v ⟧t ρ)
+  ⟦ VAL v ⟧ ρ = η (⟦ v ⟧t ρ)
   ⟦ FAIL ⟧ ρ = sfail
   ⟦ CHOOSE t u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
-  ⟦ if b then m else n fi ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
+  ⟦ IF b THEN m ELSE n ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
   ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (λ x → λ y → ⟦ n ⟧ (y , x , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
 
@@ -221,13 +221,13 @@ gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 gamma-inside  = svar2inlist {gamma} (svar 0)
 --gamma-outside = svar2inlist {gamma} (svar 5)
 
-pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ tt
--- pv0-contra = ⟦ val (LAM nat (val (varify 1))) ⟧ tt
-pv1        = ⟦ val (varify 0) ⟧ (1 , tt)
--- pv1-contra = ⟦ val (varify 1) ⟧ (1 , tt)
-pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , tt)
+pv0        = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
+-- pv0-contra = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
+pv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
+-- pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
+pv2        = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
 pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
-pv3        = ⟦ val (varify 0) ⟧
+pv3        = ⟦ VAL (varify 0) ⟧
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
@@ -237,29 +237,29 @@ pv3        = ⟦ val (varify 0) ⟧
 
 ----------------------------------------------------------------------
 
-p1 = ⟦ val (varify 0) ⟧ (1 , tt)
-p2 = ⟦ if TT then (val (SS ZZ)) else val ZZ fi ⟧ tt
+p1 = ⟦ VAL (varify 0) ⟧ (1 , tt)
+p2 = ⟦ IF TT THEN (VAL (SS ZZ)) ELSE VAL ZZ ⟧ tt
 p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , tt) ) 
-p4 = ⟦ val (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
-p5 = ⟦ lam nat (val (SS (varify 0))) $ ZZ ⟧ tt
-p6 = ⟦ PREC (natify 6) (val ZZ) ((LET val (varify 0) IN (val (varify 1)) )) ⟧ tt
+p4 = ⟦ VAL (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
+p5 = ⟦ LAM nat (VAL (SS (varify 0))) $ ZZ ⟧ tt
+p6 = ⟦ PREC (natify 6) (VAL ZZ) ((LET VAL (varify 0) IN (VAL (varify 1)) )) ⟧ tt
 p7 : ℕ → T ℕ
-p7 n  = ⟦ PREC (natify n) (val ZZ) (CHOOSE (val (varify 0)) (val (SS (SS (varify 0))))) ⟧ tt
+p7 n  = ⟦ PREC (natify n) (VAL ZZ) (CHOOSE (VAL (varify 0)) (VAL (SS (SS (varify 0))))) ⟧ tt
 
 
 add : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
-add = (lam nat (
-          val (lam nat
+add = (LAM nat (
+          VAL (LAM nat
                (PREC (varify 0)
-                     (val (varify 1))
-                     (val (SS (varify 0)))))))
+                     (VAL (varify 1))
+                     (VAL (SS (varify 0)))))))
 p-add-3-4 = ⟦ LET add $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , tt))
 
 mul : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
-mul = (lam nat (
-          val (lam nat
+mul = (LAM nat (
+          VAL (LAM nat
                (PREC (varify 0)
-                     (val ZZ)
+                     (VAL ZZ)
                      (LET add $ varify 0 IN
                           (
                                ( varify 0
