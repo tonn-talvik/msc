@@ -7,7 +7,7 @@ open import Relation.Binary.Core using (_≡_ ; refl)
 open import Data.Nat hiding (_≟_)
 open import Data.Bool hiding (T ; _≟_)
 open import Data.Empty
-open import Data.Unit renaming (tt to top) hiding (_≟_)
+open import Data.Unit hiding (_≟_)
 open import Data.Product
 
 open import Data.List
@@ -18,6 +18,7 @@ open import Finiteness
 --open import OrderedMonoid
 open import NonDeterminism
 
+  
 T : Set → Set
 T X = List X
 
@@ -62,22 +63,22 @@ infixl 80 _$_
 
 mutual
   data VTerm (Γ : Ctx) : VType → Set where
-    tt ff : VTerm Γ bool
-    zz : VTerm Γ nat
-    ss : VTerm Γ nat → VTerm Γ nat
+    TT FF : VTerm Γ bool
+    ZZ : VTerm Γ nat
+    SS : VTerm Γ nat → VTerm Γ nat
     ⟨_,_⟩ : ∀ {σ τ} → VTerm Γ σ → VTerm Γ τ → VTerm Γ (σ ∏ τ)
-    fst : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
-    snd : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
-    var : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
+    FST : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
+    SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
+    VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
     lam : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
     
   data CTerm (Γ : Ctx) : VType → Set where
     val : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
-    fail : ∀ {σ} → CTerm Γ σ
-    choose : ∀ {σ} → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
+    FAIL : ∀ {σ} → CTerm Γ σ
+    CHOOSE : ∀ {σ} → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
     if_then_else_fi : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
     _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
-    prec : ∀ {σ} → VTerm Γ nat →
+    PREC : ∀ {σ} → VTerm Γ nat →
            CTerm Γ σ →
            CTerm (σ ∷ nat ∷ Γ) σ → CTerm Γ σ
     LET_IN_ : ∀ {σ τ} → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
@@ -98,22 +99,22 @@ primrecT (suc n) z s = lift (s n) (primrecT n z s)
 ----------------------------------------------------------------------
 mutual
   ⟦_⟧t : {Γ : Ctx} → {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧l → ⟦ σ ⟧v
-  ⟦ tt ⟧t ρ = true
-  ⟦ ff ⟧t ρ = false
-  ⟦ zz ⟧t ρ = zero
-  ⟦ ss t ⟧t ρ = suc (⟦ t ⟧t ρ)
+  ⟦ TT ⟧t ρ = true
+  ⟦ FF ⟧t ρ = false
+  ⟦ ZZ ⟧t ρ = zero
+  ⟦ SS t ⟧t ρ = suc (⟦ t ⟧t ρ)
   ⟦ ⟨ t , u ⟩ ⟧t ρ = ⟦ t ⟧t ρ , ⟦ u ⟧t ρ
-  ⟦ fst p ⟧t ρ = proj₁ (⟦ p ⟧t ρ)
-  ⟦ snd p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
-  ⟦ var x ⟧t ρ = proj x ρ
+  ⟦ FST p ⟧t ρ = proj₁ (⟦ p ⟧t ρ)
+  ⟦ SND p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
+  ⟦ VAR x ⟧t ρ = proj x ρ
   ⟦ lam σ t ⟧t ρ = λ x → ⟦ t ⟧ (x , ρ)
   
   ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → T ⟦ σ ⟧v
   ⟦ val v ⟧ ρ = η (⟦ v ⟧t ρ)
-  ⟦ fail ⟧ ρ = sfail
-  ⟦ choose t u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
+  ⟦ FAIL ⟧ ρ = sfail
+  ⟦ CHOOSE t u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
   ⟦ if b then m else n fi ⟧ ρ = (if ⟦ b ⟧t ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
-  ⟦ prec v m n ⟧ ρ = primrecT (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (λ x → λ y → ⟦ n ⟧ (y , x , ρ))
+  ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧t ρ) (⟦ m ⟧ ρ) (λ x → λ y → ⟦ n ⟧ (y , x , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧t ρ (⟦ u ⟧t ρ)
 
   ⟦ LET m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
@@ -121,8 +122,8 @@ mutual
 ----------------------------------------------------------------------
 
 natify : ∀ {Γ} → ℕ → VTerm Γ nat
-natify zero = zz
-natify (suc n) = ss (natify n)
+natify zero = ZZ
+natify (suc n) = SS (natify n)
 
 -- binary relations are inequal, if there are pointwise inequalities
 lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
@@ -207,7 +208,7 @@ svar2inlist : {Γ : Ctx} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
 svar2inlist (svar v {p}) = lookupcorrect v _ (extract' p)
 
 varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
-varify v {p} = var (svar2inlist (svar v {p} ))
+varify v {p} = VAR (svar2inlist (svar v {p} ))
 
 
 
@@ -220,11 +221,11 @@ gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
 gamma-inside  = svar2inlist {gamma} (svar 0)
 --gamma-outside = svar2inlist {gamma} (svar 5)
 
-pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ top
--- pv0-contra = ⟦ val (lam nat (val (varify 1))) ⟧ top
-pv1        = ⟦ val (varify 0) ⟧ (1 , top)
--- pv1-contra = ⟦ val (varify 1) ⟧ (1 , top)
-pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , top)
+pv0        = ⟦ val (lam nat (val (varify 0))) ⟧ tt
+-- pv0-contra = ⟦ val (LAM nat (val (varify 1))) ⟧ tt
+pv1        = ⟦ val (varify 0) ⟧ (1 , tt)
+-- pv1-contra = ⟦ val (varify 1) ⟧ (1 , tt)
+pv2        = ⟦ if (varify 2) then val (varify 0) else val (varify 1) fi ⟧ (1 , 2 , false , tt)
 pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
 pv3        = ⟦ val (varify 0) ⟧
 
@@ -236,33 +237,33 @@ pv3        = ⟦ val (varify 0) ⟧
 
 ----------------------------------------------------------------------
 
-p1 = ⟦ val (varify 0) ⟧ (1 , top)
-p2 = ⟦ if tt then (val (ss zz)) else val zz fi ⟧ top
-p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , top) ) 
-p4 = ⟦ val (snd ⟨ zz , tt ⟩ ) ⟧ top
-p5 = ⟦ lam nat (val (ss (varify 0))) $ zz ⟧ top
-p6 = ⟦ prec (natify 6) (val zz) ((LET val (varify 0) IN (val (varify 1)) )) ⟧ top
+p1 = ⟦ val (varify 0) ⟧ (1 , tt)
+p2 = ⟦ if TT then (val (SS ZZ)) else val ZZ fi ⟧ tt
+p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , tt) ) 
+p4 = ⟦ val (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
+p5 = ⟦ lam nat (val (SS (varify 0))) $ ZZ ⟧ tt
+p6 = ⟦ PREC (natify 6) (val ZZ) ((LET val (varify 0) IN (val (varify 1)) )) ⟧ tt
 p7 : ℕ → T ℕ
-p7 n  = ⟦ prec (natify n) (val zz) (choose (val (varify 0)) (val (ss (ss (varify 0))))) ⟧ top
+p7 n  = ⟦ PREC (natify n) (val ZZ) (CHOOSE (val (varify 0)) (val (SS (SS (varify 0))))) ⟧ tt
 
 
 add : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
 add = (lam nat (
           val (lam nat
-               (prec (varify 0)
+               (PREC (varify 0)
                      (val (varify 1))
-                     (val (ss (varify 0)))))))
-p-add-3-4 = ⟦ LET add $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , top))
+                     (val (SS (varify 0)))))))
+p-add-3-4 = ⟦ LET add $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , tt))
 
 mul : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
 mul = (lam nat (
           val (lam nat
-               (prec (varify 0)
-                     (val zz)
+               (PREC (varify 0)
+                     (val ZZ)
                      (LET add $ varify 0 IN
                           (
                                ( varify 0
                                     $ varify 4 )))))))
-p-mul-3-4 = ⟦ LET mul $ natify 3 IN varify 0 $ natify 4 ⟧ top
+p-mul-3-4 = ⟦ LET mul $ natify 3 IN varify 0 $ natify 4 ⟧ tt
 
 

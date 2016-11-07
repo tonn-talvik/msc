@@ -22,7 +22,7 @@ data ND : Set where
 
 data _⊑ND_ : ND → ND → Set where
   reflND : {m : ND} → m ⊑ND m
-  top : {m : ND} → m ⊑ND ndN
+  topND : {m : ND} → m ⊑ND ndN
   0⊑01 : nd0 ⊑ND nd01
   1⊑01 : nd1 ⊑ND nd01
   1⊑1+ : nd1 ⊑ND nd1+
@@ -50,39 +50,39 @@ nd0 ?⊑ND nd0 = yes reflND
 nd0 ?⊑ND nd01 = yes 0⊑01
 nd0 ?⊑ND nd1 = no (λ ())
 nd0 ?⊑ND nd1+ = no (λ ())
-nd0 ?⊑ND ndN = yes top
+nd0 ?⊑ND ndN = yes topND
 nd01 ?⊑ND nd0 = no (λ ())
 nd01 ?⊑ND nd01 = yes reflND
 nd01 ?⊑ND nd1 = no (λ ())
 nd01 ?⊑ND nd1+ = no (λ ())
-nd01 ?⊑ND ndN = yes top
+nd01 ?⊑ND ndN = yes topND
 nd1 ?⊑ND nd0 = no (λ ())
 nd1 ?⊑ND nd01 = yes 1⊑01
 nd1 ?⊑ND nd1 = yes reflND
 nd1 ?⊑ND nd1+ = yes 1⊑1+
-nd1 ?⊑ND ndN = yes top
+nd1 ?⊑ND ndN = yes topND
 nd1+ ?⊑ND nd0 = no (λ ())
 nd1+ ?⊑ND nd01 = no (λ ())
 nd1+ ?⊑ND nd1 = no (λ ())
 nd1+ ?⊑ND nd1+ = yes reflND
-nd1+ ?⊑ND ndN = yes top
+nd1+ ?⊑ND ndN = yes topND
 ndN ?⊑ND nd0 = no (λ ())
 ndN ?⊑ND nd01 = no (λ ())
 ndN ?⊑ND nd1 = no (λ ())
 ndN ?⊑ND nd1+ = no (λ ())
 ndN ?⊑ND ndN = yes reflND 
 
+private 
 
+  listND : List ND
+  listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
 
-listND : List ND
-listND = nd0 ∷ nd01 ∷ nd1 ∷ nd1+ ∷ ndN ∷ [] 
-
-cmpltND : (x : ND) → x ∈ listND
-cmpltND nd0  = here
-cmpltND nd01 = there here
-cmpltND nd1  = there (there here)
-cmpltND nd1+ = there (there (there here))
-cmpltND ndN  = there (there (there (there here)))
+  cmpltND : (x : ND) → x ∈ listND
+  cmpltND nd0  = here
+  cmpltND nd01 = there here
+  cmpltND nd1  = there (there here)
+  cmpltND nd1+ = there (there (there here))
+  cmpltND ndN  = there (there (there (there here)))
 
 
 lstblND : Listable ND 
@@ -100,32 +100,32 @@ _?≡ND_ = ?≡L lstblND
 
 -------------------------------------------------------
 
+private 
+  refl-⊑ND : (m : ND) → m ⊑ND m
+  refl-⊑ND = extract (?∀ND (λ m → m ?⊑ND m))
 
-refl-⊑ND : (m : ND) → m ⊑ND m
-refl-⊑ND = extract (?∀ND (λ m → m ?⊑ND m))
+  trans-⊑ND : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
+  trans-⊑ND = extract (?∀ND (λ m → 
+                         ?∀ND (λ n → 
+                           ?∀ND (λ o →   
+                                  (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
 
-trans-⊑ND : (m n o : ND) → m ⊑ND n → n ⊑ND o → m ⊑ND o
-trans-⊑ND = extract (?∀ND (λ m → 
-                       ?∀ND (λ n → 
-                         ?∀ND (λ o →   
-                                (m ?⊑ND n) ?→ ((n ?⊑ND o) ?→ (m ?⊑ND o))))))
-
-ru-⊙ : (m : ND) → m ≡ m ⊙ nd1
-ru-⊙ = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
+  ru-⊙ : (m : ND) → m ≡ m ⊙ nd1
+  ru-⊙ = extract (?∀ND (λ m → m ?≡ND m  ⊙ nd1))
 
 
-mon-⊙ : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
-mon-⊙ = extract (?∀ND (λ m → 
-                   ?∀ND (λ n → 
-                     ?∀ND (λ m' → 
-                       ?∀ND (λ n' →
-                              (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
+  mon-⊙ : (m n m' n' : ND) →  m ⊑ND m' → n ⊑ND n' → (m ⊙ n) ⊑ND (m' ⊙ n')
+  mon-⊙ = extract (?∀ND (λ m → 
+                     ?∀ND (λ n → 
+                       ?∀ND (λ m' → 
+                         ?∀ND (λ n' →
+                                (m ?⊑ND m') ?→ ((n ?⊑ND n') ?→ ((m ⊙ n) ?⊑ND (m' ⊙ n'))) )))))
                                   
-ass-⊙ : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
-ass-⊙ = extract (?∀ND (λ m → 
-                   ?∀ND (λ n → 
-                     ?∀ND (λ o →
-                            ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
+  ass-⊙ : (m n o : ND) → (m ⊙ n) ⊙ o ≡ m ⊙ (n ⊙ o)
+  ass-⊙ = extract (?∀ND (λ m → 
+                     ?∀ND (λ n → 
+                       ?∀ND (λ o →
+                              ((m ⊙ n) ⊙ o) ?≡ND (m ⊙ (n ⊙ o)) ))))
 
 
 NDEffOM : OrderedMonoid
@@ -146,73 +146,75 @@ NDEffOM = record { M = ND
 
 open import Data.List
 
-TND : ND → Set → Set
-TND nd X = List X  -- powerset?
+private 
+  TND : ND → Set → Set
+  TND nd X = List X  -- powerset?
 
-ηND : {X : Set} → X → TND (nd1) X
-ηND x = [ x ]
+  ηND : {X : Set} → X → TND (nd1) X
+  ηND x = [ x ]
 
-liftND :  (e e' : ND) {X Y : Set} →
-      (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
-liftND _ _ f [] = []
-liftND e e' f (x ∷ xs) = (f x) ++ (liftND e e' f xs)
+  liftND :  (e e' : ND) {X Y : Set} →
+        (X → TND e' Y) → TND e X → TND (e ⊙ e') Y
+  liftND _ _ f [] = []
+  liftND e e' f (x ∷ xs) = (f x) ++ (liftND e e' f xs)
 
--- Is this correct? Isn't TND too broad?
-subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
-subND p x = x
+  -- Is this correct? Isn't TND too broad?
+  subND : {e e' : ND} {X : Set} → e ⊑ND e' → TND e X → TND e' X
+  subND p x = x
 
-subND-refl : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
-subND-refl _ = refl
+  subND-refl : {e : ND} {X : Set} → (c : TND e X) → subND {e} reflND c ≡ c
+  subND-refl _ = refl
 
-subND-mon : {e e' e'' e''' : ND} {X Y : Set} →
-            (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
-            (f : X → TND e' Y) → (c : TND e X) → 
-            subND (mon-⊙ e e' e'' e''' p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
-subND-mon p q f c = refl
-
-
-
-subND-trans : {e e' e'' : ND} {X : Set} →
-              (p : e ⊑ND e') → (q : e' ⊑ND e'') → (c : TND e X) → 
-              subND q (subND p c) ≡ subND (trans-⊑ND e e' e'' p q) c
-subND-trans r q c = refl
-
-
-++-right-identity : {X : Set} (xs : List X) → xs ++ [] ≡ xs
-++-right-identity [] = refl
-++-right-identity (x ∷ xs) = cong (_∷_ x) (++-right-identity xs)
-
-mlaw1ND : {e : ND} → {X Y : Set} → (f : X → TND e Y) → (x : X) →
-          liftND nd1 e f (ηND x) ≡ f x
-mlaw1ND f x = ++-right-identity (f x)
+  subND-mon : {e e' e'' e''' : ND} {X Y : Set} →
+              (p : e ⊑ND e'') → (q : e' ⊑ND e''') →
+              (f : X → TND e' Y) → (c : TND e X) → 
+              subND (mon-⊙ e e' e'' e''' p q) (liftND e e' f c) ≡ liftND e'' e''' (subND q ∘ f) (subND p c)
+  subND-mon p q f c = refl
 
 
 
-subND-eq : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
-subND-eq = subeq {ND} {TND}
+  subND-trans : {e e' e'' : ND} {X : Set} →
+                (p : e ⊑ND e') → (q : e' ⊑ND e'') → (c : TND e X) → 
+                subND q (subND p c) ≡ subND (trans-⊑ND e e' e'' p q) c
+  subND-trans r q c = refl
 
 
-η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND e e' ηND xs
-η-lift-identity [] = refl
-η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
+  ++-right-identity : {X : Set} (xs : List X) → xs ++ [] ≡ xs
+  ++-right-identity [] = refl
+  ++-right-identity (x ∷ xs) = cong (_∷_ x) (++-right-identity xs)
 
-mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
-           subND-eq {e} (ru-⊙ e) c ≡ liftND e nd1 ηND c
-mlaw2ND {nd0} [] = refl
-mlaw2ND {nd01} [] = refl
-mlaw2ND {nd1} [] = refl
-mlaw2ND {nd1+} [] = refl
-mlaw2ND {ndN} [] = refl
-mlaw2ND {nd0} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
-mlaw2ND {nd01} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
-mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
-mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
-mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+  mlaw1ND : {e : ND} → {X Y : Set} → (f : X → TND e Y) → (x : X) →
+            liftND nd1 e f (ηND x) ≡ f x
+  mlaw1ND f x = ++-right-identity (f x)
 
+
+
+  subND-eq : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
+  subND-eq = subeq {ND} {TND}
+
+
+  η-lift-identity : {e e' : ND} {X : Set} (xs : List X) → xs ≡ liftND e e' ηND xs
+  η-lift-identity [] = refl
+  η-lift-identity {e} {e'} (x ∷ xs) = cong (_∷_ x) (η-lift-identity {e} {e'} xs)
+
+  mlaw2ND :  {e : ND} → {X : Set} → (c : TND e X) →
+             subND-eq {e} (ru-⊙ e) c ≡ liftND e nd1 ηND c
+  mlaw2ND {nd0} [] = refl
+  mlaw2ND {nd01} [] = refl
+  mlaw2ND {nd1} [] = refl
+  mlaw2ND {nd1+} [] = refl
+  mlaw2ND {ndN} [] = refl
+  mlaw2ND {nd0} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+  mlaw2ND {nd01} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+  mlaw2ND {nd1} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+  mlaw2ND {nd1+} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+  mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
+
+
+{-
 open import Data.Nat
 open import Data.Vec
 
-{-
 -- FIXME: yellow submarine
 tail-≡ : {X : Set} {x x' : X} {n : ℕ} {xs xs' : Vec X n} → (x ∷ xs ≡ x' ∷ xs') → xs ≡ xs'
 tail-≡ p = cong tail refl
@@ -251,7 +253,7 @@ decVecEq2decListEq (no ¬p) = no (λ q → ¬p {!!})
 
 _?≡list_ : {X : Set} (xs xs' : List X) → {_ : DecEq X} → Dec (xs ≡ xs')
 xs ?≡list xs' = decVecEq2decListEq (fromList {!!} ?≡vec fromList {!!})
--}
+
 
 ?Empty : {X : Set} (l : List X) → Dec (l ≡ [])
 ?Empty [] = yes refl
@@ -265,7 +267,7 @@ what = extract (?∀ND (λ e →
                       (subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
                                (ass-⊙ e e' e'') [])))))
 
-{-
+
 mlaw3ND : (e e' e'' : ND) → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
           subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
@@ -290,6 +292,7 @@ NDEffGM = record { OM = NDEffOM
                  ; mlaw2 = λ {e} → mlaw2ND {e}
 --                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND e e' e''
                  }
+
 
 
 

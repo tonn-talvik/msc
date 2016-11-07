@@ -61,96 +61,94 @@ suc i ?≡F suc j with i ?≡F j
 ... | yes p = yes (cong suc p)
 ... | no ¬p = no (λ p → ¬p (peano5 i j p))
 
-module MListable where
-  record Listable (X : Set) : Set where
-    constructor _,_
-    field 
-      list : List X
-      complete : (x : X) → x ∈ list
+
+record Listable (X : Set) : Set where
+  constructor _£_
+  field 
+    list : List X
+    complete : (x : X) → x ∈ list
     
 
-  idxinj : {X : Set} → (p : Listable X) → let open Listable p in 
-         {x y : X} → idx (complete x) ≡ idx (complete y) → x ≡ y
-  idxinj (list , complete) {x} {y} p = 
-    trans (sym (lkpcorrect list (complete x))) 
-          (trans (cong (lkp list) p) (lkpcorrect list (complete y))) 
+idxinj : {X : Set} → (p : Listable X) → let open Listable p in 
+       {x y : X} → idx (complete x) ≡ idx (complete y) → x ≡ y
+idxinj (list £ complete) {x} {y} p = 
+  trans (sym (lkpcorrect list (complete x))) 
+        (trans (cong (lkp list) p) (lkpcorrect list (complete y))) 
 
 
-  ?≡L : {X : Set} → Listable X → (x y : X) → Dec (x ≡ y) 
-  ?≡L (list , complete) x y with idx (complete x) ?≡F idx (complete y) 
-  ?≡L (list , complete) x y | yes p = yes (idxinj (list , complete) p)
-  ?≡L (list , complete) x y | no ¬p = no ( λ p → ¬p (cong (λ x → idx (complete x)) p))
+?≡L : {X : Set} → Listable X → (x y : X) → Dec (x ≡ y) 
+?≡L (list £ complete) x y with idx (complete x) ?≡F idx (complete y) 
+?≡L (list £ complete) x y | yes p = yes (idxinj (list £ complete) p)
+?≡L (list £ complete) x y | no ¬p = no ( λ p → ¬p (cong (λ x → idx (complete x)) p))
 
 
-  All : {X : Set} → (xs : List X) → (P : X → Set) → Set
-  All {X} xs P = {x : X} → x ∈ xs → P x
+All : {X : Set} → (xs : List X) → (P : X → Set) → Set
+All {X} xs P = {x : X} → x ∈ xs → P x
 
-  ?All : {X : Set} → {P : X → Set} → (xs : List X) → 
-                            ((x : X) → Dec (P x)) → Dec (All xs P) 
-  ?All []       f =  yes (λ ())
-  ?All (x ∷ xs) f with f x 
-  ?All (x ∷ xs) f | yes p with ?All xs f
-  ?All (x ∷ xs) f | yes p | yes p' = yes (λ { (here' q) → subst _ q p 
-                                          ; (there q) → p' q })
-  ?All (x ∷ xs) f | yes p | no ¬p' =  no (λ q → ¬p' (λ r → q (there r))) 
-  ?All (x ∷ xs) f | no ¬p = no (λ q → ¬p (q here)) 
-
-
-  Some : {X : Set} → (xs : List X) → (P : X → Set) → Set
-  Some {X} xs P = Σ X (λ x → x ∈ xs × P x)
-
-  ?Some : {X : Set} → {P : X → Set} → (xs : List X) → 
-                            ((x : X) → Dec (P x)) → Dec (Some xs P) 
-  ?Some []       f = no ( λ { (_ , () , _) }) 
-  ?Some (x ∷ xs) f with f x 
-  ?Some (x ∷ _ ) f | yes p =  yes (x , here , p)
-  ?Some (_ ∷ xs) f | no ¬p with ?Some xs f
-  ?Some (_ ∷ _ ) f | no _  | yes (x' , q , p') = yes (x' , there q , p')
-  ?Some (x ∷ _ ) f | no ¬p | no ¬p'            = 
-       no  ( λ { (.x , here' refl , p) → ¬p p 
-               ; (y  , there q    , p) → ¬p' (y , q , p) } )
+?All : {X : Set} → {P : X → Set} → (xs : List X) → 
+                          ((x : X) → Dec (P x)) → Dec (All xs P) 
+?All []       f =  yes (λ ())
+?All (x ∷ xs) f with f x 
+?All (x ∷ xs) f | yes p with ?All xs f
+?All (x ∷ xs) f | yes p | yes p' = yes (λ { (here' q) → subst _ q p 
+                                        ; (there q) → p' q })
+?All (x ∷ xs) f | yes p | no ¬p' =  no (λ q → ¬p' (λ r → q (there r))) 
+?All (x ∷ xs) f | no ¬p = no (λ q → ¬p (q here)) 
 
 
+Some : {X : Set} → (xs : List X) → (P : X → Set) → Set
+Some {X} xs P = Σ X (λ x → x ∈ xs × P x)
 
-  ?∀ : {X : Set} → (p : Listable X) → {P : X → Set} 
-         → ((x : X) → Dec (P x)) → Dec ((x : X) → P x)
-  ?∀ (list , complete) f with ?All list f 
-  ... | yes q = yes (λ x → q (complete x))
-  ... | no ¬q = no (λ g → ¬q (λ {x} → λ _ → g x)) 
-
-  ?∃ : {X : Set} → (p : Listable X) → {P : X → Set} 
-         → ((x : X) → Dec (P x)) → Dec (Σ X P)
-  ?∃ (list , complete) f with ?Some list f 
-  ... | yes (x , _ , p) = yes (x , p)
-  ... | no ¬q = no ( λ { (x , p) →  ¬q (x , complete x , p)  })
+?Some : {X : Set} → {P : X → Set} → (xs : List X) → 
+                          ((x : X) → Dec (P x)) → Dec (Some xs P) 
+?Some []       f = no ( λ { (_ , () , _) }) 
+?Some (x ∷ xs) f with f x 
+?Some (x ∷ _ ) f | yes p =  yes (x , here , p)
+?Some (_ ∷ xs) f | no ¬p with ?Some xs f
+?Some (_ ∷ _ ) f | no _  | yes (x' , q , p') = yes (x' , there q , p')
+?Some (x ∷ _ ) f | no ¬p | no ¬p'            = 
+     no  ( λ { (.x , here' refl , p) → ¬p p 
+             ; (y  , there q    , p) → ¬p' (y , q , p) } )
 
 
 
-  ?⊤ : Dec ⊤ 
-  ?⊤ = yes tt
+?∀ : {X : Set} → (p : Listable X) → {P : X → Set} 
+       → ((x : X) → Dec (P x)) → Dec ((x : X) → P x)
+?∀ (list £ complete) f with ?All list f 
+... | yes q = yes (λ x → q (complete x))
+... | no ¬q = no (λ g → ¬q (λ {x} → λ _ → g x)) 
 
-  _?×_ : {P Q : Set} → Dec P → Dec Q → Dec (P × Q)
-  yes p ?× yes q = yes (p , q)
-  _     ?× no ¬q = no (λ {(_ , q) → ¬q q}) 
-  no ¬p ?× _     = no (λ {(p , _) → ¬p p}) 
-
-
-  ?⊥ : Dec ⊥
-  ?⊥ = no (λ ())
-
-  _?⊎_ : {P Q : Set} → Dec P → Dec Q → Dec (P ⊎ Q)
-  yes p ?⊎ q     = yes (inj₁ p)
-  _     ?⊎ yes q = yes (inj₂ q)
-  no ¬p ?⊎ no ¬q = no (λ {(inj₁ p) → ¬p p ; (inj₂ q) → ¬q q}) 
+?∃ : {X : Set} → (p : Listable X) → {P : X → Set} 
+       → ((x : X) → Dec (P x)) → Dec (Σ X P)
+?∃ (list £ complete) f with ?Some list f 
+... | yes (x , _ , p) = yes (x , p)
+... | no ¬q = no ( λ { (x , p) →  ¬q (x , complete x , p)  })
 
 
-  _?→_ : {P Q : Set} → Dec P → Dec Q → Dec (P → Q)
-  _     ?→ yes q = yes (λ _ → q)
-  no ¬p ?→ _     = yes (λ p → ⊥-elim (¬p p)) 
-  yes p ?→ no ¬q = no  (λ r → ¬q (r p))
 
-open MListable public
-  hiding (_,_) -- so that we don't confuse this with Data.Product._,_
+?⊤ : Dec ⊤ 
+?⊤ = yes tt
+
+_?×_ : {P Q : Set} → Dec P → Dec Q → Dec (P × Q)
+yes p ?× yes q = yes (p , q)
+_     ?× no ¬q = no (λ {(_ , q) → ¬q q}) 
+no ¬p ?× _     = no (λ {(p , _) → ¬p p}) 
+
+
+?⊥ : Dec ⊥
+?⊥ = no (λ ())
+
+_?⊎_ : {P Q : Set} → Dec P → Dec Q → Dec (P ⊎ Q)
+yes p ?⊎ q     = yes (inj₁ p)
+_     ?⊎ yes q = yes (inj₂ q)
+no ¬p ?⊎ no ¬q = no (λ {(inj₁ p) → ¬p p ; (inj₂ q) → ¬q q}) 
+
+
+_?→_ : {P Q : Set} → Dec P → Dec Q → Dec (P → Q)
+_     ?→ yes q = yes (λ _ → q)
+no ¬p ?→ _     = yes (λ p → ⊥-elim (¬p p)) 
+yes p ?→ no ¬q = no  (λ r → ¬q (r p))
+
 
 truncate : {P : Set} → Dec P → Set
 truncate (yes _) = ⊤
