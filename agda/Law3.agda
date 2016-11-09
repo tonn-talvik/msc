@@ -9,10 +9,16 @@ liftND : {X Y : Set} → (X → List Y) → (List X → List Y)
 liftND f [] = []
 liftND f (x ∷ xs) = f x ++ liftND f xs
 
+lemma++ : {X : Set} (xs xs' xs'' : List X) →
+          xs ++ (xs' ++ xs'') ≡ (xs ++ xs') ++ xs''
+lemma++ [] xs' xs'' = refl
+lemma++ (x ∷ xs) xs' xs'' rewrite lemma++ xs xs' xs'' = refl
+
 lemma : {X Y : Set} → (f : X → List Y) → (xs xs' : List X) → 
     liftND f (xs ++ xs') ≡ liftND f xs ++ liftND f xs'
 lemma f [] xs' = refl
-lemma f (x ∷ xs) xs' = {!!}
+lemma f (x ∷ xs) xs' rewrite lemma f xs xs' = lemma++ (f x) (liftND f xs) (liftND f xs')
+
 
 mlaw3ND : {X Y Z : Set} → 
           (f : X → List Y) → (g : Y → List Z) → (c : List X) → 
