@@ -5,8 +5,8 @@ open import Data.List
 open import Relation.Nullary
 
 
-open import Relation.Binary.Core using (_≡_ ; refl)
-open import Relation.Binary.PropositionalEquality using (cong)
+open import Relation.Binary.Core
+open import Relation.Binary.PropositionalEquality hiding ([_]; inspect)
 
 open import Finiteness
 open import OrderedMonoid
@@ -211,62 +211,36 @@ private
   mlaw2ND {ndN} (x ∷ xs) = cong (_∷_ x) (η-lift-identity xs)
 
 
-{-
-open import Data.Nat
-open import Data.Vec
+lemma++ : {X : Set} (xs xs' xs'' : List X) →
+          xs ++ (xs' ++ xs'') ≡ (xs ++ xs') ++ xs''
+lemma++ [] xs' xs'' = refl
+lemma++ (x ∷ xs) xs' xs'' rewrite lemma++ xs xs' xs'' = refl
 
--- FIXME: yellow submarine
-tail-≡ : {X : Set} {x x' : X} {n : ℕ} {xs xs' : Vec X n} → (x ∷ xs ≡ x' ∷ xs') → xs ≡ xs'
-tail-≡ p = cong tail refl
+lemma-liftND : {e e' : ND} {X Y : Set} → (f : X → TND e' Y) → (xs xs' : TND e X) → 
+    liftND e e' f (xs ++ xs') ≡ liftND e e' f xs ++ liftND e e' f xs'
+lemma-liftND f [] xs' = refl
+lemma-liftND {e} {e'} f (x ∷ xs) xs' rewrite lemma-liftND {e} {e'} f xs xs' = lemma++ (f x) (liftND e e' f xs) (liftND e e' f xs')
 
-head-≡ : {X : Set} {x x' : X} {n : ℕ} {xs xs' : Vec X n} → (x ∷ xs ≡ x' ∷ xs') → x ≡ x'
-head-≡ p = cong head refl
+mlaw3ND' : (e e' e'' : ND) → {X Y Z : Set} →
+          (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
+          (liftND (e ⊙ e') e'' g (liftND e e' f c))
+          ≡ liftND e (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
+mlaw3ND' e e' e'' f g [] = refl
+mlaw3ND' e e' e'' f g (c ∷ cs) = trans (lemma-liftND {e ⊙ e'} {e''} g (f c) (liftND e e' f cs)) (cong (_++_ (liftND e' e'' g (f c))) (mlaw3ND' e e' e'' f g cs))
 
+--subND-eq : {e e' : ND} {X : Set} → e ≡ e' → TND e X → TND e' X
+--subND-eq refl p = p
 
-_?≡vec_ : {X : Set} {n : ℕ} (xs xs' : Vec X n) → {_ : DecEq X} → Dec (xs ≡ xs')
-[] ?≡vec [] = yes refl
-((x ∷ xs) ?≡vec (x' ∷ xs')) {eq} with eq x x'
-((x ∷ xs) ?≡vec (x' ∷ xs')) {eq} | yes p with (xs ?≡vec xs') {eq}
-(x ∷ xs) ?≡vec (x' ∷ xs') | yes p | yes q rewrite p | q = yes refl
-(x ∷ xs) ?≡vec (x' ∷ xs') | yes p | no ¬q rewrite p = no (λ ys → ¬q (tail-≡ ys))
-(x ∷ xs) ?≡vec (x' ∷ xs') | no ¬p = no (λ ys → ¬p (head-≡ ys))
--}
+lemma-s : {e e' : ND} {X : Set} → (p : e ≡ e') →
+          (c : TND e X) → (d : TND e' X) → subND-eq p c ≡ d
+lemma-s p c d  = {!!}
 
-{-
-_?≡list_ : {X : Set} (xs xs' : List X) → {_ : DecEq X} → Dec (xs ≡ xs')
-[] ?≡list [] = yes refl
-[] ?≡list (_ ∷ _) = no (λ ())
-(_ ∷ _) ?≡list [] = no (λ ())
-((x ∷ xs) ?≡list (x' ∷ xs')) {eq} with eq x x'
-((x ∷ xs) ?≡list (x' ∷ xs')) {eq} | yes p with (xs ?≡list xs') {eq}
-(x ∷ xs) ?≡list (x' ∷ xs') | yes p | yes q rewrite p | q = yes refl
-(x ∷ xs) ?≡list (x' ∷ xs') | yes p | no ¬q rewrite p = no (λ x₁ → {!!})
-(x ∷ xs) ?≡list (x' ∷ xs') | no ¬p = no (λ xx → {!!})
--}
-
-{-
-decVecEq2decListEq : {X : Set} {n : ℕ} {xs xs' : Vec X n} → Dec (xs ≡ xs') → Dec (toList xs ≡ toList xs')
-decVecEq2decListEq (yes p) rewrite p = yes (cong toList refl)
-decVecEq2decListEq (no ¬p) = no (λ q → ¬p {!!})
-
--- FIXME: yellow
-
-_?≡list_ : {X : Set} (xs xs' : List X) → {_ : DecEq X} → Dec (xs ≡ xs')
-xs ?≡list xs' = decVecEq2decListEq (fromList {!!} ?≡vec fromList {!!})
-
-
-?Empty : {X : Set} (l : List X) → Dec (l ≡ [])
-?Empty [] = yes refl
-?Empty (x ∷ l) = no (λ ())
-what : {X : Set} (e e' e'' : ND) → subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')} {X}
-                                   (ass-⊙ e e' e'') []
-                          ≡ []
-what = extract (?∀ND (λ e →
-                  ?∀ND (λ e' →
-                    ?∀ND (λ e'' → ?Empty
-                      (subND-eq {(e ⊙ e') ⊙ e''} {e ⊙ (e' ⊙ e'')}
-                               (ass-⊙ e e' e'') [])))))
-
+lemma : (e e' e'' : ND) → {X Y Z : Set} →
+        (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
+        subND-eq (ass-⊙ e e' e'')
+                 (liftND (e ⊙ e') e'' g (liftND e e' f c))
+        ≡ liftND (e ⊙ e') e'' g (liftND e e' f c)
+lemma e e' e'' f g c = lemma-s (ass-⊙ e e' e'') ( liftND (e ⊙ e') e'' g (liftND e e' f c) ) (liftND (e ⊙ e') e'' g (liftND e e' f c))
 
 mlaw3ND : (e e' e'' : ND) → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
@@ -274,10 +248,8 @@ mlaw3ND : (e e' e'' : ND) → {X Y Z : Set} →
                    (ass-⊙ e e' e'')
                    (liftND (e ⊙ e') e'' g (liftND e e' f c))
           ≡ liftND e (e' ⊙ e'') (λ x → liftND e' e'' g (f x)) c
---          ≡ liftND e (e' ⊙ e'') (liftND e' e'' g ∘ f) c
-mlaw3ND e e' e'' f g [] = what e e' e''
-mlaw3ND e e' e'' f g (c ∷ cs) = {!!}
--}
+mlaw3ND e e' e'' f g c = trans (lemma e e' e'' f g c) (mlaw3ND' e e' e'' f g c)
+
 
 NDEffGM : GradedMonad
 NDEffGM = record { OM = NDEffOM
@@ -290,7 +262,7 @@ NDEffGM = record { OM = NDEffOM
                  ; sub-trans = subND-trans
                  ; mlaw1 = λ {e} → mlaw1ND {e}
                  ; mlaw2 = λ {e} → mlaw2ND {e}
---                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND e e' e''
+                 ; mlaw3 = λ {e} {e'} {e''} → mlaw3ND e e' e''
                  }
 
 

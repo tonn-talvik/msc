@@ -43,6 +43,6 @@ record GradedMonad : Set where
             sub-eq lu (lift f (η x)) ≡ f x
     mlaw2 : {e : M} → {X : Set} → (c : T e X) →
             sub-eq ru c ≡ lift η c
---    mlaw3 : {e e' e'' : M} → {X Y Z : Set} →
---            (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
---            sub-eq ass (lift g (lift f c)) ≡ lift (lift g ∘ f) c 
+    mlaw3 : {e e' e'' : M} → {X Y Z : Set} →
+            (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
+            sub-eq ass (lift g (lift f c)) ≡ lift (lift g ∘ f) c 
