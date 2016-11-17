@@ -56,7 +56,7 @@ mlaw3ND f g (x ∷ xs) = begin
                           liftND g (f x ++ liftND f xs)
                         ≡⟨ lemma g (f x) (liftND f xs) ⟩
                           liftND g (f x) ++ liftND g (liftND f xs)
-                        ≡⟨ refl {- refl {x = liftND g (f x)} -} ≡++ mlaw3ND f g xs ⟩
+                        ≡⟨ refl {x = liftND g (f x)} ≡++ mlaw3ND f g xs ⟩
                           liftND g (f x) ++ liftND (λ x → liftND g (f x)) xs
                         ≡⟨ refl ⟩
                           liftND (λ x → liftND g (f x)) (x ∷ xs)

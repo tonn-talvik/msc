@@ -30,7 +30,8 @@ ru* {zero} = refl
 ru* {suc n} = cong suc (ru* {n})
 
 ass+ : {m n o : ℕ} → (m + n) + o ≡ m + (n + o)
-ass+ = {!!}
+ass+ {zero} = refl
+ass+ {suc m} = cong suc (ass+ {m})
 
 dist+ : {m n o : ℕ} → (m + n) * o ≡ m * o + n * o
 dist+ {zero}  {_} {_} = refl
@@ -39,7 +40,14 @@ dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o}))
 
 ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
 ass* {zero} = refl
-ass* {suc m} = {!!}
+ass* {suc m} {n} {o} =
+                begin
+                  (n + m * n) * o
+                ≡⟨ dist+ {n} {m * n} {o}  ⟩
+                  n * o + (m * n) * o
+                ≡⟨ cong (λ x → n * o + x) (ass* {m} {n} {o}) ⟩
+                  n * o + m * (n * o)
+                ∎
 
 
 ℕ* : OrderedMonoid

@@ -34,8 +34,21 @@ data BVec (X : Set) (n : ℕ) : Set where
 1≤1 : 1 ≤ 1
 1≤1 = s≤s z≤n
 
+≤+1 : {m n : ℕ} → m ≤ n → m ≤ suc n
+≤+1 z≤n = z≤n
+≤+1 (s≤s p) = s≤s (≤+1 p)
+
+≤+ : {m m' n : ℕ} → m ≤ m' → m ≤ n + m'
+≤+ {n = zero} p = p
+≤+ {zero} {n = suc n} p = z≤n
+≤+ {suc m} {zero} {suc n} ()
+≤+ {suc m} {suc m'} {suc n} (s≤s p) = s≤s (≤+ {m} {suc m'} {n} (≤+1 p))
+
 _+≤_ : {m m' n n' : ℕ} → m ≤ m' → n ≤ n' → m + n ≤ m' + n' 
-_+≤_ = {!!}
+_+≤_ {zero} {m'} {n} {n'} z≤n q = ≤+ {n} {n'} {m'} q
+s≤s p +≤ q = s≤s (p +≤ q)
+
+
  
 ηBV : {X : Set} → X → BVec X 1
 ηBV x = bv (x ∷ []) 1≤1 
