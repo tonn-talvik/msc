@@ -7,6 +7,7 @@ open import Relation.Nullary
 
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality hiding ([_]; inspect)
+open ≡-Reasoning
 
 open import Finiteness
 open import OrderedMonoid
@@ -18,17 +19,60 @@ open import Data.Vec
 data BVec (X : Set) (n : ℕ) : Set where
   bv : {m : ℕ} → Vec X m →  m ≤ n → BVec X n
 
+refl≤ : {m : ℕ} → m ≤ m
+refl≤ {zero} = z≤n
+refl≤ {suc m} = s≤s refl≤
+
+trans≤ : {m n o : ℕ} → m ≤ n → n ≤ o → m ≤ o
+trans≤ z≤n q = z≤n
+trans≤ (s≤s p) (s≤s q) = s≤s (trans≤ p q)
+
+mon* : {m n m' n' : ℕ} → m ≤ m' → n ≤ n' → m * n ≤ m' * n'
+mon* z≤n q = z≤n
+mon* (s≤s p) z≤n = {!!}
+mon* (s≤s p) (s≤s q) = s≤s {!!}
+
+ru+ : {m : ℕ} → m + zero ≡ m
+ru+ {zero} = refl
+ru+ {suc m} = cong suc ru+
+
+lu* : {n : ℕ} → 1 * n ≡ n
+lu* = ru+ 
+
+ru* : {m : ℕ} → m ≡ m * 1
+ru* {zero} = refl
+ru* {suc m} = cong suc ru*
+
+ass+ : {m n o : ℕ} → (m + n) + o ≡ m + (n + o)
+ass+ {zero} = refl
+ass+ {suc m} = cong suc (ass+ {m})
+
+dist+ : {m n o : ℕ} → (m + n) * o ≡ m * o + n * o
+dist+ {zero}  {_} {_} = refl
+dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o})) 
+                              (sym (ass+ {o} {m * o} {n * o}))
+
+ass* : {m n o : ℕ} → m * n * o ≡ m * (n * o)
+ass* {zero} = refl
+ass* {suc m} {n} {o} = begin
+                  (n + m * n) * o
+                ≡⟨ dist+ {n} {m * n} {o}  ⟩
+                  n * o + (m * n) * o
+                ≡⟨ cong (λ x → n * o + x) (ass* {m} {n} {o}) ⟩
+                  n * o + m * (n * o)
+                ∎
+
 ℕ* : OrderedMonoid
 ℕ* = record { M = ℕ
              ; _⊑_ = _≤_
-             ; reflM = {!!}
-             ; transM = {!!}
+             ; reflM = refl≤
+             ; transM = trans≤
              ; i = 1
              ; _·_ = _*_
-             ; mon = {!!}
-             ; lu = {!!}
-             ; ru = {!!} 
-             ; ass = {!!}
+             ; mon = mon*
+             ; lu = lu*
+             ; ru = ru*
+             ; ass = λ {m n o} → ass* {m} {n} {o}
              }
 
 1≤1 : 1 ≤ 1
