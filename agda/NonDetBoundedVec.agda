@@ -27,10 +27,30 @@ trans≤ : {m n o : ℕ} → m ≤ n → n ≤ o → m ≤ o
 trans≤ z≤n q = z≤n
 trans≤ (s≤s p) (s≤s q) = s≤s (trans≤ p q)
 
+1≤1 : 1 ≤ 1
+1≤1 = s≤s z≤n
+
+≤+1 : {m n : ℕ} → m ≤ n → m ≤ suc n
+≤+1 z≤n = z≤n
+≤+1 (s≤s p) = s≤s (≤+1 p)
+
+≤+ : {m m' n : ℕ} → m ≤ m' → m ≤ n + m'
+≤+ {n = zero} p = p
+≤+ {zero} {n = suc n} p = z≤n
+≤+ {suc m} {zero} {suc n} ()
+≤+ {suc m} {suc m'} {suc n} (s≤s p) = s≤s (≤+ {m} {suc m'} {n} (≤+1 p))
+
+_+≤_ : {m m' n n' : ℕ} → m ≤ m' → n ≤ n' → m + n ≤ m' + n' 
+_+≤_ {zero} {m'} {n} {n'} z≤n q = ≤+ {n} {n'} {m'} q
+s≤s p +≤ q = s≤s (p +≤ q)
+
+
+mon+ : {m n m' n' : ℕ} → m ≤ m' → n ≤ n' → m + n ≤ m' + n'
+mon+ = _+≤_
+
 mon* : {m n m' n' : ℕ} → m ≤ m' → n ≤ n' → m * n ≤ m' * n'
 mon* z≤n q = z≤n
-mon* (s≤s p) z≤n = {!!}
-mon* (s≤s p) (s≤s q) = s≤s {!!}
+mon* (s≤s p) q = mon+ q (mon* p q)
 
 ru+ : {m : ℕ} → m + zero ≡ m
 ru+ {zero} = refl
@@ -75,24 +95,7 @@ ass* {suc m} {n} {o} = begin
              ; ass = λ {m n o} → ass* {m} {n} {o}
              }
 
-1≤1 : 1 ≤ 1
-1≤1 = s≤s z≤n
-
-≤+1 : {m n : ℕ} → m ≤ n → m ≤ suc n
-≤+1 z≤n = z≤n
-≤+1 (s≤s p) = s≤s (≤+1 p)
-
-≤+ : {m m' n : ℕ} → m ≤ m' → m ≤ n + m'
-≤+ {n = zero} p = p
-≤+ {zero} {n = suc n} p = z≤n
-≤+ {suc m} {zero} {suc n} ()
-≤+ {suc m} {suc m'} {suc n} (s≤s p) = s≤s (≤+ {m} {suc m'} {n} (≤+1 p))
-
-_+≤_ : {m m' n n' : ℕ} → m ≤ m' → n ≤ n' → m + n ≤ m' + n' 
-_+≤_ {zero} {m'} {n} {n'} z≤n q = ≤+ {n} {n'} {m'} q
-s≤s p +≤ q = s≤s (p +≤ q)
-
-
+open OrderedMonoid.OrderedMonoid ℕ*
  
 ηBV : {X : Set} → X → BVec X 1
 ηBV x = bv (x ∷ []) 1≤1 
@@ -103,15 +106,22 @@ liftBV f (bv [] z≤n) = bv [] z≤n
 liftBV f (bv (x ∷ xs) (s≤s p)) with f x | liftBV f (bv xs p)  
 ... | bv ys q | bv zs r = bv (ys ++ zs) (q +≤ r) 
 
+subBV : {e e' : M} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
+subBV p (bv x q) = bv x (trans≤ q p)
 
+subBV-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
+      (f : X → BVec Y e') (c : BVec X e) →
+      subBV (mon p q) (liftBV f c) ≡
+      liftBV (λ x → subBV q (f x)) (subBV p c)
+subBV-mon p q f (bv x r) = {!!}
 
 NDBV : GradedMonad
 NDBV = record    { OM = ℕ*
                  ; T = λ e X → BVec X e
                  ; η = ηBV
                  ; lift = λ {e} {e'} → liftBV {e} {e'}
-                 ; sub = {!!}
-                 ; sub-mon = {!!}
+                 ; sub = subBV
+                 ; sub-mon = subBV-mon
                  ; sub-refl = {!!}
                  ; sub-trans = {!!}
                  ; mlaw1 = {!!}
