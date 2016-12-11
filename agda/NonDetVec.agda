@@ -18,12 +18,16 @@ open import Data.Vec
 open ≡-Reasoning
 
 
-ru+ : {n : ℕ} → n + 0 ≡ n
+--ru+ : {n : ℕ} → n + 0 ≡ n
+--ru+ {zero} = refl
+--ru+ {suc n} = cong suc (ru+ {n}) 
+ru+ : {n : ℕ} → n ≡ n + 0
 ru+ {zero} = refl
 ru+ {suc n} = cong suc (ru+ {n}) 
 
 lu* : {n : ℕ} → 1 * n ≡ n
-lu* = ru+ 
+lu* {zero} = refl
+lu* {suc n} = cong suc (lu* {n})
 
 ru* : {n : ℕ} → n ≡ n * 1 
 ru* {zero} = refl
@@ -128,36 +132,15 @@ mlaw2V : {n : ℕ} → {X : Set} → (xs : Vec X n) →
 mlaw2V []       = refl
 mlaw2V (x ∷ xs) = subV∷ {x = x} {xs = xs} ru (mlaw2V xs) 
 
+
+
 lemma : {e e' e'' : M} {X Y Z : Set}
-      (f : X → Vec Y e') (g : Y → Vec Z e'')
-      (x : X) (xs' : Vec X e) →
-      subV
-        (ass* {suc e} {e'} {e''})
-        (liftV g ((f x) ++ liftV f xs'))
-      ≡ liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f xs'))
-lemma {zero} {e'} {e''} f g x [] = 
-  begin
-    subV
-      (ass* {suc zero} {e'} {e''})
-      (liftV g (f x ++ [])) 
-  ≡⟨ {!!} ⟩
-    liftV g (f x) ++ subV refl [] 
-  ∎ 
-lemma f g x (x₁ ∷ xs) = {!!}
-{-
-lemma {e} {zero} {e''} f g [] xs' =
-  begin
-    subV
-      --(begin
-      -- e * 0 * e'' ≡⟨ refl ⟩
-      -- e * 0 * e'' ≡⟨ cong (_+_ zero) ass* ⟩ e * zero ∎)
-      (ass* {suc e} {zero} {e''})
-      (liftV g ([] ++ liftV f xs')) 
-  ≡⟨ {!!} ⟩
-    [] ++ subV ass* (liftV g (liftV f xs')) 
-  ∎
-lemma f g (x ∷ xs) xs' = {!!}
--}
+        (g : Y → Vec Z e'')
+        (xs : Vec Y e')
+        (xs' : Vec Y (e * e')) →
+        subV (ass* {suc e} {e'} {e''}) (liftV g (xs ++ xs'))
+        ≡ liftV g xs ++ subV (ass* {e} {e'} {e''}) (liftV g xs')
+lemma g xs xs' = {!!}
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
       (g : Y → Vec Z e'') (c : Vec X e) →
@@ -169,7 +152,10 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ c) =
     subV (ass* {suc e} {e'} {e''}) (liftV g (liftV f (x ∷ c)))
   ≡⟨ refl ⟩
     subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f c))
-  ≡⟨ lemma f g x c ⟩
+--   |<----->|  this is yellow    
+  ≡⟨ lemma {e} g (f x) (liftV f c) ⟩
+--              but the following works fine
+--  ≡⟨ lemma {e} {e'} {e''} g f x (liftV f c) ⟩
     (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f c)))
   ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g c) ⟩
     liftV g (f x) ++ liftV (λ x → liftV g (f x)) c
