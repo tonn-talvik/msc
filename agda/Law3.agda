@@ -34,15 +34,15 @@ lemma++ (x ∷ xs) xs' xs'' =
                          ((x ∷ xs) ++ xs') ++ xs'' 
                       ∎
                         --cong (_∷_ x) (lemma++ xs xs' xs'')
-
-
 -- rewrite lemma++ xs xs' xs'' = refl
 
 lemma : {X Y : Set} → (f : X → List Y) → (xs xs' : List X) → 
     liftND f (xs ++ xs') ≡ liftND f xs ++ liftND f xs'
 lemma f [] xs' = refl
-lemma f (x ∷ xs) xs' rewrite lemma f xs xs' = lemma++ (f x) (liftND f xs) (liftND f xs')
-
+lemma f (x ∷ xs) xs' = 
+  trans (cong (_++_ (f x)) (lemma f xs xs')) 
+        ((lemma++ (f x) (liftND f xs) (liftND f xs')))
+--lemma f (x ∷ xs) xs' rewrite lemma f xs xs' = lemma++ (f x) (liftND f xs) (liftND f xs')
 
 
 mlaw3ND : {X Y Z : Set} → 
@@ -61,8 +61,6 @@ mlaw3ND f g (x ∷ xs) = begin
                         ≡⟨ refl ⟩
                           liftND (λ x → liftND g (f x)) (x ∷ xs)
                         ∎ 
-
-
 -- trans (lemma g (f x) (liftND f xs)) (cong (_++_ (liftND g (f x))) (mlaw3ND f g xs))
 
 
