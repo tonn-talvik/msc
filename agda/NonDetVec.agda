@@ -52,6 +52,12 @@ ass* {suc m} {n} {o} =
                 ≡⟨ cong (λ x → n * o + x) (ass* {m} {n} {o}) ⟩
                   n * o + m * (n * o)
                 ∎
+zl* : {m : ℕ} → m * 0 ≡ 0
+zl* {zero} = refl
+zl* {suc m} = zl* {m}
+zr* : {m : ℕ} → 0 ≡ m * 0
+zr* {zero} = refl
+zr* {suc m} = zr* {m}
 
 
 ℕ* : OrderedMonoid
@@ -132,15 +138,112 @@ mlaw2V : {n : ℕ} → {X : Set} → (xs : Vec X n) →
 mlaw2V []       = refl
 mlaw2V (x ∷ xs) = subV∷ {x = x} {xs = xs} ru (mlaw2V xs) 
 
+lem1 : {m n : M} → m + suc n ≡ suc m + n
+lem1 {zero} = refl
+lem1 {suc m} {n} = cong suc (lem1 {m})
+
+comm+ : {m n : M} → m + n ≡ n + m
+comm+ {zero} = ru+
+comm+ {suc m} {zero} = cong suc (comm+ {m})
+comm+ {suc m} {suc n} = cong suc (
+  begin
+    m + suc n
+  ≡⟨ lem1 {m} {n} ⟩
+    suc m + n
+  ≡⟨ comm+ {suc m} ⟩
+    n + suc m 
+  ∎)
+
+-- FIXME :-)
+comm* : {m n : M} → m * n ≡ n * m
+comm* {zero} {n} = zr* {n}
+comm* {suc m} {zero} = comm* {m}
+comm* {suc m} {suc n} = cong suc (
+  begin
+    n + m * suc n
+  ≡⟨ cong (_+_ n) (comm* {m}) ⟩
+    n + suc n * m
+  ≡⟨ cong (_+_ n) (comm+ {m}) ⟩
+    n + (n * m + m)
+  ≡⟨ cong (_+_ n) (cong (λ x → x + m) (comm* {n})) ⟩
+    n + (m * n + m)
+  ≡⟨ sym (ass+ {n}) ⟩
+    (n + m * n) + m
+  ≡⟨ comm+ {n + m * n} ⟩
+    m + suc m * n
+  ≡⟨ cong (_+_ m) (comm* {suc m} {n}) ⟩
+    m + n * suc m
+  ∎)
+
+eze : {e e'' : M} → e * zero * e'' ≡ e * zero
+eze {e} {e''} = 
+    begin
+      (e * zero) * e''
+    ≡⟨ cong (λ n → n * e'') (zl* {e}) ⟩
+      0
+    ≡⟨ zr* {e} ⟩
+      e * zero
+    ∎
+aza : {e e'' : M} → e * zero ≡ {!!}
+aza = {!!}
+izi : {e e'' : M} → (e * zero) * e'' ≡ e * (zero * e'')
+izi = {!!}
+ass2 : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
+ass2 = {!!}
+t = trans
+-- ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
+lass : {e e'' : M} → ass* {suc e} {zero} {e''} ≡ ass* {e} {zero} {e''}
+lass {e} {e''} = {!!}
 
 
 lemma : {e e' e'' : M} {X Y Z : Set}
         (g : Y → Vec Z e'')
-        (xs : Vec Y e')
-        (xs' : Vec Y (e * e')) →
-        subV (ass* {suc e} {e'} {e''}) (liftV g (xs ++ xs'))
-        ≡ liftV g xs ++ subV (ass* {e} {e'} {e''}) (liftV g xs')
-lemma g xs xs' = {!!}
+        (f : X → Vec Y e') (x : X)
+        (ys' : Vec Y (e * e')) →
+        subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
+        ≡ liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
+lemma g f x ys' with f x
+{-lemma {e} {zero} {e''} g f x ys' | [] = 
+  begin
+    subV (ass* {suc e} {zero} {e''}) (liftV g ([] ++ ys'))
+  ≡⟨ refl ⟩
+    subV (ass* {suc e} {zero} {e''}) (liftV g ys')
+  ≡⟨ cong (λ p → subV p (liftV g ys')) (lass {e} {e''}) ⟩
+    subV (ass* {e} {zero} {e''}) (liftV g ys')
+  ≡⟨ refl ⟩
+    liftV g [] ++ subV (ass* {e} {zero} {e''}) (liftV g ys')
+  ∎-}
+lemma {e} {zero} {e''} g f x ys' | [] =
+      begin
+    subV (ass* {suc e} {zero} {e''}) (liftV g ([] ++ ys'))
+  ≡⟨ refl ⟩
+    subV (ass* {suc e} {zero} {e''}) (liftV g ys')
+  ≡⟨ {!!} ⟩
+    {!!}
+  ≡⟨ {!!} ⟩
+    subV (ass* {e} {zero} {e''}) (liftV g ys')
+  ≡⟨ refl ⟩
+    liftV g [] ++ subV (ass* {e} {zero} {e''}) (liftV g ys')
+  ∎
+-- Goal: subeq
+--       (trans (trans (cong (_+_ e'') dist+) (sym ass+))
+--        (trans (cong (_+_ (e'' + e' * e'')) ass*) refl))
+--       (g y ++ liftV g (ys ++ ys'))
+--       ≡ (g y ++ liftV g ys) ++ subeq ass* (liftV g ys')
+lemma {e} {suc e'} {e''} g f x ys' | y ∷ ys = 
+  begin
+    subV (ass* {suc e} {suc e'} {e''}) (liftV g ((y ∷ ys) ++ ys'))
+  ≡⟨ {!!} ⟩
+    subV
+      (trans (trans (cong (_+_ e'') dist+) (sym ass+))
+       (trans (cong (_+_ (e'' + e' * e'')) (ass* {e} {suc e'} {e''})) refl))
+      (g y ++ liftV g (ys ++ ys'))
+  ≡⟨ {!!} ⟩ 
+    (g y ++ liftV g ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
+  ≡⟨ refl ⟩
+    liftV g (y ∷ ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
+  ∎
+
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
       (g : Y → Vec Z e'') (c : Vec X e) →
@@ -152,10 +255,7 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ c) =
     subV (ass* {suc e} {e'} {e''}) (liftV g (liftV f (x ∷ c)))
   ≡⟨ refl ⟩
     subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f c))
---   |<----->|  this is yellow    
-  ≡⟨ lemma {e} g (f x) (liftV f c) ⟩
---              but the following works fine
---  ≡⟨ lemma {e} {e'} {e''} g f x (liftV f c) ⟩
+  ≡⟨ lemma {e} {e'} {e''} g f x (liftV f c) ⟩
     (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f c)))
   ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g c) ⟩
     liftV g (f x) ++ liftV (λ x → liftV g (f x)) c
