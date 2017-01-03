@@ -195,54 +195,77 @@ t = trans
 lass : {e e'' : M} → ass* {suc e} {zero} {e''} ≡ ass* {e} {zero} {e''}
 lass {e} {e''} = {!!}
 
+lemm1 : {e : M} {X : Set}
+        (xs : Vec X e) →
+        subV ru+ (xs) ≡ xs ++ []
+lemm1 [] = refl
+lemm1 (x ∷ xs) = subV∷ {xs = xs} ru+ (lemm1 xs)
 
+lemm2 : {e' : M} → (e' + zero) * 0 ≡ e' * 0 + 0
+lemm2 {e'} = 
+  begin
+    (e' + zero) * 0
+  ≡⟨ cong (λ e → e * 0) ((sym (ru+ {e'}))) ⟩
+    e' * 0
+  ≡⟨ ru+ ⟩
+    e' * 0 + 0
+  ∎
+
+lemm3 : {e' : M} →
+        ass* {suc zero} {suc e'} {zero}
+        ≡ lemm2 {e'}
+lemm3 = {!!}
+
+lemm4 : {e' : M} →  e' * 0 + 0 ≡ 0
+lemm4 = {!!}
+ 
+lemma' : {e' e'' : M} {X Y Z : Set}
+        (g : Y → Vec Z e'')
+        (ys : Vec Y e')
+         →
+        subV (ass* {suc zero} {e'} {e''}) (liftV g (ys ++ []))
+        ≡ liftV g ys ++ []
+lemma' g [] = refl
+lemma' {suc e'} g (y ∷ ys) with g y
+lemma' {suc e'} {zero} {X} {Y} {Z} g (y ∷ ys) | [] = -- lemma' g ys ja lemm1
+  begin
+    --subeq (trans (trans (cong (_+_ 0) dist+) refl) refl)
+    --  (liftV g (ys ++ []))
+    subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
+  ≡⟨ {!!} ⟩
+    subV (ass* {suc zero} {e'} {zero} ) (liftV g (ys ++ []))
+  ≡⟨ lemma' {e'} {zero} {X} {Y} {Z} g ys ⟩ -- lemma' g ys
+    liftV g ys ++ []
+  ∎
+{-  begin
+    --subeq (trans (trans (cong (_+_ 0) dist+) refl) refl)
+    --  (liftV g (ys ++ []))
+    subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
+  ≡⟨ cong (λ p → subV p (liftV g (ys ++ []))) (lemm3 {e'}) ⟩
+    subV (lemm2 {e'}) (liftV g (ys ++ []))
+  ≡⟨ {!!} ⟩
+    subV ru+ (liftV g ys)
+  ≡⟨ lemm1 (liftV g ys) ⟩
+    liftV g ys ++ []
+  ∎-}
+lemma' {suc e'} g (y ∷ ys) | z ∷ zs = {!!}
+        
 lemma : {e e' e'' : M} {X Y Z : Set}
         (g : Y → Vec Z e'')
         (f : X → Vec Y e') (x : X)
         (ys' : Vec Y (e * e')) →
         subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
         ≡ liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
-lemma g f x ys' with f x
-{-lemma {e} {zero} {e''} g f x ys' | [] = 
-  begin
-    subV (ass* {suc e} {zero} {e''}) (liftV g ([] ++ ys'))
-  ≡⟨ refl ⟩
-    subV (ass* {suc e} {zero} {e''}) (liftV g ys')
-  ≡⟨ cong (λ p → subV p (liftV g ys')) (lass {e} {e''}) ⟩
-    subV (ass* {e} {zero} {e''}) (liftV g ys')
-  ≡⟨ refl ⟩
-    liftV g [] ++ subV (ass* {e} {zero} {e''}) (liftV g ys')
-  ∎-}
-lemma {e} {zero} {e''} g f x ys' | [] =
-      begin
-    subV (ass* {suc e} {zero} {e''}) (liftV g ([] ++ ys'))
-  ≡⟨ refl ⟩
-    subV (ass* {suc e} {zero} {e''}) (liftV g ys')
-  ≡⟨ {!!} ⟩
-    {!!}
-  ≡⟨ {!!} ⟩
-    subV (ass* {e} {zero} {e''}) (liftV g ys')
-  ≡⟨ refl ⟩
-    liftV g [] ++ subV (ass* {e} {zero} {e''}) (liftV g ys')
-  ∎
--- Goal: subeq
---       (trans (trans (cong (_+_ e'') dist+) (sym ass+))
---        (trans (cong (_+_ (e'' + e' * e'')) ass*) refl))
---       (g y ++ liftV g (ys ++ ys'))
---       ≡ (g y ++ liftV g ys) ++ subeq ass* (liftV g ys')
-lemma {e} {suc e'} {e''} g f x ys' | y ∷ ys = 
-  begin
-    subV (ass* {suc e} {suc e'} {e''}) (liftV g ((y ∷ ys) ++ ys'))
-  ≡⟨ {!!} ⟩
-    subV
-      (trans (trans (cong (_+_ e'') dist+) (sym ass+))
-       (trans (cong (_+_ (e'' + e' * e'')) (ass* {e} {suc e'} {e''})) refl))
-      (g y ++ liftV g (ys ++ ys'))
-  ≡⟨ {!!} ⟩ 
-    (g y ++ liftV g ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
-  ≡⟨ refl ⟩
-    liftV g (y ∷ ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
-  ∎
+lemma {zero} {e'} {e''} {X} {Y} {Z} g f x [] with f x
+... | ys = lemma' {e'} {e''} {X} {Y} {Z} g ys
+{-lemma {zero} g f x [] with f x
+lemma {zero} g f x [] | [] = refl
+lemma {zero} g f x [] | y ∷ ys with g y
+lemma {zero} g f x [] | y ∷ ys | [] = {!!}
+lemma {zero} g f x [] | y ∷ ys | z ∷ zs = {!!}-}
+lemma {suc e} g f x ys' with f x
+lemma {suc e} g f x ys' | [] = {!!}
+lemma {suc e} g f x (y' ∷ ys') | y ∷ ys = {!!}
 
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
