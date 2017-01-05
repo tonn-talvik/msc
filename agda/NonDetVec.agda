@@ -175,58 +175,6 @@ comm* {suc m} {suc n} = cong suc (
     m + n * suc m
   ∎)
 
-eze : {e e'' : M} → e * zero * e'' ≡ e * zero
-eze {e} {e''} = 
-    begin
-      (e * zero) * e''
-    ≡⟨ cong (λ n → n * e'') (zl* {e}) ⟩
-      0
-    ≡⟨ zr* {e} ⟩
-      e * zero
-    ∎
-aza : {e : M} → e * zero ≡ zero
-aza {e} = comm* {e}
-
-izi : {e e'' : M} → (e * zero) * e'' ≡ e * (zero * e'')
-izi = {!!}
-ass2 : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
-ass2 = {!!}
-t = trans
--- ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
-lass : {e e'' : M} → ass* {suc e} {zero} {e''} ≡ ass* {e} {zero} {e''}
-lass {e} {e''} = {!!}
-
-lemm1 : {e : M} {X : Set}
-        (xs : Vec X e) →
-        subV ru+ (xs) ≡ xs ++ []
-lemm1 [] = refl
-lemm1 (x ∷ xs) = subV∷ {xs = xs} ru+ (lemm1 xs)
-
-lemm2 : {e' : M} → (e' + zero) * 0 ≡ e' * 0 + 0
-lemm2 {e'} = 
-  begin
-    (e' + zero) * 0
-  ≡⟨ cong (λ e → e * 0) ((sym (ru+ {e'}))) ⟩
-    e' * 0
-  ≡⟨ ru+ ⟩
-    e' * 0 + 0
-  ∎
-
-lemm3 : {e' : M} →
-        ass* {suc zero} {suc e'} {zero}
-        ≡ lemm2 {e'}
-lemm3 = {!!}
-
-lemm4 : {e : M} →  e * 0 + 0 ≡ 0
-lemm4 {zero} = refl
-lemm4 {suc e} = lemm4 {e}
-
-
-xxx : {e : M} → (e + zero) * zero ≡ e * zero + zero
-xxx {zero} = refl
-xxx {suc e} = xxx {e}
-xx1 : {e' : M} → (e' + zero) * zero ≡ 0
-xx1 = {!!}
 
 
 lemmm :  {e' : M} → 
@@ -249,27 +197,14 @@ lemma' : {e' e'' : M} {X Y Z : Set}
         ≡ liftV g ys ++ []
 lemma' g [] = refl
 lemma' {suc e'} g (y ∷ ys) with g y
-lemma' {suc e'} {zero} {X} {Y} {Z} g (y ∷ ys) | [] = -- lemma' g ys ja lemm1
+lemma' {suc e'} {zero} {X} {Y} {Z} g (y ∷ ys) | [] =
   begin
-    --subeq (trans (trans (cong (_+_ 0) dist+) refl) refl)
-    --  (liftV g (ys ++ []))
     subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
   ≡⟨ cong (λ p → subV p (liftV g (ys ++ []))) (lemmm {e'}) ⟩
     subV (ass* {suc zero} {e'} {zero} ) (liftV g (ys ++ []))
-  ≡⟨ lemma' {e'} {zero} {X} {Y} {Z} g ys ⟩ -- lemma' g ys
+  ≡⟨ lemma' {e'} {zero} {X} {Y} {Z} g ys ⟩
     liftV g ys ++ []
   ∎
-{-  begin
-    --subeq (trans (trans (cong (_+_ 0) dist+) refl) refl)
-    --  (liftV g (ys ++ []))
-    subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
-  ≡⟨ cong (λ p → subV p (liftV g (ys ++ []))) (lemm3 {e'}) ⟩
-    subV (lemm2 {e'}) (liftV g (ys ++ []))
-  ≡⟨ {!!} ⟩
-    subV ru+ (liftV g ys)
-  ≡⟨ lemm1 (liftV g ys) ⟩
-    liftV g ys ++ []
-  ∎-}
 lemma' {suc e'} g (y ∷ ys) | z ∷ zs = {!!}
         
 lemma : {e e' e'' : M} {X Y Z : Set}
@@ -280,11 +215,6 @@ lemma : {e e' e'' : M} {X Y Z : Set}
         ≡ liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
 lemma {zero} {e'} {e''} {X} {Y} {Z} g f x [] with f x
 ... | ys = lemma' {e'} {e''} {X} {Y} {Z} g ys
-{-lemma {zero} g f x [] with f x
-lemma {zero} g f x [] | [] = refl
-lemma {zero} g f x [] | y ∷ ys with g y
-lemma {zero} g f x [] | y ∷ ys | [] = {!!}
-lemma {zero} g f x [] | y ∷ ys | z ∷ zs = {!!}-}
 lemma {suc e} g f x ys' with f x
 lemma {suc e} g f x ys' | [] = {!!}
 lemma {suc e} g f x (y' ∷ ys') | y ∷ ys = {!!}
