@@ -42,7 +42,7 @@ dist+ {zero}  {_} {_} = refl
 dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o})) 
                               (sym (ass+ {o} {m * o} {n * o}))
 
-ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
+ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o) -- ⊑
 ass* {zero} = refl
 ass* {suc m} {n} {o} =
                 begin
@@ -86,7 +86,7 @@ liftV f [] =  []
 liftV f (x ∷ xs) =  f x ++ liftV f xs
 
 
-subV : {n n' : ℕ} {X : Set} → n ≡ n' → Vec X n → Vec X n'
+subV : {n n' : ℕ} {X : Set} → n ⊑ n' → Vec X n → Vec X n'
 --subV {X = X} p = subst (Vec X) p
 --subV refl xs = xs
 subV  = subeq {ℕ} {λ n X → Vec X n}
@@ -184,8 +184,9 @@ eze {e} {e''} =
     ≡⟨ zr* {e} ⟩
       e * zero
     ∎
-aza : {e e'' : M} → e * zero ≡ {!!}
-aza = {!!}
+aza : {e : M} → e * zero ≡ zero
+aza {e} = comm* {e}
+
 izi : {e e'' : M} → (e * zero) * e'' ≡ e * (zero * e'')
 izi = {!!}
 ass2 : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
@@ -216,9 +217,30 @@ lemm3 : {e' : M} →
         ≡ lemm2 {e'}
 lemm3 = {!!}
 
-lemm4 : {e' : M} →  e' * 0 + 0 ≡ 0
-lemm4 = {!!}
- 
+lemm4 : {e : M} →  e * 0 + 0 ≡ 0
+lemm4 {zero} = refl
+lemm4 {suc e} = lemm4 {e}
+
+
+xxx : {e : M} → (e + zero) * zero ≡ e * zero + zero
+xxx {zero} = refl
+xxx {suc e} = xxx {e}
+xx1 : {e' : M} → (e' + zero) * zero ≡ 0
+xx1 = {!!}
+
+
+lemmm :  {e' : M} → 
+         ass* {suc zero} {suc e'} {zero}
+         ≡ ass* {suc zero} {e'} {zero}
+lemmm {e'} = 
+  begin
+    ass* {suc zero} {suc e'} {zero}
+  ≡⟨ cong {!!} (comm* {suc e'} {zero}) ⟩
+    {!!}
+  ≡⟨ {!!} ⟩
+    ass* {suc zero} {e'} {zero}
+  ∎
+
 lemma' : {e' e'' : M} {X Y Z : Set}
         (g : Y → Vec Z e'')
         (ys : Vec Y e')
@@ -232,7 +254,7 @@ lemma' {suc e'} {zero} {X} {Y} {Z} g (y ∷ ys) | [] = -- lemma' g ys ja lemm1
     --subeq (trans (trans (cong (_+_ 0) dist+) refl) refl)
     --  (liftV g (ys ++ []))
     subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
-  ≡⟨ {!!} ⟩
+  ≡⟨ cong (λ p → subV p (liftV g (ys ++ []))) (lemmm {e'}) ⟩
     subV (ass* {suc zero} {e'} {zero} ) (liftV g (ys ++ []))
   ≡⟨ lemma' {e'} {zero} {X} {Y} {Z} g ys ⟩ -- lemma' g ys
     liftV g ys ++ []
