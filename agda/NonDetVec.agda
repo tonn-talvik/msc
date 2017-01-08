@@ -220,22 +220,63 @@ lemma {suc e} g f x ys' | [] = {!!}
 lemma {suc e} g f x (y' ∷ ys') | y ∷ ys = {!!}
 
 
+lemma-sub : {e e' : M} {X : Set}
+            (xs : Vec X e) (xs' : Vec X e') →
+            xs ++ xs' ≡ subV refl (xs ++ xs')
+lemma-sub xs xs' = refl
+
+lemma-sub2 : {e e' E E' : M} 
+             {p : e ⊑ E} {q : e' ⊑ E'} {r : (e + e') ⊑ (E + E')}
+             {X : Set}
+             (xs : Vec X e) (xs' : Vec X e') →
+             subV p xs ++ subV q xs' ≡ subV r (xs ++ xs')
+lemma-sub2 {p = refl} {q = refl} {r = refl} [] xs' = refl
+lemma-sub2 {suc e} {e'} {E = suc .e} {E' = .e'} {p = refl} {q = refl} {r = refl} (x ∷ xs) xs' = 
+  begin
+    subV refl (x ∷ xs) ++ subV refl xs'
+  ≡⟨ refl ⟩
+    x ∷ (subV refl xs) ++ subV refl xs'
+  ≡⟨ cong (_∷_ x) (lemma-sub2 {p = refl} {q = refl} {r = cong (_+_ e) refl} xs xs') ⟩
+    x ∷ (subV (cong (_+_ e) refl) (xs ++ xs'))
+  ≡⟨ sym (subV∷ (cong (_+_ e) refl) refl) ⟩
+    subV (cong suc (cong (_+_ e) refl)) (x ∷ xs ++ xs')
+  ≡⟨ refl ⟩
+    subV refl (x ∷ xs ++ xs')
+  ∎
+
+lemma2 : {e e' e'' : M} {X Y Z : Set}
+        (g : Y → Vec Z e'')
+        (ys  : Vec Y e')
+        (ys' : Vec Y (e * e')) →
+        subV (ass* {suc e} {e'} {e''}) (liftV g (ys ++ ys'))
+        ≡ liftV g ys ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
+lemma2 {zero} g [] [] = refl
+lemma2 {zero} g (y ∷ ys) [] = {!!}
+lemma2 {suc e} g [] ys' = {!!}
+lemma2 {suc e} g (y ∷ ys) ys' = {!!}
+{-
+lemma2 {e} {zero} g [] ys' with e * zero * 0
+lemma2 {e} {zero} g [] ys' | x = {!!}
+lemma2 g (y ∷ ys) ys' = trans
+         (cong {!!} (lemma2 g ys ys'))
+         {!!} -}
+
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
       (g : Y → Vec Z e'') (c : Vec X e) →
       subV (ass* {e} {e'} {e''}) (liftV g (liftV f c))
       ≡ liftV (λ x → liftV g (f x)) c
 mlaw3V f g [] = refl
-mlaw3V {suc e} {e'} {e''} f g (x ∷ c) =
+mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
   begin
-    subV (ass* {suc e} {e'} {e''}) (liftV g (liftV f (x ∷ c)))
+    subV (ass* {suc e} {e'} {e''}) (liftV g (liftV f (x ∷ xs)))
   ≡⟨ refl ⟩
-    subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f c))
-  ≡⟨ lemma {e} {e'} {e''} g f x (liftV f c) ⟩
-    (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f c)))
-  ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g c) ⟩
-    liftV g (f x) ++ liftV (λ x → liftV g (f x)) c
+    subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f xs))
+  ≡⟨ lemma {e} {e'} {e''} g f x (liftV f xs) ⟩
+    (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f xs)))
+  ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g xs) ⟩
+    liftV g (f x) ++ liftV (λ x → liftV g (f x)) xs
   ≡⟨ refl ⟩
-    liftV (λ x → liftV g (f x)) (x ∷ c)
+    liftV (λ x → liftV g (f x)) (x ∷ xs)
   ∎
 
 NDV : GradedMonad
