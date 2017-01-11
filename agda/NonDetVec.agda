@@ -37,6 +37,11 @@ ass+ : {m n o : ℕ} → (m + n) + o ≡ m + (n + o)
 ass+ {zero} = refl
 ass+ {suc m} = cong suc (ass+ {m})
 
++ass : {m n o : ℕ} → m + (n + o) ≡ (m + n) + o
+--+ass {m} {n} {o} = sym (ass+ {m} {n} {o})
++ass {zero} = refl
++ass {suc m} = cong suc (+ass {m})
+
 dist+ : {m n o : ℕ} → (m + n) * o ≡ m * o + n * o
 dist+ {zero}  {_} {_} = refl
 dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o})) 
@@ -248,6 +253,50 @@ lemma2 {e} {e'} {e''} g f x ys' =
     subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
   ∎
 
+lemma++ : {e e' e'' : M} {X : Set}
+          (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
+          subV (ass+ {e} {e'} {e''}) ((xs ++ xs') ++ xs'')
+          ≡ xs ++ (xs' ++ xs'')
+lemma++ [] xs' xs'' = refl
+lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (ass+ {e} {e'} {e''}) (lemma++ xs xs' xs'')
+
+lemma++2 : {e e' e'' : M} {X : Set}
+          (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
+          subV (+ass {e} {e'} {e''}) (xs ++ (xs' ++ xs''))
+          ≡ (xs ++ xs') ++ xs''
+lemma++2 [] xs' xs'' = refl
+lemma++2 {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++2 xs xs' xs'')
+
+lemma-other : {e e' e'' : M} {X Y : Set}
+              (f : X → Vec Y e'')
+              (xs : Vec X e)
+              (xs' : Vec X e') →
+              subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs'))
+              ≡ liftV f xs ++ liftV f xs'
+lemma-other f [] xs' = refl
+lemma-other {suc e} {e'} {e''} f (x ∷ xs) xs' =
+  begin
+    subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
+--  ≡⟨ {!!} ⟩
+--     subV (sym (ass+ {zero} {e'' + e * e''} {e' * e''})) ((liftV f (x ∷ xs) ++ liftV f xs'))
+  ≡⟨ {!!} ⟩
+    subV (+ass {zero} {e'' + e * e''} {e' * e''}) ((liftV f (x ∷ xs) ++ liftV f xs'))  
+  ≡⟨ sym (lemma++2 (f x) (liftV f xs) (liftV f xs')) ⟩
+    subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ (liftV f xs ++ liftV f xs'))
+  ≡⟨ lemma++2 {e''} {e * e''} {e' * e''} (f x) (liftV f xs) (liftV f xs') ⟩
+    (f x ++ liftV f xs) ++ liftV f xs'
+  ≡⟨ refl ⟩
+    liftV f (x ∷ xs) ++ liftV f xs'
+  ∎
+
+{-  begin
+    subV (dist+ {suc e} {e'} {e''})
+      (f x ++ liftV f (xs ++ xs'))
+  ≡⟨ {!!} ⟩
+    subV (sym (ass+ {e''} {e * e''} {e' * e''})) (f x ++ (liftV f xs ++ liftV f xs'))
+  ≡⟨ lemma++ {{!e''!}} {e * e''} {e' * e''} {!!} (liftV f xs) (liftV f xs') ⟩
+    (f x ++ liftV f xs) ++ liftV f xs'
+  ∎-}
 
 lemma : {e e' e'' : M} {X Y Z : Set}
         (g : Y → Vec Z e'')
@@ -255,10 +304,8 @@ lemma : {e e' e'' : M} {X Y Z : Set}
         (ys' : Vec Y (e * e')) →
         subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
         ≡ liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
-lemma {e} {e'} {e''} g f x ys' =
-      sym (lemma-sub++ {e' * e''} {(e * e') * e''} {e' * e''} {e * (e' * e'')}
-                       {refl} {ass* {e} {e'} {e''}} {{!!}}
-                       (liftV g (f x)) (liftV g ys'))
+lemma {e} {e'} {e''} g f x ys' with f x
+... | ys = {!!}
 
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
