@@ -267,6 +267,24 @@ lemma++2 : {e e' e'' : M} {X : Set}
 lemma++2 [] xs' xs'' = refl
 lemma++2 {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++2 xs xs' xs'')
 
+-- dist+ {suc e} {e'} {e''} :
+--         e'' + (e + e') * e'' ≡ e'' + e * e'' + e' * e''
+-- +ass {e''} {e * e''} {e' * e''}:
+--         e'' + (e * e'' + e' * e'') ≡ e'' + e * e'' + e' * e''
+
+lemma-that : {e e' e'' : M} {X Y : Set}
+             (f : X → Vec Y e'')
+             (ys : Vec Y e'')
+             (xs : Vec X e)
+             (xs' : Vec X e') →
+             subV (dist+ {suc e} {e'} {e''})
+                  (ys ++ liftV f (xs ++ xs'))
+             ≡ subV (+ass {e''} {e * e''} {e' * e''})
+                    (ys ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+lemma-that f [] xs xs' = {!!}
+lemma-that f (y ∷ ys) xs xs' = {!!}
+
+
 lemma-other : {e e' e'' : M} {X Y : Set}
               (f : X → Vec Y e'')
               (xs : Vec X e)
@@ -277,26 +295,19 @@ lemma-other f [] xs' = refl
 lemma-other {suc e} {e'} {e''} f (x ∷ xs) xs' =
   begin
     subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
---  ≡⟨ {!!} ⟩
---     subV (sym (ass+ {zero} {e'' + e * e''} {e' * e''})) ((liftV f (x ∷ xs) ++ liftV f xs'))
-  ≡⟨ {!!} ⟩
-    subV (+ass {zero} {e'' + e * e''} {e' * e''}) ((liftV f (x ∷ xs) ++ liftV f xs'))  
-  ≡⟨ sym (lemma++2 (f x) (liftV f xs) (liftV f xs')) ⟩
+  ≡⟨ refl ⟩
+    subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
+  ≡⟨ lemma-that f (f x) xs xs' ⟩
+    subV (+ass {e''} {e * e''} {e' * e''})
+         (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+  ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
+          (lemma-other {e} {e'} {e''} f xs xs') ⟩ 
     subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ (liftV f xs ++ liftV f xs'))
-  ≡⟨ lemma++2 {e''} {e * e''} {e' * e''} (f x) (liftV f xs) (liftV f xs') ⟩
+  ≡⟨ lemma++2 (f x) (liftV f xs) (liftV f xs') ⟩
     (f x ++ liftV f xs) ++ liftV f xs'
   ≡⟨ refl ⟩
     liftV f (x ∷ xs) ++ liftV f xs'
   ∎
-
-{-  begin
-    subV (dist+ {suc e} {e'} {e''})
-      (f x ++ liftV f (xs ++ xs'))
-  ≡⟨ {!!} ⟩
-    subV (sym (ass+ {e''} {e * e''} {e' * e''})) (f x ++ (liftV f xs ++ liftV f xs'))
-  ≡⟨ lemma++ {{!e''!}} {e * e''} {e' * e''} {!!} (liftV f xs) (liftV f xs') ⟩
-    (f x ++ liftV f xs) ++ liftV f xs'
-  ∎-}
 
 lemma : {e e' e'' : M} {X Y Z : Set}
         (g : Y → Vec Z e'')
