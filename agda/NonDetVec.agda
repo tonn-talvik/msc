@@ -307,50 +307,22 @@ lemma-other {suc e} {e'} {e''} f (x ∷ xs) xs' =
     liftV f (x ∷ xs) ++ liftV f xs'
   ∎
 
-lemma-ass :  {e e'' : M} →
-          ass* {e} {zero} {e''}
-          ≡ ass* {suc e} {zero} {e''}
-lemma-ass {zero} = refl
-lemma-ass {suc e} = {!!}
-lemma-trans : {e e'' : M} →
-              trans (ass* {e} {zero} {e''}) refl
-              ≡ ass* {e} {zero} {e''}
-lemma-trans {zero} = refl
-lemma-trans {suc e} {e''} = 
-  begin
-    trans (ass* {suc e} {zero} {e''}) refl
-  ≡⟨ {!!} ⟩ 
-    ass* {e} {zero} {e''}
-  ≡⟨ {!!} ⟩
-    ass* {suc e} {zero} {e''}
-  ∎
 
-lemma-0+ : {e e' : M} {p : e ≡ e'} → 
-           cong (_+_ 0) p ≡ p
-lemma-0+ {p = refl} = refl
+lemma-cong0+ : {e e' : M} {p : e ≡ e'} → 
+               cong (_+_ 0) p ≡ p
+lemma-cong0+ {p = refl} = refl
 
-lemma-13 : {e e'' : M} →
-           trans (cong (_+_ 0) (ass* { e} {zero} {e''})) refl
-           ≡ ass* {e} {zero} {e''}
-lemma-13 {e} {e''} = 
-  begin
-    trans (cong (_+_ 0) (ass* { e} {zero} {e''})) refl
-  ≡⟨ cong (λ p → trans p refl)
-          (lemma-0+ {e * zero * e''} {e * zero}
-                    {ass* {e} {zero} {e''}}) ⟩
-    trans ((ass* {0 + e} {zero} {e''})) refl
-  ≡⟨ lemma-trans {0 + e} {e''} ⟩
-    (ass* {0 + e} {zero} {e''})
-  ≡⟨ refl ⟩
-    ass* {e} {zero} {e''}
-  ∎
-lemma-10 : {e e'' : M} →
-           ass* {suc (suc e)} {zero} {e''}
-           ≡ ass* {suc e} {zero} {e''}
-lemma-10 {zero} = refl
-lemma-10 {suc e} {e''} rewrite lemma-10 {e} {e''} =
-         cong (λ p → trans (cong (_+_ 0) p) refl)
-              (lemma-13 {e} {e''})
+lemma-trans : {e e' : M} {p : e ≡ e'} →
+              trans p refl ≡ p
+lemma-trans {p = refl} = refl
+
+lemma-ass* : {e e'' : M} →
+            ass* {suc e} {zero} {e''}
+            ≡ ass* {e} {zero} {e''}
+lemma-ass* {zero} = refl
+lemma-ass* {suc e} {e''} rewrite lemma-ass* {e} {e''}
+    with lemma-cong0+ {p = ass* {e} {zero} {e''}}
+... | p rewrite p = lemma-trans
 
 lemma-11 : {e e' e'' : M} →
            (e'' + (e' * e'' + e * suc e' * e'')) ⊑
@@ -379,7 +351,7 @@ lemma : {e e' e'' : M} {Y Z : Set}
         ≡ liftV g ys ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
 lemma {zero} {zero} g [] ys' = refl
 lemma {suc e} {zero} {e''} g [] ys' = cong (λ p → subV p (liftV g ys'))
-                                           (lemma-10 {e} {e''})
+                                           (lemma-ass* {suc e} {e''})
 lemma {e} {suc e'} {e''} g (y ∷ ys) ys' = 
   begin
     subV (ass* {suc e} {suc e'} {e''}) (liftV g ((y ∷ ys) ++ ys'))
