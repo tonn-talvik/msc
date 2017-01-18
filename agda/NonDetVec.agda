@@ -253,17 +253,10 @@ lemma2 {e} {e'} {e''} g f x ys' =
 
 lemma++ : {e e' e'' : M} {X : Set}
           (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
-          subV (ass+ {e} {e'} {e''}) ((xs ++ xs') ++ xs'')
-          ≡ xs ++ (xs' ++ xs'')
-lemma++ [] xs' xs'' = refl
-lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (ass+ {e} {e'} {e''}) (lemma++ xs xs' xs'')
-
-lemma++2 : {e e' e'' : M} {X : Set}
-          (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
           subV (+ass {e} {e'} {e''}) (xs ++ (xs' ++ xs''))
           ≡ (xs ++ xs') ++ xs''
-lemma++2 [] xs' xs'' = refl
-lemma++2 {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++2 xs xs' xs'')
+lemma++ [] xs' xs'' = refl
+lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++ xs xs' xs'')
 
 -- dist+ {suc e} {e'} {e''} :
 --         e'' + (e + e') * e'' ≡ e'' + e * e'' + e' * e''
@@ -271,37 +264,37 @@ lemma++2 {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) 
 --         e'' + (e * e'' + e' * e'') ≡ e'' + e * e'' + e' * e''
 
 lemma-that : {e e' e'' : M} {X Y : Set}
-             (f : X → Vec Y e'')
              (ys : Vec Y e'')
              (xs : Vec X e)
-             (xs' : Vec X e') →
+             (xs' : Vec X e')
+             (f : X → Vec Y e'') →
              subV (dist+ {suc e} {e'} {e''})
                   (ys ++ liftV f (xs ++ xs'))
              ≡ subV (+ass {e''} {e * e''} {e' * e''})
                     (ys ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
-lemma-that f [] xs xs' = {!!}
-lemma-that f (y ∷ ys) xs xs' = {!!}
+lemma-that [] xs xs' f = {!!}
+lemma-that (y ∷ ys) xs xs' f = {!!}
 
 
-lemma-other : {e e' e'' : M} {X Y : Set}
+lemma-dist : {e e' e'' : M} {X Y : Set}
               (f : X → Vec Y e'')
               (xs : Vec X e)
               (xs' : Vec X e') →
               subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs'))
               ≡ liftV f xs ++ liftV f xs'
-lemma-other f [] xs' = refl
-lemma-other {suc e} {e'} {e''} f (x ∷ xs) xs' =
+lemma-dist f [] xs' = refl
+lemma-dist {suc e} {e'} {e''} f (x ∷ xs) xs' =
   begin
     subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
   ≡⟨ refl ⟩
     subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
-  ≡⟨ lemma-that f (f x) xs xs' ⟩
+  ≡⟨ lemma-that (f x) xs xs' f ⟩
     subV (+ass {e''} {e * e''} {e' * e''})
          (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
   ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
-          (lemma-other {e} {e'} {e''} f xs xs') ⟩ 
+          (lemma-dist {e} {e'} {e''} f xs xs') ⟩ 
     subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ (liftV f xs ++ liftV f xs'))
-  ≡⟨ lemma++2 (f x) (liftV f xs) (liftV f xs') ⟩
+  ≡⟨ lemma++ (f x) (liftV f xs) (liftV f xs') ⟩
     (f x ++ liftV f xs) ++ liftV f xs'
   ≡⟨ refl ⟩
     liftV f (x ∷ xs) ++ liftV f xs'
@@ -343,23 +336,34 @@ lemma-11 {e} {e'} {e''} =
     e'' + e' * e'' + e * (e'' + e' * e'')
   ∎
 
+lemmb : {e e' e'' : M} {Y Z : Set}
+        (ys : Vec Y e)
+        (ys' : Vec Y e')
+        (f : Y → Vec Z e'') →
+        subV (dist+ {e} {e'} {e''}) (liftV f (ys ++ ys'))
+        ≡ liftV f ys ++ liftV f ys'
+lemmb ys ys' g = {!!}
+
 lemma : {e e' e'' : M} {Y Z : Set}
         (g : Y → Vec Z e'')
         (ys : Vec Y e')
         (ys' : Vec Y (e * e')) →
         subV (ass* {suc e} {e'} {e''}) (liftV g (ys ++ ys'))
         ≡ liftV g ys ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
-lemma {zero} {zero} g [] ys' = refl
-lemma {suc e} {zero} {e''} g [] ys' = cong (λ p → subV p (liftV g ys'))
-                                           (lemma-ass* {suc e} {e''})
+lemma {e} {zero} {e''} g [] ys' = cong (λ p → subV p (liftV g ys'))
+                                           (lemma-ass* {e} {e''})
 lemma {e} {suc e'} {e''} g (y ∷ ys) ys' = 
   begin
     subV (ass* {suc e} {suc e'} {e''}) (liftV g ((y ∷ ys) ++ ys'))
   ≡⟨ refl ⟩
     subV (ass* {suc e} {suc e'} {e''}) (g y ++ (liftV g (ys ++ ys')))
   ≡⟨ {!!} ⟩
-    subV (lemma-11 {e} {e'} {e''}) (g y ++ (liftV g ys ++ liftV g ys'))
-  ≡⟨ {!!} ⟩
+  -- congruent with lemma on recursively smaller ys
+  -- pitfall: ys' did not shrink, but it is tied to the ys by e'
+  
+    subV (+ass {e''} {e' * e''} {e * (suc e' * e'')})
+         (g y ++ (liftV g ys ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')))
+  ≡⟨ lemma++ (g y) (liftV g ys) (subV (ass* {e} {suc e'} {e''}) (liftV g ys')) ⟩
     (g y ++ liftV g ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
   ≡⟨ refl ⟩
     liftV g (y ∷ ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
@@ -376,7 +380,7 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
   ≡⟨ refl ⟩
     subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f xs))
   ≡⟨ lemma {e} {e'} {e''} g (f x) (liftV f xs) ⟩
-    (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f xs)))
+     (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f xs)))
   ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g xs) ⟩
     liftV g (f x) ++ liftV (λ x → liftV g (f x)) xs
   ≡⟨ refl ⟩
