@@ -180,36 +180,6 @@ comm* {suc m} {suc n} = cong suc (
     m + n * suc m
   ∎)
 
-lemmm :  {e' : M} → 
-         ass* {suc zero} {suc e'} {zero}
-         ≡ ass* {suc zero} {e'} {zero}
-lemmm {e'} = 
-  begin
-    ass* {suc zero} {suc e'} {zero}
-  ≡⟨ cong {!!} (comm* {suc e'} {zero}) ⟩
-    {!!}
-  ≡⟨ {!!} ⟩
-    ass* {suc zero} {e'} {zero}
-  ∎
-
-lemma' : {e' e'' : M} {X Y Z : Set}
-        (g : Y → Vec Z e'')
-        (ys : Vec Y e')
-         →
-        subV (ass* {suc zero} {e'} {e''}) (liftV g (ys ++ []))
-        ≡ liftV g ys ++ []
-lemma' g [] = refl
-lemma' {suc e'} g (y ∷ ys) with g y
-lemma' {suc e'} {zero} {X} {Y} {Z} g (y ∷ ys) | [] =
-  begin
-    subV (ass* {suc zero} {suc e'} {zero} ) (liftV g (ys ++ []))
-  ≡⟨ cong (λ p → subV p (liftV g (ys ++ []))) (lemmm {e'}) ⟩
-    subV (ass* {suc zero} {e'} {zero} ) (liftV g (ys ++ []))
-  ≡⟨ lemma' {e'} {zero} {X} {Y} {Z} g ys ⟩
-    liftV g ys ++ []
-  ∎
-lemma' {suc e'} g (y ∷ ys) | z ∷ zs = {!!}
-
 
 lemma-sub++ : {e e' E E' : M} 
              {p : e ⊑ E} {q : e' ⊑ E'} {r : (e + e') ⊑ (E + E')}
@@ -233,89 +203,12 @@ lemma-sub++ {suc e} {e'} {E = suc .e} {E' = .e'} {p = refl} {q = refl} {r = refl
 ass+* : {m n o : ℕ} → n * o + m * n * o ≡ n * o + m * (n * o) --suc m * (n * o)
 ass+* {m} {n} {o} = cong (_+_ (n * o)) (ass* {m} {n} {o})
 
-lemma2 : {e e' e'' : M} {X Y Z : Set}
-        (g : Y → Vec Z e'')
-        (f : X → Vec Y e') (x : X)
-        (ys' : Vec Y (e * e')) →
-        (liftV g (f x)) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
-        ≡
-        subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
-lemma2 {e} {e'} {e''} g f x ys' = 
-  begin
-    (liftV g (f x)) ++ subV (ass* {e} {e'} {e''}) (liftV g ys')
-  ≡⟨ lemma-sub++ {e' * e''} {e * e' * e''} {e' * e''} {e * (e' * e'')}
-                 {refl} {ass* {e} {e'} {e''}} {ass+* {e} {e'} {e''}}
-                 (liftV g (f x)) (liftV g ys') ⟩ 
-    subV (ass+* {e} {e'} {e''}) ((liftV g (f x)) ++ (liftV g ys'))
-  ≡⟨ {!!} ⟩
-    subV (ass* {suc e} {e'} {e''}) (liftV g ((f x) ++ ys'))
-  ∎
-
 lemma++ : {e e' e'' : M} {X : Set}
           (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
           subV (+ass {e} {e'} {e''}) (xs ++ (xs' ++ xs''))
           ≡ (xs ++ xs') ++ xs''
 lemma++ [] xs' xs'' = refl
 lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++ xs xs' xs'')
-
--- dist+ {suc e} {e'} {e''} :
---         e'' + (e + e') * e'' ≡ e'' + e * e'' + e' * e''
--- +ass {e''} {e * e''} {e' * e''}:
---         e'' + (e * e'' + e' * e'') ≡ e'' + e * e'' + e' * e''
-
-lemma-that : {e e' e'' : M} {X Y : Set}
-             (ys : Vec Y e'')
-             (xs : Vec X e)
-             (xs' : Vec X e')
-             (f : X → Vec Y e'') →
-             subV (dist+ {suc e} {e'} {e''})
-                  (ys ++ liftV f (xs ++ xs'))
-             ≡ subV (+ass {e''} {e * e''} {e' * e''})
-                    (ys ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
-lemma-that [] xs xs' f = {!!}
-lemma-that (y ∷ ys) xs xs' f = {!!}
-
-
-lemma-dist : {e e' e'' : M} {X Y : Set}
-              (f : X → Vec Y e'')
-              (xs : Vec X e)
-              (xs' : Vec X e') →
-              subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs'))
-              ≡ liftV f xs ++ liftV f xs'
-lemma-dist f [] xs' = refl
-lemma-dist {suc e} {e'} {e''} f (x ∷ xs) xs' =
-  begin
-    subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
-  ≡⟨ refl ⟩
-    subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
-  ≡⟨ lemma-that (f x) xs xs' f ⟩
-    subV (+ass {e''} {e * e''} {e' * e''})
-         (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
-  ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
-          (lemma-dist {e} {e'} {e''} f xs xs') ⟩ 
-    subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ (liftV f xs ++ liftV f xs'))
-  ≡⟨ lemma++ (f x) (liftV f xs) (liftV f xs') ⟩
-    (f x ++ liftV f xs) ++ liftV f xs'
-  ≡⟨ refl ⟩
-    liftV f (x ∷ xs) ++ liftV f xs'
-  ∎
-
-
-lemma-cong0+ : {e e' : M} {p : e ≡ e'} → 
-               cong (_+_ 0) p ≡ p
-lemma-cong0+ {p = refl} = refl
-
-lemma-trans : {e e' : M} {p : e ≡ e'} →
-              trans p refl ≡ p
-lemma-trans {p = refl} = refl
-
-lemma-ass* : {e e'' : M} →
-            ass* {suc e} {zero} {e''}
-            ≡ ass* {e} {zero} {e''}
-lemma-ass* {zero} = refl
-lemma-ass* {suc e} {e''} rewrite lemma-ass* {e} {e''}
-    with lemma-cong0+ {p = ass* {e} {zero} {e''}}
-... | p rewrite p = lemma-trans
 
 lemma-11 : {e e' e'' : M} →
            (e'' + (e' * e'' + e * suc e' * e'')) ⊑
@@ -336,13 +229,190 @@ lemma-11 {e} {e'} {e''} =
     e'' + e' * e'' + e * (e'' + e' * e'')
   ∎
 
-lemmb : {e e' e'' : M} {Y Z : Set}
-        (ys : Vec Y e)
-        (ys' : Vec Y e')
-        (f : Y → Vec Z e'') →
-        subV (dist+ {e} {e'} {e''}) (liftV f (ys ++ ys'))
-        ≡ liftV f ys ++ liftV f ys'
-lemmb ys ys' g = {!!}
+
+lemma-cong0+ : {e e' : M} {p : e ≡ e'} → 
+               cong (_+_ 0) p ≡ p
+lemma-cong0+ {p = refl} = refl
+
+lemma-trans : {e e' : M} {p : e ≡ e'} →
+              trans p refl ≡ p
+lemma-trans {p = refl} = refl
+
+lemma-ass* : {e e'' : M} →
+            ass* {suc e} {zero} {e''}
+            ≡ ass* {e} {zero} {e''}
+lemma-ass* {zero} = refl
+lemma-ass* {suc e} {e''} rewrite lemma-ass* {e} {e''}
+    with lemma-cong0+ {p = ass* {e} {zero} {e''}}
+... | p rewrite p = lemma-trans
+
+lemma-other : {e e' : M} →
+              trans (cong (_+_ zero) (dist+ {e} {e'} {zero})) refl
+              ≡ dist+ {e} {e'} {zero}
+lemma-other = trans lemma-trans lemma-cong0+
+
+lemma-sym-cong : {X : Set} {x x' : X} {f : X → X} {p : x ≡ x'} →
+                 sym (cong f p) ≡ cong f (sym p)
+lemma-sym-cong {p = refl} = refl
+
+lemma-trans-cong : {X : Set} {x x' x'' : X}
+                   {f : X → X} {p : x ≡ x'} {q : x' ≡ x''} →
+                   trans (cong f p) (cong f q) ≡ cong f (trans p q)
+lemma-trans-cong {p = refl} = refl
+
+lemma-suc : {m n n' : M} {p : n ≡ n'} →
+            cong (_+_ (suc m)) p ≡ cong suc (cong (_+_ m) p)
+lemma-suc {p = refl} = refl
+
+lemma-some  : {e e' e'' : M} →
+              trans (cong (_+_ (suc e''))
+                          (dist+ {e} {e'} {suc e''}))
+                    (sym (cong suc (ass+ {e''} {e * suc e''} {e' * suc e''})))
+              ≡
+              cong suc (trans (cong (_+_ e'')
+                                    (dist+ {e} {e'} {suc e''}))
+                          (sym (ass+ {e''} {e * suc e''} {e' * suc e''})))
+lemma-some {e} {e'} {e''} = 
+  begin
+    trans (cong (_+_ (suc e''))
+                (dist+ {e} {e'} {suc e''}))
+          (sym (cong suc (ass+ {e''} {e * suc e''} {e' * suc e''})))
+  ≡⟨ cong (trans (cong (_+_ (suc e'')) (dist+ {e} {e'} {suc e''})))
+          lemma-sym-cong ⟩
+    trans (cong (_+_ (suc e''))
+                (dist+ {e} {e'} {suc e''}))
+          (cong suc (sym (ass+ {e''} {e * suc e''} {e' * suc e''})))
+  ≡⟨ cong (λ p → trans p (cong suc (sym (ass+ {e''} {e * suc e''} {e' * suc e''}))))
+          (lemma-suc {m = e''} {p = dist+ {e} {e'} {suc e''}}) ⟩
+    trans (cong suc (cong (_+_ e'')
+                          (dist+ {e} {e'} {suc e''})))
+          (cong suc (sym (ass+ {e''} {e * suc e''} {e' * suc e''})))
+  ≡⟨ lemma-trans-cong {p = cong (_+_ e'') (dist+ {e} {e'} {suc e''})} ⟩
+    cong suc (trans (cong (_+_ e'')
+                          (dist+ {e} {e'} {suc e''}))
+                    (sym (ass+ {e''} {e * suc e''} {e' * suc e''})))
+  ∎
+            
+lemma-head : {X : Set} {x : X} {e e' e'' : M}
+             {xs : Vec X e} {xs' : Vec X e'}
+             {p : e ≡ e''} {q : e' ≡ e''}
+             {tail : subV p xs ≡ subV q xs'} →
+             subV (cong suc p) (x ∷ xs)
+             ≡ subV (cong suc q) (x ∷ xs')
+lemma-head {p = refl} {q = refl} {tail = refl} = refl
+                            
+lemma-that : {e e' e'' : M} {X Y : Set}
+             (ys : Vec Y e'')
+             (xs : Vec X e)
+             (xs' : Vec X e')
+             (f : X → Vec Y e'') →
+             subV (dist+ {suc e} {e'} {e''})
+                  (ys ++ liftV f (xs ++ xs'))
+             ≡ subV (+ass {e''} {e * e''} {e' * e''})
+                    (ys ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+lemma-that {e} {e'} {zero} [] xs xs' f =
+               cong (λ p → subV p (liftV f (xs ++ xs')))
+                    (lemma-other {e} {e'}) 
+lemma-that {e} {e'} {suc e''} (y ∷ ys) xs xs' f =
+  begin
+    subV (dist+ {suc e} {e'} {suc e''})
+         (y ∷ ys ++ liftV f (xs ++ xs'))
+  ≡⟨ refl ⟩ 
+    subV (trans (cong (_+_ (suc e'')) (dist+ {e} {e'} {suc e''}))
+                (sym (cong suc (ass+ {e''} {e * suc e''} {e' * suc e''}))))
+         (y ∷ ys ++ liftV f (xs ++ xs'))
+  ≡⟨ cong (λ p → subV p (y ∷ ys ++ liftV f (xs ++ xs'))) (lemma-some {e}) ⟩
+    subV (cong suc (trans (cong (_+_ e'')
+                                (dist+ {e} {e'} {suc e''}))
+                          (sym (ass+ {e''} {e * suc e''} {e' * suc e''}))))
+         (y ∷ ys ++ liftV f (xs ++ xs'))
+  ≡⟨ lemma-head {tail = lemma-that ys {!!} {!!} {!!}}  ⟩ -- sigh
+    subV (cong suc (+ass {e''} {e * suc e''} {e' * suc e''}))
+         (y ∷ ys ++ subV (dist+ {e} {e'} {suc e''}) (liftV f (xs ++ xs')))
+  ≡⟨ refl ⟩
+    subV (+ass {suc e''} {e * suc e''} {e' * suc e''})
+         (y ∷ ys ++ subV (dist+ {e} {e'} {suc e''}) (liftV f (xs ++ xs')))
+  ∎
+{- long version of base case
+lemma-that {e} {e'} {zero} [] xs xs' f =
+  begin
+    subV (dist+ {suc e} {e'} {zero})
+         ([] ++ liftV f (xs ++ xs'))
+  ≡⟨ cong (λ p → subV p (liftV f (xs ++ xs'))) (lemma-other {e} {e'}) ⟩
+    subV refl
+         (subV (dist+ {e} {e'} {zero}) (liftV f (xs ++ xs')))
+  ≡⟨ refl ⟩
+    subV (+ass {zero} {e * zero} {e' * zero})
+         (subV (dist+ {e} {e'} {zero}) (liftV f (xs ++ xs')))
+  ≡⟨ refl ⟩
+    subV (+ass {zero} {e * zero} {e' * zero})
+         ([] ++ subV (dist+ {e} {e'} {zero}) (liftV f (xs ++ xs')))
+  ∎-}
+
+{-
+
+lemma-ass : {m n o : M} →
+            sym (ass+ {m} {n} {o}) ≡ +ass {m} {n} {o}
+lemma-ass {zero} = refl
+lemma-ass {suc m} = 
+  begin
+    sym (cong suc (ass+ {m}))
+  ≡⟨ {!!} ⟩
+    cong suc (+ass {m})
+  ∎
+
+lemma-that2 : {e e' e'' : M} {X Y : Set}
+             (xs : Vec X e)
+             (xs' : Vec X e')
+             (ys : Vec Y e'')
+             (f : X → Vec Y e'') →
+             subV (dist+ {suc e} {e'} {e''})
+                  (ys ++ liftV f (xs ++ xs'))
+             ≡ subV (sym (ass+ {e''} {e * e''} {e' * e''}))
+                    (ys ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+lemma-that2 {zero} {e'} {e''} [] xs' ys f = refl
+lemma-that2 {suc e} {e'} {e''} (x ∷ xs) xs' ys f = 
+  begin
+    subV (dist+ {suc (suc e)} {e'} {e''})
+         (ys ++ liftV f (x ∷ xs ++ xs'))
+  ≡⟨ refl ⟩
+    subV (dist+ {suc (suc e)} {e'} {e''})
+         (ys ++ f x ++ liftV f (xs ++ xs'))
+  ≡⟨ {!!} ⟩
+    subV {!!}
+         (ys ++ f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+  ≡⟨ {!!} ⟩
+    subV (sym (ass+ {e''} {suc e * e''} {e' * e''}))
+         (ys ++ subV (dist+ {suc e} {e'} {e''}) (f x ++ liftV f (xs ++ xs')))
+  ≡⟨ refl ⟩
+    subV (sym (ass+ {e''} {suc e * e''} {e' * e''}))
+         (ys ++ subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs')))
+  ∎
+-}
+
+lemma-dist : {e e' e'' : M} {X Y : Set}
+             (xs : Vec X e)
+             (xs' : Vec X e')
+             (f : X → Vec Y e'') →
+             subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs'))
+             ≡ liftV f xs ++ liftV f xs'
+lemma-dist [] xs' f = refl
+lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
+  begin
+    subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
+  ≡⟨ refl ⟩
+    subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
+  ≡⟨ lemma-that (f x) xs xs' f ⟩
+    subV (+ass {e''} {e * e''} {e' * e''})
+         (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
+  ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
+          (lemma-dist {e} {e'} {e''} xs xs' f) ⟩ 
+    subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ (liftV f xs ++ liftV f xs'))
+  ≡⟨ lemma++ (f x) (liftV f xs) (liftV f xs') ⟩
+    (f x ++ liftV f xs) ++ liftV f xs'
+  ≡⟨ refl ⟩
+    liftV f (x ∷ xs) ++ liftV f xs'
+  ∎
 
 lemma : {e e' e'' : M} {Y Z : Set}
         (g : Y → Vec Z e'')
