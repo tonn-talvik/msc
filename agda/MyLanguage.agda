@@ -20,7 +20,7 @@ open import Finiteness
   renaming (here to fhere)
 --open import GradedMonad
 --open import OrderedMonoid
-open import NonDeterminism
+--open import NonDeterminism
 
   
 T : Set → Set
@@ -227,11 +227,13 @@ varify' {Γ} v = VAR (look-where Γ v)
 -- want to have something like this
 varify'' = varify' ∘ fromℕ
 
---varify''' : {Γ : Ctx} → (n : ℕ) → {_ : n Data.Nat.≤ length Γ} → VTerm Γ (lkp Γ (fromℕ n))
---varify''' {Γ} n = VAR (look-where Γ (fromℕ n))
+varify''' : {Γ : Ctx} {n : ℕ} → (p : n Data.Nat.< length Γ) → VTerm Γ (lkp Γ (fromℕ≤ p))
+varify''' {Γ} p = VAR (look-where Γ (fromℕ≤ p))
 
-_=?=_ : (n : ℕ) → {m : ℕ} (v : Fin m) → Dec (fromℕ n ≡ v)
-n =?= v = ?
+var-alt :  {Γ : Ctx} (n : ℕ) → {p : n Data.Nat.< length Γ} → VTerm Γ (lkp Γ (fromℕ≤ p))
+var-alt {Γ} n {p} = VAR (look-where Γ (fromℕ≤ p))
+--_=?=_ : (n : ℕ) → {m : ℕ} (v : Fin m) → Dec (fromℕ n ≡ v)
+--n =?= v = ?
 --varify₄ : {Γ : Ctx} → (n : ℕ) → {v : Fin (length Γ)} → {_ : fromℕ n ≡ v} → VTerm Γ (lkp Γ v)
 --varify₄ {Γ} n = VAR (look-where Γ (fromℕ n))
 
@@ -246,6 +248,8 @@ gamma-inside  = svar2inlist {gamma} (svar 0)
 
 pv0        = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 0)))) ⟧ tt
 pv0''      = ⟦ VAL (LAM nat (VAL (varify'' 0))) ⟧ tt
+pv0'''     = ⟦ VAL (LAM nat (VAL (varify''' (s≤s z≤n)))) ⟧ tt
+pv0'''a    = ⟦ VAL (LAM nat (VAL (var-alt 1 ))) ⟧ tt
 --pv0-contra = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 1)))) ⟧ tt
 pv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
 -- pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
