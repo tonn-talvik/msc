@@ -171,92 +171,33 @@ u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
 
 ------------------------------------------------------------
 
--- FIXME: could we merge ∈/lookup/lookupcorrect with Finiteness?
-data _∈'_ {A : Set} : ℕ → List A → Set where
-  here  : ∀ {x xs} → zero ∈' (x ∷ xs)
-  there : ∀ {n x xs} → n ∈' xs → suc n ∈' (x ∷ xs)
+lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
+           ¬ suc n Data.Nat.≤ length Γ →
+           ¬ suc (suc n) Data.Nat.≤ length (τ ∷ Γ)
+lemma-<? _ _ n p (s≤s q) = p q
 
+_<?_ : (n : ℕ) (Γ : Ctx) → Dec (n Data.Nat.< length Γ)
+n <? [] = no (λ ())
+zero <? (x ∷ Γ) = yes (s≤s z≤n)
+suc n <? (x ∷ Γ) with n <? Γ
+suc n <? (x ∷ Γ) | yes p = yes (s≤s p)
+suc n <? (x ∷ Γ) | no ¬p = no (lemma-<? Γ x n ¬p)
 
-lookup : {A : Set} → (n : ℕ) → (xs : List A) → n ∈' xs → A
-lookup .0 .(x ∷ xs) (here {x} {xs}) = x
-lookup .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = lookup n xs p
-
-lookupcorrect :  {A : Set} → (n : ℕ) → (xs : List A) → (p : n ∈' xs) → lookup n xs p ∈ xs
-lookupcorrect .0 .(x ∷ xs) (here {x} {xs}) = fhere
-lookupcorrect .(suc n) .(x ∷ xs) (there {n} {x} {xs} p) = there (lookupcorrect n xs p)
-
-
-look-where : {A : Set} → (xs : List A) → (n : Fin (length xs)) → lkp xs n ∈ xs
-look-where [] ()
-look-where (x ∷ xs) zero = here' refl
-look-where (x ∷ xs) (suc n) = there (look-where xs n)
-
-----------------------------------------------------------------------
-
-lemma-∉' : {Γ : Ctx} → {τ : VType} → (v : ℕ) → ¬ v ∈' Γ → ¬ suc v ∈' (τ ∷ Γ)
-lemma-∉' n p (there q) = p q
-
-_∈'?_ : (v : ℕ) → (Γ : Ctx) → Dec (v ∈' Γ)
-v ∈'? [] = no (λ ())
-zero ∈'? (x ∷ Γ) = yes here
-suc v ∈'? (x ∷ Γ) with v ∈'? Γ 
-suc v ∈'? (x ∷ Γ) | yes p = yes (there p)
-suc v ∈'? (x ∷ Γ) | no ¬p = no (lemma-∉' v ¬p)
-
-
-data ScopedVar (Γ : Ctx) : Set where
-  svar : (v : ℕ) → {_ : truncate (v ∈'? Γ)} → ScopedVar Γ
-
-extract' : {P : Set} → {d : Dec P} → truncate d → P
-extract' {_} {yes p} t = p
-extract' {_} {no ¬p} ()
-
-svar2var : {Γ : Ctx} → ScopedVar Γ → VType
-svar2var (svar v {p}) = lookup v _ (extract' p)
-
-svar2inlist : {Γ : Ctx} → (sv : ScopedVar Γ) → svar2var sv ∈ Γ
-svar2inlist (svar v {p}) = lookupcorrect v _ (extract' p)
-
-varify : {Γ : Ctx} → (v : ℕ) → {p : truncate (v ∈'? Γ)} → VTerm Γ (svar2var (svar v {p}))
-varify v {p} = VAR (svar2inlist (svar v {p} ))
-
-
-varify' : {Γ : Ctx} → (v : Fin (length Γ)) → VTerm Γ (lkp Γ v)
-varify' {Γ} v = VAR (look-where Γ v)
-
--- want to have something like this
-varify'' = varify' ∘ fromℕ
-
-varify''' : {Γ : Ctx} {n : ℕ} → (p : n Data.Nat.< length Γ) → VTerm Γ (lkp Γ (fromℕ≤ p))
-varify''' {Γ} p = VAR (look-where Γ (fromℕ≤ p))
-
-var-alt :  {Γ : Ctx} (n : ℕ) → {p : n Data.Nat.< length Γ} → VTerm Γ (lkp Γ (fromℕ≤ p))
-var-alt {Γ} n {p} = VAR (look-where Γ (fromℕ≤ p))
---_=?=_ : (n : ℕ) → {m : ℕ} (v : Fin m) → Dec (fromℕ n ≡ v)
---n =?= v = ?
---varify₄ : {Γ : Ctx} → (n : ℕ) → {v : Fin (length Γ)} → {_ : fromℕ n ≡ v} → VTerm Γ (lkp Γ v)
---varify₄ {Γ} n = VAR (look-where Γ (fromℕ n))
-
+varify :  {Γ : Ctx} (n : ℕ) {p : truncate (n <? Γ)} →
+         VTerm Γ (lkp Γ (fromℕ≤ (extract (n <? Γ) {p})))
+varify {Γ} n {p} = VAR (trace Γ (fromℕ≤ (extract (n <? Γ) {p})))
 
 
 ----------------------------------------------------------------------
 -- Silly examples
 
-gamma = nat ∷ nat ∷ bool ∷ bool ∏ nat ∷ []
-gamma-inside  = svar2inlist {gamma} (svar 0)
---gamma-outside = svar2inlist {gamma} (svar 5)
-
-pv0        = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 0)))) ⟧ tt
-pv0''      = ⟦ VAL (LAM nat (VAL (varify'' 0))) ⟧ tt
-pv0'''     = ⟦ VAL (LAM nat (VAL (varify''' (s≤s z≤n)))) ⟧ tt
-pv0'''a    = ⟦ VAL (LAM nat (VAL (var-alt 1 ))) ⟧ tt
---pv0-contra = ⟦ VAL (LAM nat (VAL (varify' (fromℕ 1)))) ⟧ tt
+pv0      = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
+--pv0-contra = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
 pv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
--- pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
+--pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
 pv2        = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
 pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
 pv3        = ⟦ VAL (varify 0) ⟧
---pv3        = ⟦ VAL (varify' (fromℕ 0)) ⟧
 
 -- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
 -- data Syntax : Set where
@@ -294,5 +235,6 @@ mul = (LAM nat (
                                ( varify 0
                                     $ varify 4 )))))))
 p-mul-3-4 = ⟦ LET mul $ natify 3 IN varify 0 $ natify 4 ⟧ tt
+
 
 

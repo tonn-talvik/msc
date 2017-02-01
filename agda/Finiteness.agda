@@ -44,6 +44,12 @@ lkpcorrect .(x' ∷ xs) (here' {x'} {xs} p) = p
 lkpcorrect .(x' ∷ xs) (there {x'} {xs} p) = lkpcorrect xs p
 
 
+trace : {X : Set} (xs : List X) (n : Fin (length xs)) → lkp xs n ∈ xs
+trace [] ()
+trace (x ∷ xs) zero = here
+trace (x ∷ xs) (suc n) = there (trace xs n)
+
+
 _≡F_ : {n : ℕ} → Fin n → Fin n → Set
 i ≡F j = i ≡ j
 
