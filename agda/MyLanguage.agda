@@ -12,7 +12,7 @@ open import Data.Product
 
 open import Data.Nat hiding (_≟_)
 open import Data.Bool hiding (T ; _≟_)
-open import Data.Fin hiding (lift)
+open import Data.Fin hiding (lift; _<_)
 open import Data.List
 
 
@@ -172,11 +172,11 @@ u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
 ------------------------------------------------------------
 
 lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
-           ¬ suc n Data.Nat.≤ length Γ →
-           ¬ suc (suc n) Data.Nat.≤ length (τ ∷ Γ)
+           ¬ n < length Γ →
+           ¬ suc n < length (τ ∷ Γ)
 lemma-<? _ _ n p (s≤s q) = p q
 
-_<?_ : (n : ℕ) (Γ : Ctx) → Dec (n Data.Nat.< length Γ)
+_<?_ : (n : ℕ) (Γ : Ctx) → Dec (n < length Γ)
 n <? [] = no (λ ())
 zero <? (x ∷ Γ) = yes (s≤s z≤n)
 suc n <? (x ∷ Γ) with n <? Γ
