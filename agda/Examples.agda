@@ -1,82 +1,126 @@
 module Examples where
-open import Data.Unit renaming (tt to top)
-open import MyLanguage
 
--- bind function to variable
-mul2 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
-mul2 = lam nat (lam nat
-         (LET (lam nat
-                      (prec (var here)
-                            (val (var (there (there here))))
-                            (lam nat (lam nat (val (ss (var here)))))))
-            IN prec (var (there here))
-                    (val zz)
-                    (lam nat (lam nat (val (var (there (there here)))
-                                            $ var here)))))
-p-mul2-3-4 = ⟦ mul2 $ natify 3 $ natify 4 ⟧ top
+open import Data.Bool hiding (T)
+open import Data.List
+open import Data.Nat
+open import Data.Unit
+open import Data.Product
 
--- use partially applied function
-mul3 : ∀ {Γ} → CTerm Γ (nat ⇒ nat ⇒ nat)
-mul3 = lam nat (lam nat
-         (LET (lam nat
-                      (prec (var here)
-                            (val (var (there (there here))))
-                            (lam nat (lam nat (val (ss (var here)))))))
-            IN prec (var (there here))
-                    (val zz)
-                    (lam nat (val (var (there here))))))
+open import Finiteness
+open import Language
+open import Semantics
 
-p-mul3-3-4 = ⟦ mul3 $ natify 3 $ natify 4 ⟧ top
+----------------------------------------------------------------------
+-- Silly examples
+
+pv0      = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
+--pv0-contra = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
+pv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
+--pv1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
+pv2        = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
+pv3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
+pv3        = ⟦ VAL (varify 0) ⟧
+
+-- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
+-- data Syntax : Set where
+--   var : ℕ → Syntax
+-- data Term {n} {Γ : Ctx n) : Type → Set where
+--   var : ∀ {τ} (v : Fin n) → τ ≡ lookup v Γ → Term Γ τ
+
+----------------------------------------------------------------------
+
+p1 = ⟦ VAL (varify 0) ⟧ (1 , tt)
+p2 = ⟦ IF TT THEN (VAL (SS ZZ)) ELSE VAL ZZ ⟧ tt
+p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , tt) ) 
+p4 = ⟦ VAL (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
+p5 = ⟦ LAM nat (VAL (SS (varify 0))) $ ZZ ⟧ tt
+p6 = ⟦ PREC (natify 6) (VAL ZZ) ((LET VAL (varify 0) IN (VAL (varify 1)) )) ⟧ tt
+p7 : ℕ → T ℕ
+p7 n  = ⟦ PREC (natify n) (VAL ZZ) (CHOOSE (VAL (varify 0)) (VAL (SS (SS (varify 0))))) ⟧ tt
+
+-----------------------------------------------------------------
+
+INC  : ∀ {Γ} → VTerm Γ (nat ⇒ nat)
+INC = LAM nat (VAL (SS (VAR here)))
+
+test-inc-75 = ⟦ INC $ natify 75 ⟧ tt
 
 
-fact : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
-fact = lam nat
-           (prec (var here)
-                 (val (ss zz))
-                 (lam nat
-                      (lam nat
-                           mul $ var (there here)
-                               $ var here)))
-                               
+IS-ZERO : ∀ {Γ} → VTerm Γ (nat ⇒ bool)
+IS-ZERO = LAM nat
+              (PREC (VAR here)
+                    (VAL TT)
+                    (VAL FF))
+
+test-is-zero = ⟦ IS-ZERO $ natify 0 ⟧ tt
+
+
+DEC : ∀ {Γ} → VTerm Γ (nat ⇒ nat)
+DEC = LAM nat (LET PREC (VAR here)
+                        (VAL ⟨ ZZ , TT ⟩)
+                        (IF (SND (VAR here)) THEN
+                           VAL ⟨ ZZ , FF ⟩ 
+                         ELSE
+                           VAL ⟨ SS (FST (VAR here)) , FF ⟩
+                        )
+                   IN VAL (FST (VAR here)) )
+                   
+test-dec = ⟦ DEC $ natify 10 ⟧ tt
+
+
+ADD : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
+ADD = (LAM nat (
+          VAL (LAM nat
+               (PREC (varify 0)
+                     (VAL (varify 1))
+                     (VAL (SS (varify 0)))))))
+
+test-add-3-4 = ⟦ LET ADD $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , tt))
+
+
+MUL : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
+MUL = (LAM nat (
+          VAL (LAM nat
+               (PREC (varify 0)
+                     (VAL ZZ)
+                     (LET ADD $ varify 0 IN
+                          (varify 0 $ varify 4 ))))))
+
+test-mul-3-4 = ⟦ LET MUL $ natify 3 IN varify 0 $ natify 4 ⟧ tt
 
 
 
-p-fact-5 = ⟦ fact $ natify 5 ⟧ top
+FACT : ∀ {Γ} → VTerm Γ (nat ⇒ nat)
+FACT = LAM nat
+           (PREC (VAR here)
+                 (VAL (SS ZZ))
+                 (LET MUL $ VAR here IN
+                      (VAR here $ SS (VAR (there (there here))))))
+                      
+test-fact-5 = ⟦ FACT $ natify 5 ⟧ tt
 
-is-zero : ∀ {Γ} → CTerm Γ (nat ⇒ bool)
-is-zero = lam nat
-              (prec (var here) (val tt) (lam nat (lam bool (val ff))))
-p-is-zero = ⟦ is-zero $ natify 0 ⟧ top
 
-inc dec : ∀ {Γ} → CTerm Γ (nat ⇒ nat)
-inc = lam nat (val (ss (var here)))
-dec = lam nat (LET prec (var here) (val ⟨ zz , tt ⟩)
-                              (lam nat (lam (nat ∏ bool)
-                                 if snd (var here) then
-                                   val ⟨ zz , ff ⟩
-                                 else
-                                   val ⟨ ss (fst (var here)) , ff ⟩ fi))
-                   IN val (fst (var here)) )
-p-dec = ⟦ dec $ natify 10 ⟧ top
+------------------------------------------------------------
 
-AND OR : ∀ {Γ} → CTerm Γ (bool ⇒ bool ⇒ bool)
-AND = lam bool (lam bool
-        if var here then
-          if var (there here) then
-            val tt
-          else
-            val ff
-          fi
-        else
-          val ff
-        fi)
+NOT : ∀ {Γ} → VTerm Γ (bool ⇒ bool)
+NOT = LAM bool (IF VAR here THEN VAL FF ELSE VAL TT)
 
-OR = lam bool (lam bool if var here then val tt else if var (there here) then val tt else val ff fi fi)
-NOT : ∀ {Γ} → CTerm Γ (bool ⇒ bool)
-NOT = lam bool (if var here then val ff else val tt fi)
-p-and = ⟦ AND $ tt $ ff ⟧ top
+AND OR : ∀ {Γ} → VTerm Γ (bool ⇒ bool ⇒ bool)
+AND = LAM bool (VAL (LAM bool
+        (IF VAR here THEN
+          (IF VAR (there here) THEN
+            VAL TT
+          ELSE
+            VAL FF)
+        ELSE
+          VAL FF
+        )))
+
+OR = LAM bool (VAL (LAM bool (IF VAR here THEN VAL TT ELSE IF VAR (there here) THEN VAL TT ELSE VAL FF)))
+
+test-and = ⟦ LET AND $ TT IN varify 0 $ TT ⟧ tt
 
 
 -- infinite program in my language
 -- inf : ∀ {Γ} → CTerm Γ nat
--- inf = LET inf IN val (var here)
+-- inf = LET inf IN VAL (VAR here)

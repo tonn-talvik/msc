@@ -233,14 +233,146 @@ mlaw3ND' e e' e'' f g (c ∷ cs) = trans (lemma-liftND {e ⊙ e'} {e''} g (f c) 
 
 lemma-s : {e e' : ND} {X : Set} → (p : e ≡ e') →
           (c : TND e X) → (d : TND e' X) → subND-eq p c ≡ d
-lemma-s p c d  = {!!}
+lemma-s refl c d = {!!}
 
 lemma : (e e' e'' : ND) → {X Y Z : Set} →
-        (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
+        (f : X → TND e' Y) → (g : Y → TND e'' Z) → (xs : TND e X) → 
         subND-eq (ass-⊙ e e' e'')
-                 (liftND (e ⊙ e') e'' g (liftND e e' f c))
-        ≡ liftND (e ⊙ e') e'' g (liftND e e' f c)
-lemma e e' e'' f g c = lemma-s (ass-⊙ e e' e'') ( liftND (e ⊙ e') e'' g (liftND e e' f c) ) (liftND (e ⊙ e') e'' g (liftND e e' f c))
+                 (liftND (e ⊙ e') e'' g (liftND e e' f xs))
+        ≡ liftND (e ⊙ e') e'' g (liftND e e' f xs)
+-- note to self: should look for a job in agriculture
+{-
+lemma nd0 nd0 nd0 f g [] = refl
+lemma nd0 nd0 nd01 f g [] = refl
+lemma nd0 nd0 nd1 f g [] = refl
+lemma nd0 nd0 nd1+ f g [] = refl
+lemma nd0 nd0 ndN f g [] = refl
+lemma nd0 nd01 nd0 f g [] = refl
+lemma nd0 nd01 nd01 f g [] = refl
+lemma nd0 nd01 nd1 f g [] = refl
+lemma nd0 nd01 nd1+ f g [] = refl
+lemma nd0 nd01 ndN f g [] = refl
+lemma nd0 nd1 nd0 f g [] = refl
+lemma nd0 nd1 nd01 f g [] = refl
+lemma nd0 nd1 nd1 f g [] = refl
+lemma nd0 nd1 nd1+ f g [] = refl
+lemma nd0 nd1 ndN f g [] = refl
+lemma nd0 nd1+ nd0 f g [] = refl
+lemma nd0 nd1+ nd01 f g [] = refl
+lemma nd0 nd1+ nd1 f g [] = refl
+lemma nd0 nd1+ nd1+ f g [] = refl
+lemma nd0 nd1+ ndN f g [] = refl
+lemma nd0 ndN nd0 f g [] = refl
+lemma nd0 ndN nd01 f g [] = refl
+lemma nd0 ndN nd1 f g [] = refl
+lemma nd0 ndN nd1+ f g [] = refl
+lemma nd0 ndN ndN f g [] = refl
+lemma nd01 nd0 nd0 f g [] = refl
+lemma nd01 nd0 nd01 f g [] = refl
+lemma nd01 nd0 nd1 f g [] = refl
+lemma nd01 nd0 nd1+ f g [] = refl
+lemma nd01 nd0 ndN f g [] = refl
+lemma nd01 nd01 nd0 f g [] = refl
+lemma nd01 nd01 nd01 f g [] = refl
+lemma nd01 nd01 nd1 f g [] = refl
+lemma nd01 nd01 nd1+ f g [] = refl
+lemma nd01 nd01 ndN f g [] = refl
+lemma nd01 nd1 nd0 f g [] = refl
+lemma nd01 nd1 nd01 f g [] = refl
+lemma nd01 nd1 nd1 f g [] = refl
+lemma nd01 nd1 nd1+ f g [] = refl
+lemma nd01 nd1 ndN f g [] = refl
+lemma nd01 nd1+ nd0 f g [] = refl
+lemma nd01 nd1+ nd01 f g [] = refl
+lemma nd01 nd1+ nd1 f g [] = refl
+lemma nd01 nd1+ nd1+ f g [] = refl
+lemma nd01 nd1+ ndN f g [] = refl
+lemma nd01 ndN nd0 f g [] = refl
+lemma nd01 ndN nd01 f g [] = refl
+lemma nd01 ndN nd1 f g [] = refl
+lemma nd01 ndN nd1+ f g [] = refl
+lemma nd01 ndN ndN f g [] = refl
+lemma nd1 nd0 nd0 f g [] = refl
+lemma nd1 nd0 nd01 f g [] = refl
+lemma nd1 nd0 nd1 f g [] = refl
+lemma nd1 nd0 nd1+ f g [] = refl
+lemma nd1 nd0 ndN f g [] = refl
+lemma nd1 nd01 nd0 f g [] = refl
+lemma nd1 nd01 nd01 f g [] = refl
+lemma nd1 nd01 nd1 f g [] = refl
+lemma nd1 nd01 nd1+ f g [] = refl
+lemma nd1 nd01 ndN f g [] = refl
+lemma nd1 nd1 nd0 f g [] = refl
+lemma nd1 nd1 nd01 f g [] = refl
+lemma nd1 nd1 nd1 f g [] = refl
+lemma nd1 nd1 nd1+ f g [] = refl
+lemma nd1 nd1 ndN f g [] = refl
+lemma nd1 nd1+ nd0 f g [] = refl
+lemma nd1 nd1+ nd01 f g [] = refl
+lemma nd1 nd1+ nd1 f g [] = refl
+lemma nd1 nd1+ nd1+ f g [] = refl
+lemma nd1 nd1+ ndN f g [] = refl
+lemma nd1 ndN nd0 f g [] = refl
+lemma nd1 ndN nd01 f g [] = refl
+lemma nd1 ndN nd1 f g [] = refl
+lemma nd1 ndN nd1+ f g [] = refl
+lemma nd1 ndN ndN f g [] = refl
+lemma nd1+ nd0 nd0 f g [] = refl
+lemma nd1+ nd0 nd01 f g [] = refl
+lemma nd1+ nd0 nd1 f g [] = refl
+lemma nd1+ nd0 nd1+ f g [] = refl
+lemma nd1+ nd0 ndN f g [] = refl
+lemma nd1+ nd01 nd0 f g [] = refl
+lemma nd1+ nd01 nd01 f g [] = refl
+lemma nd1+ nd01 nd1 f g [] = refl
+lemma nd1+ nd01 nd1+ f g [] = refl
+lemma nd1+ nd01 ndN f g [] = refl
+lemma nd1+ nd1 nd0 f g [] = refl
+lemma nd1+ nd1 nd01 f g [] = refl
+lemma nd1+ nd1 nd1 f g [] = refl
+lemma nd1+ nd1 nd1+ f g [] = refl
+lemma nd1+ nd1 ndN f g [] = refl
+lemma nd1+ nd1+ nd0 f g [] = refl
+lemma nd1+ nd1+ nd01 f g [] = refl
+lemma nd1+ nd1+ nd1 f g [] = refl
+lemma nd1+ nd1+ nd1+ f g [] = refl
+lemma nd1+ nd1+ ndN f g [] = refl
+lemma nd1+ ndN nd0 f g [] = refl
+lemma nd1+ ndN nd01 f g [] = refl
+lemma nd1+ ndN nd1 f g [] = refl
+lemma nd1+ ndN nd1+ f g [] = refl
+lemma nd1+ ndN ndN f g [] = refl
+lemma ndN nd0 nd0 f g [] = refl
+lemma ndN nd0 nd01 f g [] = refl
+lemma ndN nd0 nd1 f g [] = refl
+lemma ndN nd0 nd1+ f g [] = refl
+lemma ndN nd0 ndN f g [] = refl
+lemma ndN nd01 nd0 f g [] = refl
+lemma ndN nd01 nd01 f g [] = refl
+lemma ndN nd01 nd1 f g [] = refl
+lemma ndN nd01 nd1+ f g [] = refl
+lemma ndN nd01 ndN f g [] = refl
+lemma ndN nd1 nd0 f g [] = refl
+lemma ndN nd1 nd01 f g [] = refl
+lemma ndN nd1 nd1 f g [] = refl
+lemma ndN nd1 nd1+ f g [] = refl
+lemma ndN nd1 ndN f g [] = refl
+lemma ndN nd1+ nd0 f g [] = refl
+lemma ndN nd1+ nd01 f g [] = refl
+lemma ndN nd1+ nd1 f g [] = refl
+lemma ndN nd1+ nd1+ f g [] = refl
+lemma ndN nd1+ ndN f g [] = refl
+lemma ndN ndN nd0 f g [] = refl
+lemma ndN ndN nd01 f g [] = refl
+lemma ndN ndN nd1 f g [] = refl
+lemma ndN ndN nd1+ f g [] = refl
+lemma ndN ndN ndN f g [] = refl
+-}
+lemma e e' e'' f g [] = {!!}
+lemma e e' e'' f g (x ∷ xs) with f x
+lemma e e' e'' f g (x ∷ xs) | [] = {!!}
+lemma e e' e'' f g (x ∷ xs) | x₁ ∷ c = {!!}
+
 
 mlaw3ND : (e e' e'' : ND) → {X Y Z : Set} →
           (f : X → TND e' Y) → (g : Y → TND e'' Z) → (c : TND e X) → 
