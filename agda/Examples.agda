@@ -124,3 +124,8 @@ test-and = ⟦ LET AND $ TT IN varify 0 $ TT ⟧ tt
 -- infinite program in my language
 -- inf : ∀ {Γ} → CTerm Γ nat
 -- inf = LET inf IN VAL (VAR here)
+
+
+------------------------------------------------------------
+
+test-err = ⟦ VAL (ERR "division by 0") ⟧ tt

@@ -6,6 +6,7 @@ open import Data.Product
 open import Data.Nat hiding (_≟_)
 open import Data.Bool hiding (T ; _≟_)
 open import Data.List
+open import Data.String hiding (_++_)
 
 
 open import Finiteness
@@ -14,7 +15,7 @@ open import Language
 --open import OrderedMonoid
 --open import NonDeterminism
 
-  
+-- T, η, lift are given by GradedMonad parameter
 T : Set → Set
 T X = List X
 
@@ -25,6 +26,7 @@ lift : {X Y : Set} → (X → T Y) → T X → T Y
 lift f []  = []
 lift f (x ∷ xs) = f x ++ lift f xs
 
+-- what are these?
 sfail : {X : Set} → T X
 sfail = []
 
@@ -38,6 +40,7 @@ sor = _++_
 ⟦ bool ⟧v = Bool
 ⟦ t ⇒ u ⟧v = ⟦ t ⟧v → T ⟦ u ⟧v
 ⟦ t ∏ u ⟧v = ⟦ t ⟧v × ⟦ u ⟧v
+⟦ err ⟧v = String
 
 
 ⟦_⟧l : Ctx → Set
@@ -66,6 +69,7 @@ mutual
   ⟦ SND p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
   ⟦ VAR x ⟧t ρ = proj x ρ
   ⟦ LAM σ t ⟧t ρ = λ x → ⟦ t ⟧ (x , ρ)
+  ⟦ ERR s ⟧t ρ = s
   
   ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → T ⟦ σ ⟧v
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧t ρ)
