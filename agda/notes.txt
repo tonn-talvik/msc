@@ -1,0 +1,5 @@
+-- http://mazzo.li/posts/Lambda.html builds variable proofs during type checking
+data Syntax : Set where
+  var : ℕ → Syntax
+data Term {n} {Γ : Ctx n) : Type → Set where
+  var : ∀ {τ} (v : Fin n) → τ ≡ lookup v Γ → Term Γ τ
