@@ -15,23 +15,23 @@ open import Semantics
 ----------------------------------------------------------------------
 -- Silly examples for variables
 
-test-v0      = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
---test-v0-contra = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
-testv1        = ⟦ VAL (varify 0) ⟧ (1 , tt)
---test-v1-contra = ⟦ VAL (varify 1) ⟧ (1 , tt)
-test-v2        = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
-test-v3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l →  T ℕ
-test-v3        = ⟦ VAL (varify 0) ⟧
+run-v0 = ⟦ VAL (LAM nat (VAL (varify 0))) ⟧ tt
+-- run-v0-bad = ⟦ VAL (LAM nat (VAL (varify 1))) ⟧ tt
+run-v1 = ⟦ VAL (varify 0) ⟧ (1 , tt)
+-- run-v1-bad = ⟦ VAL (varify 1) ⟧ (1 , tt)
+run-v2 = ⟦ IF (varify 2) THEN VAL (varify 0) ELSE VAL (varify 1) ⟧ (1 , 2 , false , tt)
+prg-v3 : {Γ : Ctx} → ⟦ nat ∷ Γ ⟧l → T ℕ
+prg-v3 = ⟦ VAL (varify 0) ⟧
 
 
-test-p1 = ⟦ VAL (varify 0) ⟧ (1 , tt)
-test-p2 = ⟦ IF TT THEN (VAL (SS ZZ)) ELSE VAL ZZ ⟧ tt
-test-p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , tt) ) 
-test-p4 = ⟦ VAL (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
-test-p5 = ⟦ LAM nat (VAL (SS (varify 0))) $ ZZ ⟧ tt
-test-p6 = ⟦ PREC (natify 6) (VAL ZZ) ((LET VAL (varify 0) IN (VAL (varify 1)) )) ⟧ tt
-test-p7 : ℕ → T ℕ
-test-p7 n  = ⟦ PREC (natify n) (VAL ZZ) (CHOOSE (VAL (varify 0)) (VAL (SS (SS (varify 0))))) ⟧ tt
+run-p1 = ⟦ VAL (varify 0) ⟧ (1 , tt)
+run-p2 = ⟦ IF TT THEN (VAL (SS ZZ)) ELSE VAL ZZ ⟧ tt
+run-p3 = ⟦ (varify 0) $ (varify 1) ⟧ ( (λ x → η (x * x)) , (3 , tt) ) 
+run-p4 = ⟦ VAL (SND ⟨ ZZ , TT ⟩ ) ⟧ tt
+run-p5 = ⟦ LAM nat (VAL (SS (varify 0))) $ ZZ ⟧ tt
+run-p6 = ⟦ PREC (natify 6) (VAL ZZ) ((LET VAL (varify 0) IN (VAL (varify 1)) )) ⟧ tt
+run-p7 : ℕ → T ℕ
+run-p7 n  = ⟦ PREC (natify n) (VAL ZZ) (CHOOSE (VAL (varify 0)) (VAL (SS (SS (varify 0))))) ⟧ tt
 
 
 -----------------------------------------------------------------
@@ -39,8 +39,9 @@ test-p7 n  = ⟦ PREC (natify n) (VAL ZZ) (CHOOSE (VAL (varify 0)) (VAL (SS (SS 
 INC  : ∀ {Γ} → VTerm Γ (nat ⇒ nat)
 INC = LAM nat (VAL (SS (VAR here)))
 
-test-inc-75 = ⟦ INC $ natify 75 ⟧ tt
-
+run-inc-75 = ⟦ INC $ natify 75 ⟧ tt
+tst-inc-75 : run-inc-75 ≡ [ 76 ]
+tst-inc-75 = refl
 
 IS-ZERO : ∀ {Γ} → VTerm Γ (nat ⇒ bool)
 IS-ZERO = LAM nat
@@ -48,7 +49,9 @@ IS-ZERO = LAM nat
                     (VAL TT)
                     (VAL FF))
 
-test-is-zero = ⟦ IS-ZERO $ natify 0 ⟧ tt
+run-is-zero-0 = ⟦ IS-ZERO $ natify 0 ⟧ tt
+tst-is-zero-0 : run-is-zero-0 ≡ [ true ]
+tst-is-zero-0 = refl
 
 
 DEC : ∀ {Γ} → VTerm Γ (nat ⇒ nat)
@@ -61,7 +64,9 @@ DEC = LAM nat (LET PREC (VAR here)
                         )
                    IN VAL (FST (VAR here)) )
                    
-test-dec = ⟦ DEC $ natify 10 ⟧ tt
+run-dec-10 = ⟦ DEC $ natify 10 ⟧ tt
+tst-dec-10 : run-dec-10 ≡ [ 9 ]
+tst-dec-10 = refl
 
 
 ADD : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
@@ -71,7 +76,9 @@ ADD = (LAM nat (
                      (VAL (varify 1))
                      (VAL (SS (varify 0)))))))
 
-test-add-3-4 = ⟦ LET ADD $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , tt))
+run-add-3-4 = ⟦ LET ADD $ varify 1 IN varify 0 $ varify 1 ⟧ (3 , (4 , tt))
+tst-add-3-4 : run-add-3-4 ≡ [ 7 ]
+tst-add-3-4 = refl
 
 
 MUL : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ nat)
@@ -82,7 +89,9 @@ MUL = (LAM nat (
                      (LET ADD $ varify 0 IN
                           (varify 0 $ varify 4 ))))))
 
-test-mul-3-4 = ⟦ LET MUL $ natify 3 IN varify 0 $ natify 4 ⟧ tt
+run-mul-3-4 = ⟦ LET MUL $ natify 3 IN varify 0 $ natify 4 ⟧ tt
+tst-mul-3-4 : run-mul-3-4 ≡ [ 12 ]
+tst-mul-3-4 = refl
 
 
 
@@ -93,8 +102,9 @@ FACT = LAM nat
                  (LET MUL $ VAR here IN
                       (VAR here $ SS (VAR (there (there here))))))
                       
-test-fact-5 = ⟦ FACT $ natify 5 ⟧ tt
-
+run-fact-5 = ⟦ FACT $ natify 5 ⟧ tt
+tst-fact-5 : run-fact-5 ≡ [ 120 ]
+tst-fact-5 = refl
 
 ------------------------------------------------------------
 
@@ -114,8 +124,8 @@ AND = LAM bool (VAL (LAM bool
 
 OR = LAM bool (VAL (LAM bool (IF VAR here THEN VAL TT ELSE IF VAR (there here) THEN VAL TT ELSE VAL FF)))
 
-test-and = ⟦ LET AND $ TT IN varify 0 $ TT ⟧ tt
-test-or = ⟦ LET OR $ FF IN varify 0 $ TT ⟧ tt
+run-and-t-t = ⟦ LET AND $ TT IN varify 0 $ TT ⟧ tt
+run-or-f-t = ⟦ LET OR $ FF IN varify 0 $ TT ⟧ tt
 -----------------------------------------------------------------
 
 DEC' : ∀ {Γ} → VTerm Γ (nat ⇒ (nat ∏ bool))
@@ -151,11 +161,10 @@ run-sub':5-6 = prg-sub' (5 , (6 , tt))
 tst-sub':5-6=0,t : run-sub':5-6 ≡ [ (0 , true) ]
 tst-sub':5-6=0,t = refl
 
-LT EQ GT : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ bool)
+LT GT : ∀ {Γ} → VTerm Γ (nat ⇒ nat ⇒ bool)
 LT = LAM nat (VAL (LAM nat (LET SUB' $ varify 1 IN (LET varify 0 $ varify 1 IN VAL (SND (varify 0))))))
-EQ = {!!}
 GT = LAM nat (VAL (LAM nat (LET SUB' $ varify 0 IN (LET varify 0 $ varify 2 IN VAL (SND (varify 0))))))
-
+-- EQ = {!!} -- AND (not LT) (not GT)
 
 prg-lt prg-gt : {Γ : Ctx} → ⟦ nat ∷ nat ∷ Γ ⟧l  → T Bool
 prg-lt = ⟦ LET LT $ varify 0 IN varify 0 $ varify 2 ⟧
@@ -191,20 +200,20 @@ tst-gt:3>3 = refl
 --     let x ⇐ val 1 or val 2 in let y ⇐ val 3 or val 4 in f(x+y) : T int⟧ = {4,5}
 
 run-benton-1 =
-  ⟦ LET (VAL (LAM nat                                      -- f ⇐ val (λx: int.
+  ⟦ LET (VAL (LAM nat                                      -- let f ⇐ val (λx: int.
                   (LET (LET LT $ varify 0
                         IN varify 0 $ natify 6)            --          x < 6
                    IN IF varify 0                          --       if ...
                       THEN VAL (varify 1)                  --         then val x
                       ELSE FAIL)))                         --         else fail)
-    IN (LET (CHOOSE (VAL (natify 1)) (VAL (natify 2)))     -- x ⇐ val 1 or val 2
-        IN (LET (CHOOSE (VAL (natify 3)) (VAL (natify 4))) -- y ⇐ val 3 or val 4
+    IN (LET (CHOOSE (VAL (natify 1)) (VAL (natify 2)))     -- let x ⇐ val 1 or val 2
+        IN (LET (CHOOSE (VAL (natify 3)) (VAL (natify 4))) -- let y ⇐ val 3 or val 4
             IN (LET (LET ADD $ varify 1
-                     IN (varify 0 $ varify 1))             --  x + y
-                IN varify 3 $ varify 0))) ⟧ tt             -- f(...)
+                     IN (varify 0 $ varify 1))             --     x + y
+                IN varify 3 $ varify 0))) ⟧ tt             -- in f(...)
 
 tst-benton-1 : run-benton-1 ≡ 4 ∷ 5 ∷ 5 ∷ [] -- our list has duplicates too!
 tst-benton-1 = refl
 ------------------------------------------------------------
 
-test-err = ⟦ VAL (ERR "division by 0") ⟧ tt
+run-err = ⟦ VAL (ERR "division by 0") ⟧ tt
