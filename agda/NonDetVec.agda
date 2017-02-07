@@ -45,11 +45,12 @@ ass+ {suc m} = cong suc (ass+ {m})
 dist+ : {m n o : ℕ} → (m + n) * o ≡ m * o + n * o
 dist+ {zero}  {_} {_} = refl
 dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o})) 
-                              (sym (ass+ {o} {m * o} {n * o}))
+                              (+ass {o} {m * o} {n * o})
 
 ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o) -- ⊑
 ass* {zero} = refl
-ass* {suc m} {n} {o} =
+ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o}) (cong (λ x → n * o + x) (ass* {m} {n} {o}))
+{-
                 begin
                   (n + m * n) * o
                 ≡⟨ dist+ {n} {m * n} {o}  ⟩
@@ -57,6 +58,8 @@ ass* {suc m} {n} {o} =
                 ≡⟨ cong (λ x → n * o + x) (ass* {m} {n} {o}) ⟩
                   n * o + m * (n * o)
                 ∎
+-}
+
 zl* : {m : ℕ} → m * 0 ≡ 0
 zl* {zero} = refl
 zl* {suc m} = zl* {m}
@@ -244,7 +247,7 @@ lemma-ass* : {e e'' : M} →
 lemma-ass* {zero} = refl
 lemma-ass* {suc e} {e''} rewrite lemma-ass* {e} {e''}
     with lemma-cong0+ {p = ass* {e} {zero} {e''}}
-... | p rewrite p = lemma-trans
+... | p rewrite p = refl -- lemma-trans
 
 lemma-other : {e e' : M} →
               trans (cong (_+_ zero) (dist+ {e} {e'} {zero})) refl
@@ -300,7 +303,8 @@ lemma-head : {X : Set} {x : X} {e e' e'' : M}
              subV (cong suc p) (x ∷ xs)
              ≡ subV (cong suc q) (x ∷ xs')
 lemma-head {p = refl} {q = refl} {tail = refl} = refl
-                            
+  
+{-                          
 lemma-that : {e e' e'' : M} {X Y : Set}
              (ys : Vec Y e'')
              (xs : Vec X e)
@@ -333,6 +337,7 @@ lemma-that {e} {e'} {suc e''} (y ∷ ys) xs xs' f =
     subV (+ass {suc e''} {e * suc e''} {e' * suc e''})
          (y ∷ ys ++ subV (dist+ {e} {e'} {suc e''}) (liftV f (xs ++ xs')))
   ∎
+-}
 {- long version of base case
 lemma-that {e} {e'} {zero} [] xs xs' f =
   begin
@@ -402,7 +407,7 @@ lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
     subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
   ≡⟨ refl ⟩
     subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
-  ≡⟨ lemma-that (f x) xs xs' f ⟩
+  ≡⟨ {!!} ⟩
     subV (+ass {e''} {e * e''} {e' * e''})
          (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
   ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
@@ -439,6 +444,12 @@ lemma {e} {suc e'} {e''} g (y ∷ ys) ys' =
     liftV g (y ∷ ys) ++ subV (ass* {e} {suc e'} {e''}) (liftV g ys')
   ∎
 
+
+subV-lemma : {e e' : M} {X Y : Set} → (g : M → M) → (f : {e : M} → Vec X e → Vec Y (g e))
+      → (p : e ≡ e') → (xs : Vec X e) → subV (cong g p) (f xs) ≡ f (subV p xs)
+subV-lemma g f refl xs =  refl
+
+
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
       (g : Y → Vec Z e'') (c : Vec X e) →
       subV (ass* {e} {e'} {e''}) (liftV g (liftV f c))
@@ -449,7 +460,13 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
     subV (ass* {suc e} {e'} {e''}) (liftV g (liftV f (x ∷ xs)))
   ≡⟨ refl ⟩
     subV (ass* {suc e} {e'} {e''}) (liftV g (f x ++ liftV f xs))
-  ≡⟨ lemma {e} {e'} {e''} g (f x) (liftV f xs) ⟩
+  ≡⟨ sym (sub-trans (dist+ {e'} {e * e'} {e''}) (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''})) _)  ⟩
+    subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))
+       (subV (dist+ {e'} {e * e'} {e''}) (liftV g (f x ++ liftV f xs)))
+  ≡⟨  cong (subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))) (lemma-dist (f x) (liftV f xs) g) ⟩ 
+    subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))
+        (liftV g (f x) ++ liftV g (liftV f xs))
+  ≡⟨ subV-lemma (_+_ (e' * e'')) (_++_ (liftV g (f x))) (ass* {e} {e'} {e''}) _  ⟩ 
      (liftV g (f x) ++ subV (ass* {e} {e'} {e''}) (liftV g (liftV f xs)))
   ≡⟨ cong (_++_ (liftV g (f x))) (mlaw3V f g xs) ⟩
     liftV g (f x) ++ liftV (λ x → liftV g (f x)) xs
