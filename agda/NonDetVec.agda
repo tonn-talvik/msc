@@ -191,26 +191,6 @@ lemma++ : {e e' e'' : M} {X : Set}
 lemma++ [] xs' xs'' = refl
 lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++ xs xs' xs'')
 
-lemma-11 : {e e' e'' : M} →
-           (e'' + (e' * e'' + e * suc e' * e'')) ⊑
-           (e'' + e' * e'' + e * (e'' + e' * e''))
-lemma-11 {e} {e'} {e''} = 
-  begin
-    e'' + (e' * e'' + e * suc e' * e'')
-  ≡⟨ +ass {e''} {e' * e''} {e * suc e' * e''} ⟩
-    (e'' + e' * e'') + e * suc e' * e''
-  ≡⟨ cong (_+_ (e'' + e' * e'')) (
-          begin
-            e * suc e' * e''
-          ≡⟨ ass* {e} {suc e'} {e''} ⟩
-            e * (suc e' * e'')
-          ≡⟨ refl ⟩
-            e * (e'' + e' * e'')
-          ∎) ⟩
-    e'' + e' * e'' + e * (e'' + e' * e'')
-  ∎
-
-
 lemma-cong0+ : {e e' : M} {p : e ≡ e'} → 
                cong (_+_ 0) p ≡ p
 lemma-cong0+ {p = refl} = refl
@@ -218,19 +198,6 @@ lemma-cong0+ {p = refl} = refl
 lemma-trans : {e e' : M} {p : e ≡ e'} →
               trans p refl ≡ p
 lemma-trans {p = refl} = refl
-
-lemma-ass* : {e e'' : M} →
-            ass* {suc e} {zero} {e''}
-            ≡ ass* {e} {zero} {e''}
-lemma-ass* {zero} = refl
-lemma-ass* {suc e} {e''} rewrite lemma-ass* {e} {e''}
-    with lemma-cong0+ {p = ass* {e} {zero} {e''}}
-... | p rewrite p = refl -- lemma-trans
-
-lemma-other : {e e' : M} →
-              trans (cong (_+_ zero) (dist+ {e} {e'} {zero})) refl
-              ≡ dist+ {e} {e'} {zero}
-lemma-other = trans lemma-trans lemma-cong0+
 
 lemma-sym-cong : {X : Set} {x x' : X} {f : X → X} {p : x ≡ x'} →
                  sym (cong f p) ≡ cong f (sym p)
