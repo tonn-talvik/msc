@@ -49,7 +49,7 @@ dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o}))
 
 ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o) -- ⊑
 ass* {zero} = refl
-ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o}) (cong (λ x → n * o + x) (ass* {m} {n} {o}))
+ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o}) (cong (_+_ (n * o)) (ass* {m} {n} {o}))
 {-
                 begin
                   (n + m * n) * o
@@ -221,6 +221,13 @@ lemma-head : {X : Set} {x : X} {e e' e'' : M}
 lemma-head {p = refl} {q = refl} {tail = refl} = refl
  
 
+subV-lemma : {e e' : M} {X Y : Set} →
+             (g : M → M) → (f : {e : M} → Vec X e → Vec Y (g e)) →
+             (p : e ≡ e') → (xs : Vec X e) →
+             subV (cong g p) (f xs) ≡ f (subV p xs)
+subV-lemma g f refl xs =  refl
+
+
 lemma-dist : {e e' e'' : M} {X Y : Set}
              (xs : Vec X e)
              (xs' : Vec X e')
@@ -233,7 +240,11 @@ lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
     subV (dist+ {suc e} {e'} {e''}) (liftV f (x ∷ xs ++ xs'))
   ≡⟨ refl ⟩
     subV (dist+ {suc e} {e'} {e''}) (f x ++ (liftV f (xs ++ xs')))
-  ≡⟨ {!!} ⟩
+  ≡⟨ sym (sub-trans (cong (_+_ e'') (dist+ {e} {e'} {e''})) (+ass {e''} {e * e''} {e' * e''}) _) ⟩
+    subV (+ass {e''} {e * e''} {e' * e''})
+         (subV (cong (_+_ e'') (dist+ {e} {e'} {e''})) (f x ++ liftV f (xs ++ xs')))
+  ≡⟨ cong (subV (+ass {e''} {e * e''} {e' * e''}))
+          (subV-lemma (_+_ e'') (_++_ (f x)) (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs'))) ⟩
     subV (+ass {e''} {e * e''} {e' * e''})
          (f x ++ subV (dist+ {e} {e'} {e''}) (liftV f (xs ++ xs')))
   ≡⟨ cong (λ ys → subV (+ass {e''} {e * e''} {e' * e''}) (f x ++ ys))
@@ -244,11 +255,6 @@ lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
   ≡⟨ refl ⟩
     liftV f (x ∷ xs) ++ liftV f xs'
   ∎
-
-subV-lemma : {e e' : M} {X Y : Set} → (g : M → M) → (f : {e : M} → Vec X e → Vec Y (g e))
-      → (p : e ≡ e') → (xs : Vec X e) → subV (cong g p) (f xs) ≡ f (subV p xs)
-subV-lemma g f refl xs =  refl
-
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
       (g : Y → Vec Z e'') (c : Vec X e) →
@@ -263,7 +269,7 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
   ≡⟨ sym (sub-trans (dist+ {e'} {e * e'} {e''}) (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''})) _)  ⟩
     subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))
        (subV (dist+ {e'} {e * e'} {e''}) (liftV g (f x ++ liftV f xs)))
-  ≡⟨  cong (subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))) (lemma-dist (f x) (liftV f xs) g) ⟩ 
+  ≡⟨ cong (subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))) (lemma-dist (f x) (liftV f xs) g) ⟩ 
     subV (cong (_+_ (e' * e'')) (ass* {e} {e'} {e''}))
         (liftV g (f x) ++ liftV g (liftV f xs))
   ≡⟨ subV-lemma (_+_ (e' * e'')) (_++_ (liftV g (f x))) (ass* {e} {e'} {e''}) _  ⟩ 
