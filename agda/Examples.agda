@@ -214,6 +214,3 @@ run-benton-1 =
 
 tst-benton-1 : run-benton-1 ≡ 4 ∷ 5 ∷ 5 ∷ [] -- our list has duplicates too!
 tst-benton-1 = refl
-------------------------------------------------------------
-
-run-err = ⟦ VAL (ERR "division by 0") ⟧ tt

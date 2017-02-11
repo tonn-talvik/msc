@@ -40,7 +40,6 @@ sor = _++_
 ⟦ bool ⟧v = Bool
 ⟦ t ⇒ u ⟧v = ⟦ t ⟧v → T ⟦ u ⟧v
 ⟦ t ∏ u ⟧v = ⟦ t ⟧v × ⟦ u ⟧v
-⟦ err ⟧v = String
 
 
 ⟦_⟧l : Ctx → Set
@@ -69,7 +68,6 @@ mutual
   ⟦ SND p ⟧t ρ = proj₂ (⟦ p ⟧t ρ)
   ⟦ VAR x ⟧t ρ = proj x ρ
   ⟦ LAM σ t ⟧t ρ = λ x → ⟦ t ⟧ (x , ρ)
-  ⟦ ERR s ⟧t ρ = s
   
   ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧l → T ⟦ σ ⟧v
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧t ρ)

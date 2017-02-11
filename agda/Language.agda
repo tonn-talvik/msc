@@ -18,7 +18,6 @@ data VType : Set where
   bool : VType
   _⇒_ : VType → VType → VType
   _∏_ : VType → VType → VType
-  err : VType
   
 
 Ctx = List VType
@@ -36,7 +35,6 @@ mutual
     SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
     VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
     LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
-    ERR : String → VTerm Γ err
 
 
   data CTerm (Γ : Ctx) : VType → Set where
@@ -71,12 +69,10 @@ nat ≟ nat      = yes refl
 nat ≟ bool     = no (λ ())
 nat ≟ u ⇒ v    = no (λ ())
 nat ≟ (u ∏ v)  = no (λ ())
-nat ≟ err      = no (λ ())
 bool ≟ nat     = no (λ ())
 bool ≟ bool    = yes refl
 bool ≟ u ⇒ v   = no (λ ())
 bool ≟ (u ∏ v) = no (λ ())
-bool ≟ err      = no (λ ())
 u ⇒ u₁ ≟ nat = no (λ ())
 u ⇒ u₁ ≟ bool = no (λ ())
 u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ with u₁ ≟ v₁ | u₂ ≟ v₂
@@ -84,7 +80,6 @@ u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | yes q rewrite p | q = yes refl
 u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | no ¬q = no (lemma-⇒-2 u₁ u₂ v₁ v₂ ¬q)
 u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | no ¬p | q = no (lemma-⇒-1 u₁ u₂ v₁ v₂ ¬p)
 u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
-u₁ ⇒ u₂ ≟ err      = no (λ ())
 (u ∏ v) ≟ nat = no (λ ())
 (u ∏ v) ≟ bool = no (λ ())
 (u₁ ∏ u₂) ≟ v₁ ⇒ v₂ = no (λ ())
@@ -93,13 +88,6 @@ u₁ ⇒ u₂ ≟ err      = no (λ ())
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | no ¬q = no (lemma-∏-2 u₁ u₂ v₁ v₂ ¬q)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
-(u₁ ∏ u₂) ≟ err      = no (λ ())
---err ≟ err = yes refl
-err ≟ nat = no (λ ())
-err ≟ bool = no (λ ())
-err ≟ (v ⇒ v₁) = no (λ ())
-err ≟ (v ∏ v₁) = no (λ ())
-err ≟ err = yes refl
 
 
 ------------------------------------------------------------

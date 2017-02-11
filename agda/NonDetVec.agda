@@ -35,9 +35,10 @@ dist+ {zero}  {_} {_} = refl
 dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o})) 
                               (+ass {o} {m * o} {n * o})
 
-ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o) -- ⊑
+ass* : {m n o : ℕ} → (m * n) * o ≡ m * (n * o)
 ass* {zero} = refl
-ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o}) (cong (_+_ (n * o)) (ass* {m} {n} {o}))
+ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o})
+                             (cong (_+_ (n * o)) (ass* {m} {n} {o}))
 
 
 ℕ* : OrderedMonoid
@@ -59,7 +60,6 @@ open OrderedMonoid.OrderedMonoid ℕ*
 ηV x = x ∷ [] 
 
 
-
 liftV : {m n : ℕ} {X Y : Set} →
         (X → Vec Y n) → Vec X m → Vec Y (m * n)
 liftV f [] =  []
@@ -70,15 +70,15 @@ subV : {n n' : ℕ} {X : Set} → n ⊑ n' → Vec X n → Vec X n'
 subV  = subeq {ℕ} {λ n X → Vec X n}
 
 
-subV∷ : {m n : ℕ} → {X : Set} → {x : X} → {xs : Vec X m} → {ys : Vec X n} →    
-    (p : m ≡ n) → subV p xs ≡ ys → subV (cong suc p) (x ∷ xs) ≡ x ∷ ys 
+subV∷ : {m n : ℕ} {X : Set} {x : X} {xs : Vec X m} {ys : Vec X n} →    
+        (p : m ≡ n) → subV p xs ≡ ys → subV (cong suc p) (x ∷ xs) ≡ x ∷ ys 
 subV∷ refl refl = refl
 
 
 sub-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
-      (f : X → Vec Y e') (c : Vec X e) →
-      subV (mon p q) (liftV f c) ≡
-      liftV ((subV q) ∘ f) (subV p c)
+          (f : X → Vec Y e') (c : Vec X e) →
+          subV (mon p q) (liftV f c) ≡
+          liftV ((subV q) ∘ f) (subV p c)
 sub-mon refl refl f c = refl 
 
 
@@ -97,13 +97,13 @@ sub-trans : {e e' e'' : M} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
 sub-trans refl refl c = refl
 
 
-mlaw1V : {n : ℕ} → {X Y : Set} → (f : X → Vec Y n) → (x : X) →
-            subV lu (liftV f (ηV x)) ≡ f x
+mlaw1V : {n : ℕ} {X Y : Set} → (f : X → Vec Y n) → (x : X) →
+         subV lu (liftV f (ηV x)) ≡ f x
 mlaw1V f x = ru++ (f x)
 
 
-mlaw2V : {n : ℕ} → {X : Set} → (xs : Vec X n) →
-            subV ru xs ≡ liftV ηV xs
+mlaw2V : {n : ℕ} {X : Set} → (xs : Vec X n) →
+         subV ru xs ≡ liftV ηV xs
 mlaw2V []       = refl
 mlaw2V (x ∷ xs) = subV∷ {x = x} {xs = xs} ru (mlaw2V xs) 
 
@@ -152,9 +152,9 @@ lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
   ∎
 
 mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
-      (g : Y → Vec Z e'') (c : Vec X e) →
-      subV (ass* {e} {e'} {e''}) (liftV g (liftV f c))
-      ≡ liftV (λ x → liftV g (f x)) c
+         (g : Y → Vec Z e'') (c : Vec X e) →
+         subV (ass* {e} {e'} {e''}) (liftV g (liftV f c))
+         ≡ liftV (λ x → liftV g (f x)) c
 mlaw3V f g [] = refl
 mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
   begin
