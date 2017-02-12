@@ -48,8 +48,8 @@ mutual
            CTerm (σ ∷ nat ∷ Γ) σ → CTerm Γ σ
     LET_IN_ : ∀ {σ τ} → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
 
-------------------------------------------------------------
-
+{- This part is relevant if we want to use Finiteness deciders
+--------------------------------------------------------------
 -- binary relations are inequal, if there are pointwise inequalities
 lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
 lemma-⇒-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
@@ -88,9 +88,8 @@ u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | no ¬q = no (lemma-∏-2 u₁ u₂ v₁ v₂ ¬q)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
 (u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
-
-
 ------------------------------------------------------------
+-}
 
 lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
            ¬ n < length Γ →
