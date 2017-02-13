@@ -19,6 +19,13 @@ open import Data.Vec
 data BVec (X : Set) (n : ℕ) : Set where
   bv : {m : ℕ} → Vec X m →  m ≤ n → BVec X n
 
+_∷bv_ : {X : Set} {n : ℕ} → X → BVec X n → BVec X (suc n)
+x ∷bv (bv xs p) = bv (x ∷ xs) (s≤s p)
+
+--_++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
+--bv xs p ++bv bv xs' q = {!!}
+
+
 refl≤ : {m : ℕ} → m ≤ m
 refl≤ {zero} = z≤n
 refl≤ {suc m} = s≤s refl≤
@@ -74,13 +81,8 @@ dist+ {suc m} {n} {o} = trans (cong (_+_ o) (dist+ {m} {n} {o}))
 
 ass* : {m n o : ℕ} → m * n * o ≡ m * (n * o)
 ass* {zero} = refl
-ass* {suc m} {n} {o} = begin
-                  (n + m * n) * o
-                ≡⟨ dist+ {n} {m * n} {o}  ⟩
-                  n * o + (m * n) * o
-                ≡⟨ cong (λ x → n * o + x) (ass* {m} {n} {o}) ⟩
-                  n * o + m * (n * o)
-                ∎
+ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o})
+                             (cong (_+_ (n * o)) (ass* {m} {n} {o}))
 
 ℕ* : OrderedMonoid
 ℕ* = record { M = ℕ
@@ -97,34 +99,92 @@ ass* {suc m} {n} {o} = begin
 
 open OrderedMonoid.OrderedMonoid ℕ*
  
-ηBV : {X : Set} → X → BVec X 1
+ηBV : {X : Set} → X → BVec X i
 ηBV x = bv (x ∷ []) 1≤1 
 
+
 liftBV :  {m n : ℕ} {X Y : Set} →
-        (X → BVec Y n) → BVec X m → BVec Y (m * n)
+        (X → BVec Y n) → BVec X m → BVec Y (m · n)
 liftBV f (bv [] z≤n) = bv [] z≤n
 liftBV f (bv (x ∷ xs) (s≤s p)) with f x | liftBV f (bv xs p)  
 ... | bv ys q | bv zs r = bv (ys ++ zs) (q +≤ r) 
 
+
 subBV : {e e' : M} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
-subBV p (bv x q) = bv x (trans≤ q p)
+subBV p (bv x q) = bv x (transM q p)
+
 
 subBV-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
       (f : X → BVec Y e') (c : BVec X e) →
       subBV (mon p q) (liftBV f c) ≡
       liftBV (λ x → subBV q (f x)) (subBV p c)
-subBV-mon p q f (bv x r) = {!!}
+subBV-mon p q f (bv [] z≤n) = refl
+subBV-mon (s≤s p) q f (bv (x ∷ xs) (s≤s r)) = 
+  begin
+    subBV (mon (s≤s p) q) (liftBV f (bv (x ∷ xs) (s≤s r)))
+  ≡⟨ {!!} ⟩
+    liftBV (λ x → subBV q (f x)) (subBV (s≤s p) (bv (x ∷ xs) (s≤s r)))
+  ∎
+
+
+transM-reflM : {e e' : M} (p : e ⊑ e') →
+               transM p reflM ≡ p
+transM-reflM z≤n = refl
+transM-reflM (s≤s p) = cong s≤s (transM-reflM p)
+
+
+subBV-refl : {e : M} {X : Set} (c : BVec X e) → subBV reflM c ≡ c
+subBV-refl (bv x p) = cong (bv x) (transM-reflM p)
+
+
+trans-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''') →
+            transM (transM p q) r ≡ transM p (transM q r)
+trans-ass z≤n q r = refl
+trans-ass (s≤s p) (s≤s q) (s≤s r) = cong s≤s (trans-ass p q r)
+
+subBV-trans : {e e' e'' : M} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
+              (c : BVec X e) →
+              subBV q (subBV p c) ≡ subBV (transM p q) c
+subBV-trans p q (bv x r) = cong (bv x) (trans-ass r p q)
+
+TBV = λ e X → BVec X e
+
+
+subeq∷ : {m n : M} {X : Set} {x : X} {xs : BVec X m} {ys : BVec X n} →    
+        (p : m ≡ n) → subeq {T = TBV} p xs ≡ ys → subeq {T = TBV} (cong suc p) (x ∷bv xs) ≡ x ∷bv ys
+subeq∷ refl refl = refl
+
+
+ru++ : {m n : M} {X : Set} (xs : Vec X m) (p : m ≤ n) →
+       subeq {T = TBV} ru+ (bv (xs ++ []) (p +≤ z≤n)) ≡ bv xs p
+ru++ [] (z≤n {zero}) = refl
+ru++ [] (z≤n {suc n}) = 
+  begin
+    subeq {T = TBV} (cong suc ru+) (bv [] (z≤n {suc (n + zero)}))
+  ≡⟨ {!!} ⟩
+    bv [] (z≤n {suc n})
+  ∎
+ru++ (x ∷ xs) (s≤s p) = subeq∷ ru+ (ru++ xs p)
+
+
+
+blaw1 : {e : M} {X Y : Set} (f : X → BVec Y e) (x : X) →
+        subeq {T = TBV} lu (liftBV f (ηBV x)) ≡ f x
+blaw1 f x with f x
+blaw1 f x | bv xs p = ru++ xs p
+
+
 
 NDBV : GradedMonad
 NDBV = record    { OM = ℕ*
-                 ; T = λ e X → BVec X e
+                 ; T = TBV
                  ; η = ηBV
                  ; lift = λ {e} {e'} → liftBV {e} {e'}
                  ; sub = subBV
                  ; sub-mon = subBV-mon
-                 ; sub-refl = {!!}
-                 ; sub-trans = {!!}
-                 ; mlaw1 = {!!}
+                 ; sub-refl = subBV-refl
+                 ; sub-trans = subBV-trans
+                 ; mlaw1 = blaw1
                  ; mlaw2 = {!!}
                  ; mlaw3 = {!!}
                  }
