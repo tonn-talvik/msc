@@ -9,14 +9,15 @@ open import Data.List
 open import Data.String hiding (_≟_)
 
 open import Finiteness
+open import Exception
 
 ------------------------------------------------------------  
-infixr 30 _⇒_
+infixr 30 _⇒_/_
 
 data VType : Set where
   nat : VType
   bool : VType
-  _⇒_ : VType → VType → VType
+  _⇒_/_ : VType → E → VType → VType
   _∏_ : VType → VType → VType
   
 
@@ -34,62 +35,20 @@ mutual
     FST : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
     SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
     VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
-    LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
+    LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) ε τ → VTerm Γ (σ ⇒ ε / τ)
 
 
-  data CTerm (Γ : Ctx) : VType → Set where
-    VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ σ
-    FAIL : ∀ {σ} → CTerm Γ σ
-    TRY_WITH_ : ∀ {σ} → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
-    IF_THEN_ELSE_ : ∀ {σ} → VTerm Γ bool → CTerm Γ σ → CTerm Γ σ → CTerm Γ σ
-    _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
-    PREC : ∀ {σ} → VTerm Γ nat →
-           CTerm Γ σ →
-           CTerm (σ ∷ nat ∷ Γ) σ → CTerm Γ σ
-    LET_IN_ : ∀ {σ τ} → CTerm Γ σ → CTerm (σ ∷ Γ) τ → CTerm Γ τ
+  data CTerm (Γ : Ctx) : E → VType → Set where
+    VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ ok σ
+    FAIL : ∀ {σ} → CTerm Γ err σ
+    TRY_WITH_ : ∀ {ε σ} → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
+    IF_THEN_ELSE_ : ∀ {σ ε} → VTerm Γ bool → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
+    _$_ : ∀ {σ τ ε} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ ε τ
+    PREC : ∀ {ε σ} → VTerm Γ nat →
+           CTerm Γ ε σ →
+           CTerm (σ ∷ nat ∷ Γ) ε σ → CTerm Γ ε σ
+    LET_IN_ : ∀ {σ τ ε ε'} → CTerm Γ ε σ → CTerm (σ ∷ Γ) ε' τ → CTerm Γ (ε ·E ε') τ
 
-{- This part is relevant if we want to use Finiteness deciders
---------------------------------------------------------------
--- binary relations are inequal, if there are pointwise inequalities
-lemma-⇒-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
-lemma-⇒-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
-
-lemma-⇒-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂ → ¬ (u₁ ⇒ u₂ ≡ v₁ ⇒ v₂)
-lemma-⇒-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
-
-lemma-∏-1 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₁ ≡ v₁ → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
-lemma-∏-1 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
-
-lemma-∏-2 : (u₁ u₂ v₁ v₂ : VType) → ¬ u₂ ≡ v₂ → ¬ (u₁ ∏ u₂ ≡ v₁ ∏ v₂)
-lemma-∏-2 u₁ u₂ .u₁ .u₂ ¬q refl = ¬q refl
-
--- is ALL of this really required?
-_≟_ : (u v : VType) → Dec (u ≡ v)
-nat ≟ nat      = yes refl
-nat ≟ bool     = no (λ ())
-nat ≟ u ⇒ v    = no (λ ())
-nat ≟ (u ∏ v)  = no (λ ())
-bool ≟ nat     = no (λ ())
-bool ≟ bool    = yes refl
-bool ≟ u ⇒ v   = no (λ ())
-bool ≟ (u ∏ v) = no (λ ())
-u ⇒ u₁ ≟ nat = no (λ ())
-u ⇒ u₁ ≟ bool = no (λ ())
-u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ with u₁ ≟ v₁ | u₂ ≟ v₂
-u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | yes q rewrite p | q = yes refl
-u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | yes p | no ¬q = no (lemma-⇒-2 u₁ u₂ v₁ v₂ ¬q)
-u₁ ⇒ u₂ ≟ v₁ ⇒ v₂ | no ¬p | q = no (lemma-⇒-1 u₁ u₂ v₁ v₂ ¬p)
-u₁ ⇒ u₂ ≟ (v₁ ∏ v₂) = no (λ ())
-(u ∏ v) ≟ nat = no (λ ())
-(u ∏ v) ≟ bool = no (λ ())
-(u₁ ∏ u₂) ≟ v₁ ⇒ v₂ = no (λ ())
-(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) with u₁ ≟ v₁ | u₂ ≟ v₂
-(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | yes q rewrite p | q = yes refl
-(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | yes p | no ¬q = no (lemma-∏-2 u₁ u₂ v₁ v₂ ¬q)
-(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | yes q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p)
-(u₁ ∏ u₂) ≟ (v₁ ∏ v₂) | no ¬p | no ¬q = no (lemma-∏-1 u₁ u₂ v₁ v₂ ¬p) -- duplicates previous line
-------------------------------------------------------------
--}
 
 lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
            ¬ n < length Γ →

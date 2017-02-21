@@ -12,8 +12,11 @@ open import Data.String hiding (_++_)
 
 open import Finiteness
 open import ELanguage
+open import GradedMonad
+open import Exception
+open GradedMonad.GradedMonad ExcEffGM
 
-
+{-
 T : Set → Set
 T X = Maybe X
 
@@ -24,20 +27,27 @@ lift : {X Y : Set} → (X → T Y) → T X → T Y
 lift f (just x) = f x
 lift f nothing  = nothing
 
-
 sfail : {X : Set} → T X
 sfail = nothing
 
 sor : {X : Set} → T X → T X → T X 
 sor (just x) _ = just x
 sor nothing x' = x'
+-}
+
+sfail : {X : Set} → T err X
+sfail = {!!}
+
+sor : {X : Set} {ε : E} → T ε X → T ε X → T ε X 
+sor x = {!!}
+
 
 ----------------------------------------------------------------------
   
 ⟦_⟧t : VType → Set
 ⟦ nat ⟧t = ℕ
 ⟦ bool ⟧t = Bool
-⟦ t ⇒ u ⟧t = ⟦ t ⟧t → T ⟦ u ⟧t
+⟦ t ⇒ ε / u ⟧t = ⟦ t ⟧t → T ε ⟦ u ⟧t
 ⟦ t ∏ u ⟧t = ⟦ t ⟧t × ⟦ u ⟧t
 
 
@@ -51,7 +61,7 @@ proj (here' p) ρ rewrite p = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
 
-primrecT : {t : Set} → ℕ → T t → (ℕ → t → T t) → T t
+primrecT : {ε : E} {t : Set} → ℕ → T ε t → (ℕ → t → T ε t) → T ε t
 primrecT zero z s = z
 primrecT (suc n) z s = lift (s n) (primrecT n z s)
 
@@ -68,7 +78,7 @@ mutual
   ⟦ VAR x ⟧v ρ = proj x ρ
   ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧ (x , ρ)
   
-  ⟦_⟧ : {Γ : Ctx} → {σ : VType} → CTerm Γ σ → ⟦ Γ ⟧c → T ⟦ σ ⟧t
+  ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ ε σ → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
   ⟦ FAIL ⟧ ρ = sfail
   ⟦ TRY t WITH u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
