@@ -25,21 +25,17 @@ trans≤ : {m n o : ℕ} → m ≤ n → n ≤ o → m ≤ o
 trans≤ z≤n q = z≤n
 trans≤ (s≤s p) (s≤s q) = s≤s (trans≤ p q)
 
-1≤1 : 1 ≤ 1
-1≤1 = s≤s z≤n
-
 ≤+1 : {m n : ℕ} → m ≤ n → m ≤ suc n
 ≤+1 z≤n = z≤n
 ≤+1 (s≤s p) = s≤s (≤+1 p)
 
-≤+ : {m m' n : ℕ} → m ≤ m' → m ≤ n + m'
-≤+ {n = zero} p = p
-≤+ {zero} {n = suc n} p = z≤n
-≤+ {suc m} {zero} {suc n} ()
-≤+ {suc m} {suc m'} {suc n} (s≤s p) = s≤s (≤+ {m} {suc m'} {n} (≤+1 p))
+≤+ : (n : ℕ) {m m' : ℕ} → m ≤ m' → m ≤ n + m'
+≤+ zero p = p
+≤+ (suc n) z≤n = z≤n
+≤+ (suc n) (s≤s p) = s≤s (≤+ n (≤+1 p))
 
 mon+ : {m n m' n' : ℕ} → m ≤ m' → n ≤ n' → m + n ≤ m' + n'
-mon+ {zero} {n} {m'} {n'} z≤n q = ≤+ {n} {n'} {m'} q
+mon+ {m' = m'} z≤n q = ≤+ m' q
 mon+ (s≤s p) q = s≤s (mon+ p q)
 
 mon* : {m n m' n' : ℕ} → m ≤ m' → n ≤ n' → m * n ≤ m' * n'
@@ -90,30 +86,77 @@ open OrderedMonoid.OrderedMonoid ℕ*
 data BVec (X : Set) : (n : ℕ) → Set where
   bv : {m n : ℕ} → Vec X m →  m ≤ n → BVec X n
 
+
 _∷bv_ : {X : Set} {n : ℕ} → X → BVec X n → BVec X (suc n)
 x ∷bv (bv xs p) = bv (x ∷ xs) (s≤s p)
+
 
 _++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
 bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)
 
-ruu : {m : M} → m ≡ m * i
-ruu {zero} = refl
-ruu {suc m} = cong suc ruu
 
 ηBV : {X : Set} → X → BVec X i
-ηBV x = bv (x ∷ []) 1≤1 
+ηBV x = bv (x ∷ []) (s≤s z≤n)
 
 
 liftBV :  {m n : ℕ} {X Y : Set} →
         (X → BVec Y n) → BVec X m → BVec Y (m · n)
 liftBV f (bv [] z≤n) = bv [] z≤n
 liftBV f (bv (x ∷ xs) (s≤s p)) = (f x) ++bv liftBV f (bv xs p)
---liftBV f (bv (x ∷ xs) (s≤s p)) with f x | liftBV f (bv xs p)  
---... | bv ys q | bv zs r = bv (ys ++ zs) (mon+ q r) 
 
 
 subBV : {e e' : M} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
 subBV p (bv x q) = bv x (transM q p)
+
+
+
+
+lemma-trans+1 : {m n o : ℕ} (p : m ≤ n) (q : o ≤ m) →
+                ≤+1 (trans≤ q p) ≡ trans≤ q (≤+1 p)
+lemma-trans+1 p z≤n = refl
+lemma-trans+1 (s≤s p) (s≤s q) = cong s≤s (lemma-trans+1 p q)
+
+lemma-≤+ : {m n o : ℕ} (x : ℕ) (p : m ≤ n) (q : o ≤ m) →
+           transM q (≤+ x p) ≡ ≤+ x (transM q p)
+lemma-≤+ zero p q = refl
+lemma-≤+ (suc x) z≤n z≤n = refl
+lemma-≤+ (suc x) (s≤s p) z≤n = refl
+lemma-≤+ (suc x) (s≤s p) (s≤s q) rewrite lemma-trans+1 p q = cong s≤s (lemma-≤+ x (≤+1 p) q)
+
+
+what :  {m m' n n' o' : ℕ}
+        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
+        trans≤ (≤+ (suc m) (≤+1 q')) (s≤s (mon+ p (s≤s p'))) ≡
+        ≤+ (suc n) (≤+1 (trans≤ q' p'))
+what p p' z≤n = refl
+what p p' (s≤s q') = {!!}
+
+
+lemma : {m m' n n' o' : ℕ}
+        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
+        trans≤ (≤+ m (≤+1 q')) (mon+ p (s≤s p')) ≡ ≤+ n (≤+1 (trans≤ q' p'))
+lemma {n = zero} z≤n z≤n z≤n = refl
+lemma {n = zero} z≤n (s≤s p') z≤n = refl
+lemma {n = zero} z≤n (s≤s p') (s≤s q') = cong s≤s (lemma {n = zero} z≤n p' q')
+lemma {n = suc n} z≤n p' z≤n = refl
+lemma {n = suc n} z≤n (s≤s p') (s≤s q') rewrite lemma-trans+1 p' q' = cong s≤s (lemma {n = n} z≤n (≤+1 p') q')
+lemma (s≤s p) p' q' = what p p' q'
+
+
+lemma-mon+ : {m m' n n' o o' : ℕ}
+             (p : m ≤ n) (p' : m' ≤ n') (q : o ≤ m) (q' : o' ≤ m') →
+             transM (mon+ q q') (mon+ p p') ≡ mon+ (transM q p) (transM q' p')
+lemma-mon+ {n = n} z≤n p' z≤n q' = lemma-≤+ n p' q'
+lemma-mon+ (s≤s p) p' z≤n z≤n = refl
+lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q') = cong s≤s (lemma p p' q')
+lemma-mon+ (s≤s p) p' (s≤s q) q' = cong s≤s (lemma-mon+ p p' q q')
+
+
+lemma++ : {m m' n n' : ℕ} {X : Set} (p : m ≤ n) (p' : m' ≤ n')
+          (xs : BVec X m) (xs' : BVec X m') →
+          subBV (mon+ p p') (xs ++bv xs') ≡ subBV p xs ++bv subBV p' xs'
+lemma++ p p' (bv xs q) (bv xs' q') = cong (bv (xs ++ xs'))
+                                          (lemma-mon+ p p' q q')
 
 
 subBV-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
@@ -124,20 +167,12 @@ subBV-mon p q f (bv [] z≤n) = refl
 subBV-mon {suc e} {e'} {suc e''} {e'''} (s≤s p) q f (bv (x ∷ xs) (s≤s r)) = 
   begin
     subBV (mon+ q (mon* p q)) (f x ++bv liftBV f (bv xs r))
-  ≡⟨ {!!} ⟩
-    subBV (mon+ q refl≤) (f x ++bv subBV (mon* p q) (liftBV f (bv xs r)))
-  ≡⟨ {!!} ⟩
+  ≡⟨ lemma++ q (mon* p q) (f x) (liftBV f (bv xs r)) ⟩
+    subBV q (f x) ++bv subBV (mon* p q) (liftBV f (bv xs r))
+  ≡⟨ cong (_++bv_ (subBV q (f x))) (subBV-mon p q f (bv xs r)) ⟩
     subBV q (f x) ++bv
        liftBV (λ z → subBV q (f z)) (bv xs (trans≤ r p))
   ∎
-{-subBV-mon (s≤s p) q f (bv (x ∷ xs) (s≤s r)) = 
-  begin
-    subBV (mon (s≤s p) q) (liftBV f (bv (x ∷ xs) (s≤s r)))
-  ≡⟨ {!!} ⟩
-    liftBV (λ x → subBV q (f x)) (x ∷bv subBV p (bv xs r))
-  ≡⟨ refl ⟩
-    liftBV (λ x → subBV q (f x)) (subBV (s≤s p) (bv (x ∷ xs) (s≤s r)))
-  ∎-}
 
 
 transM-reflM : {e e' : M} (p : e ⊑ e') →
@@ -147,7 +182,7 @@ transM-reflM (s≤s p) = cong s≤s (transM-reflM p)
 
 
 subBV-refl : {e : M} {X : Set} (c : BVec X e) → subBV reflM c ≡ c
-subBV-refl (bv x p) = cong (bv x) (transM-reflM p)
+subBV-refl (bv xs p) = cong (bv xs) (transM-reflM p)
 
 
 trans-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''') →
@@ -155,16 +190,19 @@ trans-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''
 trans-ass z≤n q r = refl
 trans-ass (s≤s p) (s≤s q) (s≤s r) = cong s≤s (trans-ass p q r)
 
+
 subBV-trans : {e e' e'' : M} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
               (c : BVec X e) →
               subBV q (subBV p c) ≡ subBV (transM p q) c
-subBV-trans p q (bv x r) = cong (bv x) (trans-ass r p q)
+subBV-trans p q (bv xs r) = cong (bv xs) (trans-ass r p q)
+
 
 TBV = λ e X → BVec X e
 
 
 subeq∷ : {m n : M} {X : Set} {x : X} {xs : BVec X m} {ys : BVec X n} →    
-        (p : m ≡ n) → subeq {T = TBV} p xs ≡ ys → subeq {T = TBV} (cong suc p) (x ∷bv xs) ≡ x ∷bv ys
+         (p : m ≡ n) → subeq {T = TBV} p xs ≡ ys →
+         subeq {T = TBV} (cong suc p) (x ∷bv xs) ≡ x ∷bv ys
 subeq∷ refl refl = refl
 
 
@@ -186,6 +224,11 @@ blaw1 f x with f x
 ...       | bv xs p = ru++ xs p
 
 
+head-bv : {X : Set} {n : ℕ} (x : X) (xs : BVec X n) →
+          x ∷bv xs ≡ ηBV x ++bv xs
+head-bv x (bv xs p) = refl
+
+
 blaw2 : {e : M} {X : Set} (c : TBV e X) → subeq {T = TBV} ru c ≡ liftBV ηBV c
 blaw2 (bv [] (z≤n {n})) = subeq-air (ru {n})
 blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) = 
@@ -197,7 +240,9 @@ blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) =
     x ∷bv (subeq {T = TBV} ru (bv xs p))
   ≡⟨ cong (_∷bv_ x) (blaw2 (bv xs p)) ⟩
     x ∷bv (liftBV ηBV (bv xs p))
-  ≡⟨ {!!} ⟩
+  ≡⟨ head-bv x (liftBV ηBV (bv xs p)) ⟩
+    ηBV x ++bv liftBV ηBV (bv xs p)
+  ≡⟨ refl ⟩
     liftBV ηBV (bv (x ∷ xs) (s≤s p))
   ∎
 
