@@ -116,6 +116,7 @@ lemma-trans+1 : {m n o : ℕ} (p : m ≤ n) (q : o ≤ m) →
 lemma-trans+1 p z≤n = refl
 lemma-trans+1 (s≤s p) (s≤s q) = cong s≤s (lemma-trans+1 p q)
 
+
 lemma-≤+ : {m n o : ℕ} (x : ℕ) (p : m ≤ n) (q : o ≤ m) →
            transM q (≤+ x p) ≡ ≤+ x (transM q p)
 lemma-≤+ zero p q = refl
@@ -124,13 +125,27 @@ lemma-≤+ (suc x) (s≤s p) z≤n = refl
 lemma-≤+ (suc x) (s≤s p) (s≤s q) rewrite lemma-trans+1 p q = cong s≤s (lemma-≤+ x (≤+1 p) q)
 
 
+wat : {m m' n n' o' : ℕ}
+        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
+        trans≤ (≤+ (suc m) (≤+1 (≤+1 q')))
+        (s≤s (mon+ p (s≤s (s≤s p'))))
+        ≡ ≤+ (suc n) (≤+1 (≤+1 (trans≤ q' p')))
+wat p p' z≤n = refl
+wat p (s≤s p') (s≤s q') = {!!}
+
+
+
+
 what :  {m m' n n' o' : ℕ}
         (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
         trans≤ (≤+ (suc m) (≤+1 q')) (s≤s (mon+ p (s≤s p'))) ≡
         ≤+ (suc n) (≤+1 (trans≤ q' p'))
 what p p' z≤n = refl
-what p p' (s≤s q') = {!!}
-
+what {n = zero} z≤n (s≤s p') (s≤s z≤n) = refl
+what {n = zero} z≤n (s≤s (s≤s p')) (s≤s (s≤s q')) = cong s≤s (what {n = zero} z≤n (s≤s p') (s≤s q'))
+what {n = suc n} z≤n (s≤s p') (s≤s z≤n) = refl
+what {n = suc n} z≤n (s≤s (s≤s p')) (s≤s (s≤s q')) rewrite lemma-trans+1 p' q' = cong s≤s (what {n = n} z≤n (s≤s (≤+1 p')) (s≤s q'))
+what {suc m} {n = suc n} (s≤s p) (s≤s p') (s≤s q') = cong s≤s (wat p p' q')
 
 lemma : {m m' n n' o' : ℕ}
         (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
@@ -141,14 +156,16 @@ lemma {n = zero} z≤n (s≤s p') (s≤s q') = cong s≤s (lemma {n = zero} z≤
 lemma {n = suc n} z≤n p' z≤n = refl
 lemma {n = suc n} z≤n (s≤s p') (s≤s q') rewrite lemma-trans+1 p' q' = cong s≤s (lemma {n = n} z≤n (≤+1 p') q')
 lemma (s≤s p) p' q' = what p p' q'
+--lemma (s≤s p) p' q' = {!!}
 
 
 lemma-mon+ : {m m' n n' o o' : ℕ}
              (p : m ≤ n) (p' : m' ≤ n') (q : o ≤ m) (q' : o' ≤ m') →
-             transM (mon+ q q') (mon+ p p') ≡ mon+ (transM q p) (transM q' p')
+             trans≤ (mon+ q q') (mon+ p p') ≡ mon+ (trans≤ q p) (trans≤ q' p')
 lemma-mon+ {n = n} z≤n p' z≤n q' = lemma-≤+ n p' q'
 lemma-mon+ (s≤s p) p' z≤n z≤n = refl
 lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q') = cong s≤s (lemma p p' q')
+--lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q') = {!!}
 lemma-mon+ (s≤s p) p' (s≤s q) q' = cong s≤s (lemma-mon+ p p' q q')
 
 
@@ -185,16 +202,16 @@ subBV-refl : {e : M} {X : Set} (c : BVec X e) → subBV reflM c ≡ c
 subBV-refl (bv xs p) = cong (bv xs) (transM-reflM p)
 
 
-trans-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''') →
+transM-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''') →
             transM (transM p q) r ≡ transM p (transM q r)
-trans-ass z≤n q r = refl
-trans-ass (s≤s p) (s≤s q) (s≤s r) = cong s≤s (trans-ass p q r)
+transM-ass z≤n q r = refl
+transM-ass (s≤s p) (s≤s q) (s≤s r) = cong s≤s (transM-ass p q r)
 
 
 subBV-trans : {e e' e'' : M} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
               (c : BVec X e) →
               subBV q (subBV p c) ≡ subBV (transM p q) c
-subBV-trans p q (bv xs r) = cong (bv xs) (trans-ass r p q)
+subBV-trans p q (bv xs r) = cong (bv xs) (transM-ass r p q)
 
 
 TBV = λ e X → BVec X e
@@ -247,6 +264,37 @@ blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) =
   ∎
 
 
+subeq-lemma : {e e' : M} {X Y : Set} →
+              (g : M → M) → (f : {e : M} → BVec X e → BVec Y (g e)) →
+              (p : e ≡ e') → (xs : BVec X e) →
+              subeq {T = TBV} (cong g p) (f xs) ≡ f (subeq {T = TBV} p xs)
+subeq-lemma g f refl xs = refl
+
+≡2⊑ : {e e' : M} → e ≡ e' → e ⊑ e'
+≡2⊑ {zero} p = z≤n
+≡2⊑ {suc e} refl = s≤s (≡2⊑ refl)
+
+trans-ass : {e e' e'' e''' : M} (p : e ≡ e') (q : e' ≡ e'') (r : e'' ≡ e''') →
+            trans (trans p q) r ≡ trans p (trans q r)
+trans-ass refl q r = refl
+
+
+subeq-trans : {e e' e'' : M} {X : Set} (p : e ≡ e') (q : e' ≡ e'')
+              (c : BVec X e) →
+              subeq {T = TBV} q (subeq {T = TBV} p c) ≡ subeq {T = TBV} (trans p q) c
+subeq-trans refl q xs = refl
+
+
+lemma-dist : {e e' e'' : M} {X Y : Set}
+             (xs : BVec X e)
+             (xs' : BVec X e')
+             (f : X → BVec Y e'') →
+             subeq {T = TBV} (dist+ {e} {e'} {e''}) (liftBV f (xs ++bv xs'))
+             ≡ liftBV f xs ++bv liftBV f xs'
+lemma-dist (bv [] z≤n) (bv xs' p') f = {!!}
+lemma-dist (bv (x ∷ xs) p) xs' f = {!!}
+
+
 blaw3 : {e e' e'' : M} {X Y Z : Set} (f : X → TBV e' Y)
         (g : Y → TBV e'' Z) (c : TBV e X) →
         subeq {T = TBV} (ass {e} {e'} {e''}) (liftBV g (liftBV f c)) ≡
@@ -257,7 +305,23 @@ blaw3 {suc e} {e'} {e''} f g (bv (x ∷ xs) (s≤s p)) =
     subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (liftBV f (bv (x ∷ xs) (s≤s p))))
   ≡⟨ refl ⟩
     subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (liftBV f (x ∷bv (bv xs p))))
-  ≡⟨ {!!} ⟩
+  ≡⟨ refl ⟩
+    subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (f x ++bv liftBV f (bv xs p)))
+  ≡⟨ sym (subeq-trans (dist+ {e'} {e · e'} {e''})
+                      (cong (_+_ (e' · e'')) (ass {e} {e'} {e''})) _) ⟩
+    subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''}))
+                    (subeq {T = TBV} (dist+ {e'} {e · e'} {e''})
+                           (liftBV g (f x ++bv liftBV f (bv xs p))))
+  ≡⟨ cong (subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''})))
+                 (lemma-dist (f x) (liftBV f (bv xs p)) g) ⟩
+    subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''}))
+          (liftBV g (f x) ++bv liftBV g (liftBV f (bv xs p)))
+  ≡⟨ subeq-lemma (_+_ (e' · e'')) (_++bv_ (liftBV g (f x))) (ass {e} {e'} {e''}) _ ⟩
+    liftBV g (f x) ++bv subeq {T = TBV} (ass {e} {e'} {e''})
+                                        (liftBV g (liftBV f (bv xs p)))
+  ≡⟨ cong (_++bv_ (liftBV g (f x))) (blaw3 f g (bv xs p)) ⟩
+    liftBV g (f x) ++bv liftBV (λ x → liftBV g (f x)) (bv xs p)
+  ≡⟨ refl ⟩
     liftBV (λ x → liftBV g (f x)) (bv (x ∷ xs) (s≤s p))
   ∎
 
