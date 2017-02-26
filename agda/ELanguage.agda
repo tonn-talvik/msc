@@ -41,13 +41,16 @@ mutual
   data CTerm (Γ : Ctx) : E → VType → Set where
     VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ ok σ
     FAIL : ∀ {σ} → CTerm Γ err σ
+    -- FIXME: allow branches to have different effects?
     TRY_WITH_ : ∀ {ε σ} → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
-    IF_THEN_ELSE_ : ∀ {σ ε} → VTerm Γ bool → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
-    _$_ : ∀ {σ τ ε} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ ε τ
-    PREC : ∀ {ε σ} → VTerm Γ nat →
-           CTerm Γ ε σ →
-           CTerm (σ ∷ nat ∷ Γ) ε σ → CTerm Γ ε σ
-    LET_IN_ : ∀ {σ τ ε ε'} → CTerm Γ ε σ → CTerm (σ ∷ Γ) ε' τ → CTerm Γ (ε ·E ε') τ
+    -- FIXME: allow branches to have different effects?
+    IF_THEN_ELSE_ : ∀ {ε σ} → VTerm Γ bool → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
+    _$_ : ∀ {ε σ τ} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ ε τ
+    -- FIXME: allow primitive recursion to fail?
+    PREC : ∀ {σ} → VTerm Γ nat →
+           CTerm Γ ok σ →
+           CTerm (σ ∷ nat ∷ Γ) ok σ → CTerm Γ ok σ
+    LET_IN_ : ∀ {ε ε' σ τ} → CTerm Γ ε σ → CTerm (σ ∷ Γ) ε' τ → CTerm Γ (ε ·E ε') τ
 
 
 lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →

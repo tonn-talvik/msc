@@ -36,10 +36,13 @@ sor nothing x' = x'
 -}
 
 sfail : {X : Set} → T err X
-sfail = {!!}
+sfail = tt
 
-sor : {X : Set} {ε : E} → T ε X → T ε X → T ε X 
-sor x = {!!}
+sor : {ε : E} {X : Set} → T ε X → T ε X → T ε X 
+sor {err} x x' = x'
+sor {ok} x _ = x
+sor {errok} (just x) x' = just x
+sor {errok} nothing x' = x'
 
 
 ----------------------------------------------------------------------
@@ -61,9 +64,9 @@ proj (here' p) ρ rewrite p = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
 
-primrecT : {ε : E} {t : Set} → ℕ → T ε t → (ℕ → t → T ε t) → T ε t
+primrecT : {t : Set} → ℕ → T ok t → (ℕ → t → T ok t) → T ok t
 primrecT zero z s = z
-primrecT (suc n) z s = lift (s n) (primrecT n z s)
+primrecT (suc n) z s = lift {ok} {ok} (s n) (primrecT n z s)
 
 
 mutual
@@ -80,12 +83,14 @@ mutual
   
   ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ ε σ → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
-  ⟦ FAIL ⟧ ρ = sfail
-  ⟦ TRY t WITH u ⟧ ρ = sor (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
+  ⟦ FAIL {σ} ⟧ ρ = sfail {⟦ σ ⟧t}
+
+  ⟦ TRY_WITH_ {ε} t u ⟧ ρ = sor {ε} (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)  
   ⟦ IF b THEN m ELSE n ⟧ ρ = (if ⟦ b ⟧v ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
   ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
 
-  ⟦ LET m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
+  -- ⟦ LET m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
+  ⟦ LET_IN_ {ε} {ε'} m n ⟧ ρ = lift {ε} {ε'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
 
 
