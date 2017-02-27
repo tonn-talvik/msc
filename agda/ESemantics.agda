@@ -4,8 +4,8 @@ open import Data.Unit hiding (_≟_)
 open import Data.Product
 
 open import Data.Maybe
-open import Data.Nat hiding (_≟_)
-open import Data.Bool hiding (T ; _≟_)
+open import Data.Nat hiding (_≟_; _⊔_)
+open import Data.Bool hiding (T ; _≟_; _∨_)
 open import Data.List
 open import Data.String hiding (_++_)
 
@@ -38,11 +38,18 @@ sor nothing x' = x'
 sfail : {X : Set} → T err X
 sfail = tt
 
-sor : {ε : E} {X : Set} → T ε X → T ε X → T ε X 
-sor {err} x x' = x'
-sor {ok} x _ = x
+sor : {ε ε' : E} {X : Set} → T ε X → T ε' X → T (ε ⊔ ε') X 
+sor {err} {err} _ _ = tt
+sor {err} {ok} _ x' = just x'
+sor {err} {errok} _ x' = x'
+sor {ok} {err} x _ = just x
+sor {ok} {ok} x _ = x
+sor {ok} {errok} x _ = just x
 sor {errok} (just x) x' = just x
-sor {errok} nothing x' = x'
+sor {errok} {err} nothing x' = nothing
+sor {errok} {ok} nothing x' = just x'
+sor {errok} {errok} nothing x' = x'
+
 
 
 ----------------------------------------------------------------------
@@ -84,13 +91,12 @@ mutual
   ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ ε σ → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
   ⟦ FAIL {σ} ⟧ ρ = sfail {⟦ σ ⟧t}
-
-  ⟦ TRY_WITH_ {ε} t u ⟧ ρ = sor {ε} (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)  
-  ⟦ IF b THEN m ELSE n ⟧ ρ = (if ⟦ b ⟧v ρ then ⟦ m ⟧ else ⟦ n ⟧) ρ
+  ⟦ TRY_WITH_ {ε} {ε'} t u ⟧ ρ = sor {ε} {ε'} (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
+  ⟦ IF_THEN_ELSE_ {ε} {ε'} b m n ⟧ ρ = if ⟦ b ⟧v ρ
+                                       then (sub (lub ε ε') (⟦ m ⟧ ρ))
+                                       else (sub (lub-sym ε' ε) (⟦ n ⟧ ρ))
   ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
-
-  -- ⟦ LET m IN n ⟧ ρ = lift (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
   ⟦ LET_IN_ {ε} {ε'} m n ⟧ ρ = lift {ε} {ε'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
 
 

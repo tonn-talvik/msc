@@ -184,3 +184,35 @@ ExcEffGM = record { OM = ExcEffOM
                   ; mlaw2 = λ {e} → mlaw2E {e}
                   ; mlaw3 = λ {e} {e'} {e''} → mlaw3E {e} {e'} {e''}
                   }
+
+-------------------------------------------------------------------------
+
+_⊔_ : E → E → E
+err ⊔ err = err
+ok ⊔ ok = ok
+_ ⊔ _ = errok
+
+⊔-sym : (e e' : E) → e ⊔ e' ≡ e' ⊔ e
+⊔-sym err err = refl
+⊔-sym err ok = refl
+⊔-sym err errok = refl
+⊔-sym ok err = refl
+⊔-sym ok ok = refl
+⊔-sym ok errok = refl
+⊔-sym errok err = refl
+⊔-sym errok ok = refl
+⊔-sym errok errok = refl
+ 
+lub : (e e' : E) → e ⊑E (e ⊔ e')
+lub err err = reflE
+lub err ok = err⊑Eerrok
+lub err errok = err⊑Eerrok
+lub ok err = ok⊑Eerrok
+lub ok ok = reflE
+lub ok errok = ok⊑Eerrok
+lub errok err = reflE
+lub errok ok = reflE
+lub errok errok = reflE
+
+lub-sym : (e e' : E) → e ⊑E (e' ⊔ e)
+lub-sym e e' rewrite ⊔-sym e' e = lub e e'

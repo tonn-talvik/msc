@@ -3,7 +3,7 @@ module ELanguage where
 open import Relation.Nullary
 open import Relation.Binary.Core using (_≡_ ; refl)
 
-open import Data.Nat hiding (_≟_)
+open import Data.Nat hiding (_≟_; _⊔_)
 open import Data.Fin hiding (lift; _<_)
 open import Data.List
 open import Data.String hiding (_≟_)
@@ -41,10 +41,8 @@ mutual
   data CTerm (Γ : Ctx) : E → VType → Set where
     VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ ok σ
     FAIL : ∀ {σ} → CTerm Γ err σ
-    -- FIXME: allow branches to have different effects?
-    TRY_WITH_ : ∀ {ε σ} → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
-    -- FIXME: allow branches to have different effects?
-    IF_THEN_ELSE_ : ∀ {ε σ} → VTerm Γ bool → CTerm Γ ε σ → CTerm Γ ε σ → CTerm Γ ε σ
+    TRY_WITH_ : ∀ {ε ε' σ} → CTerm Γ ε σ → CTerm Γ ε' σ → CTerm Γ (ε ⊔ ε') σ
+    IF_THEN_ELSE_ : ∀ {ε ε' σ} → VTerm Γ bool → CTerm Γ ε σ → CTerm Γ ε' σ → CTerm Γ (ε ⊔ ε') σ
     _$_ : ∀ {ε σ τ} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ ε τ
     -- FIXME: allow primitive recursion to fail?
     PREC : ∀ {σ} → VTerm Γ nat →

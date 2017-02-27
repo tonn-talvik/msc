@@ -34,3 +34,10 @@ p3 = ⟦ LET (VAL ZZ) IN (LAM nat (VAL (SS (varify 0)))) $ (varify 0) ⟧ tt
 -- p4 : T err ℕ
 p4 = ⟦ LET FAIL IN (LAM nat (VAL (SS (varify 0)))) $ (varify 0) ⟧ tt
 
+-- p5 : T errok ℕ
+p5 = ⟦ IF TT THEN VAL (natify 5) ELSE FAIL ⟧ tt
+-- p6 : T ok ℕ
+p6 = ⟦ IF TT THEN VAL (natify 5) ELSE VAL ZZ ⟧ tt
+
+-- p7 : T errok ℕ
+p7 = ⟦ TRY FAIL WITH VAL (natify 3) ⟧ tt
