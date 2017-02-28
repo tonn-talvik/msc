@@ -95,6 +95,7 @@ _++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
 bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)
 
 
+
 ηBV : {X : Set} → X → BVec X i
 ηBV x = bv (x ∷ []) (s≤s z≤n)
 
@@ -109,6 +110,9 @@ subBV : {e e' : M} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
 subBV p (bv x q) = bv x (transM q p)
 
 
+_+++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
+bv [] (z≤n {m}) +++bv ys = subBV (mon+ (z≤n {m}) refl≤) ys 
+bv (x ∷ xs) (s≤s p) +++bv ys = x ∷bv (bv xs p +++bv ys)  
 
 
 lemma-trans+1 : {m n o : ℕ} (p : m ≤ n) (q : o ≤ m) →
@@ -169,11 +173,18 @@ lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q
 lemma-mon+ (s≤s p) p' (s≤s q) q' = cong s≤s (lemma-mon+ p p' q q')
 
 
+ans : {n n' : ℕ} → (p p' : n ≤ n') → p ≡ p'
+ans z≤n z≤n = refl
+ans (s≤s p) (s≤s p') = cong s≤s (ans p p')
+
+
+
+
 lemma++ : {m m' n n' : ℕ} {X : Set} (p : m ≤ n) (p' : m' ≤ n')
           (xs : BVec X m) (xs' : BVec X m') →
           subBV (mon+ p p') (xs ++bv xs') ≡ subBV p xs ++bv subBV p' xs'
 lemma++ p p' (bv xs q) (bv xs' q') = cong (bv (xs ++ xs'))
-                                          (lemma-mon+ p p' q q')
+                                          (ans (trans≤ (mon+ q q') (mon+ p p')) (mon+ (trans≤ q p) (trans≤ q' p'))) --(lemma-mon+ p p' q q')
 
 
 subBV-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
@@ -192,6 +203,9 @@ subBV-mon {suc e} {e'} {suc e''} {e'''} (s≤s p) q f (bv (x ∷ xs) (s≤s r)) 
   ∎
 
 
+
+
+
 transM-reflM : {e e' : M} (p : e ⊑ e') →
                transM p reflM ≡ p
 transM-reflM z≤n = refl
@@ -200,6 +214,27 @@ transM-reflM (s≤s p) = cong s≤s (transM-reflM p)
 
 subBV-refl : {e : M} {X : Set} (c : BVec X e) → subBV reflM c ≡ c
 subBV-refl (bv xs p) = cong (bv xs) (transM-reflM p)
+
+
+
+subBV-mon1 : {e e' e'' : M} {X Y : Set} (p : e ⊑ e'') 
+      (f : X → BVec Y e') (c : BVec X e) →
+      subBV (mon* p refl≤) (liftBV f c) ≡
+      liftBV f (subBV p c)
+subBV-mon1 p f (bv [] z≤n) = refl
+subBV-mon1 {suc e} {e'} {suc e''} (s≤s p) f (bv (x ∷ xs) (s≤s r)) = let q = refl≤ {e'} in 
+  begin
+    subBV (mon+ q (mon* p q)) (f x ++bv liftBV f (bv xs r))
+  ≡⟨ lemma++ q (mon* p q) (f x) (liftBV f (bv xs r)) ⟩
+    subBV q (f x) ++bv subBV (mon* p q) (liftBV f (bv xs r))
+  ≡⟨ cong (_++bv_ (subBV q (f x))) (subBV-mon1 p f (bv xs r)) ⟩
+    subBV q (f x) ++bv
+       liftBV f (bv xs (trans≤ r p))
+   ≡⟨ cong₂ _++bv_ (subBV-refl (f x)) refl ⟩
+    f x ++bv
+       liftBV f (bv xs (trans≤ r p))
+  ∎
+
 
 
 transM-ass : {e e' e'' e''' : M} (p : e ⊑ e') (q : e' ⊑ e'') (r : e'' ⊑ e''') →
@@ -306,17 +341,45 @@ lemma-z≤n (suc e) = refl
 lemma-[] : (e : M) {e' : M} {X : Set} → bv {X} [] (≤+ e (z≤n {e'})) ≡ bv [] z≤n
 lemma-[] e = cong (bv []) (lemma-z≤n e)
 
+lemma'-[] : {X : Set} {e e' : M} (p : zero ≤ e) (xs : BVec X e') → bv [] p ++bv xs ≡ subBV (mon+ p refl≤) xs 
+lemma'-[] p (bv xs q) = cong (bv xs) (ans (mon+ p q) (trans≤ q (mon+ p refl≤)))
+
 
 lemma-lift-[]++ : {e e' e'' : M} {X Y : Set}
                   (xs : BVec X e')
                   (f : X → BVec Y e'') →
                   liftBV f (bv [] (z≤n {suc e}) ++bv xs) ≡
                   (bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs))
+
+lemma-lift-[]++ {e} {e'} {e''} xs f = 
+    let 
+      p = mon+ (z≤n {e}) (refl≤ {e'})
+      q = ≤+1 (refl≤ {e + e'})
+    in
+    begin
+      liftBV f (bv [] (z≤n {suc e}) ++bv xs) 
+    ≡⟨ cong (liftBV f) (lemma'-[] (z≤n {suc e}) xs)   ⟩
+      liftBV f (subBV (mon+ (z≤n {suc e}) (refl≤ {e'})) xs) 
+    ≡⟨ cong (λ p → liftBV f (subBV p xs)) (ans _ (trans≤ p q)) ⟩
+     liftBV f (subBV (trans≤ p q) xs)
+    ≡⟨  cong (liftBV f) (sym (subBV-trans p q xs))  ⟩
+     liftBV f (subBV q (subBV p xs))
+    ≡⟨  sym (subBV-mon1 q f (subBV p xs))  ⟩
+     subBV (mon* q (refl≤ {e''})) (liftBV f (subBV p xs))
+    ≡⟨  cong (λ p' → subBV p' (liftBV f (subBV p xs))) (ans _ _) ⟩
+     subBV (mon+ (z≤n {e''}) (refl≤ {(e + e') * e''})) (liftBV f (subBV p xs))
+    ≡⟨  sym (lemma'-[]  (z≤n {e''}) _) ⟩
+      bv [] (z≤n {e''}) ++bv liftBV f (subBV p xs) 
+    ≡⟨  cong (λ ys → bv []  (z≤n {e''}) ++bv liftBV f ys) (sym (lemma'-[] (z≤n {e}) xs))  ⟩                 
+      bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs)
+    ∎ 
+
+{-
 lemma-lift-[]++ {zero} {e'} {e''} (bv [] z≤n) f = sym (lemma-[] e'')
 lemma-lift-[]++ {zero} (bv (x ∷ xs) (s≤s p)) f = {!!}
 lemma-lift-[]++ {suc e} {e'} {e''} (bv [] z≤n) f = sym (lemma-[] e'')
 lemma-lift-[]++ {suc e} (bv (x ∷ xs) (s≤s p)) f = {!!}
-
+-}
 
 lemma-dist : {e e' e'' : M} {X Y : Set}
              (xs : BVec X e)
