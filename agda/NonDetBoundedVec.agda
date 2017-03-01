@@ -115,64 +115,6 @@ bv [] (z≤n {m}) +++bv ys = subBV (mon+ (z≤n {m}) refl≤) ys
 bv (x ∷ xs) (s≤s p) +++bv ys = x ∷bv (bv xs p +++bv ys)  
 
 
-lemma-trans+1 : {m n o : ℕ} (p : m ≤ n) (q : o ≤ m) →
-                ≤+1 (trans≤ q p) ≡ trans≤ q (≤+1 p)
-lemma-trans+1 p z≤n = refl
-lemma-trans+1 (s≤s p) (s≤s q) = cong s≤s (lemma-trans+1 p q)
-
-
-lemma-≤+ : {m n o : ℕ} (x : ℕ) (p : m ≤ n) (q : o ≤ m) →
-           transM q (≤+ x p) ≡ ≤+ x (transM q p)
-lemma-≤+ zero p q = refl
-lemma-≤+ (suc x) z≤n z≤n = refl
-lemma-≤+ (suc x) (s≤s p) z≤n = refl
-lemma-≤+ (suc x) (s≤s p) (s≤s q) rewrite lemma-trans+1 p q = cong s≤s (lemma-≤+ x (≤+1 p) q)
-
--- this is same as 'what'
-wat : {m m' n n' o' : ℕ}
-        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
-        trans≤ (≤+ (suc m) (≤+1 (≤+1 q')))
-        (s≤s (mon+ p (s≤s (s≤s p'))))
-        ≡ ≤+ (suc n) (≤+1 (≤+1 (trans≤ q' p')))
-wat p p' z≤n = refl
-wat p (s≤s p') (s≤s q') = {!!}
-
-
-
--- this is same as 'lemma', but one step deeper
-what :  {m m' n n' o' : ℕ}
-        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
-        trans≤ (≤+ (suc m) (≤+1 q')) (s≤s (mon+ p (s≤s p'))) ≡
-        ≤+ (suc n) (≤+1 (trans≤ q' p'))
-what p p' z≤n = refl
-what {n = zero} z≤n (s≤s p') (s≤s z≤n) = refl
-what {n = zero} z≤n (s≤s (s≤s p')) (s≤s (s≤s q')) = cong s≤s (what {n = zero} z≤n (s≤s p') (s≤s q'))
-what {n = suc n} z≤n (s≤s p') (s≤s z≤n) = refl
-what {n = suc n} z≤n (s≤s (s≤s p')) (s≤s (s≤s q')) rewrite lemma-trans+1 p' q' = cong s≤s (what {n = n} z≤n (s≤s (≤+1 p')) (s≤s q'))
-what {suc m} {n = suc n} (s≤s p) (s≤s p') (s≤s q') = cong s≤s (wat p p' q')
-
-lemma : {m m' n n' o' : ℕ}
-        (p : m ≤ n) (p' : m' ≤ n') (q' : o' ≤ m') →
-        trans≤ (≤+ m (≤+1 q')) (mon+ p (s≤s p')) ≡ ≤+ n (≤+1 (trans≤ q' p'))
-lemma {n = zero} z≤n z≤n z≤n = refl
-lemma {n = zero} z≤n (s≤s p') z≤n = refl
-lemma {n = zero} z≤n (s≤s p') (s≤s q') = cong s≤s (lemma {n = zero} z≤n p' q')
-lemma {n = suc n} z≤n p' z≤n = refl
-lemma {n = suc n} z≤n (s≤s p') (s≤s q') rewrite lemma-trans+1 p' q' = cong s≤s (lemma {n = n} z≤n (≤+1 p') q')
-lemma (s≤s p) p' q' = what p p' q'
---lemma (s≤s p) p' q' = {!!}
-
-
-lemma-mon+ : {m m' n n' o o' : ℕ}
-             (p : m ≤ n) (p' : m' ≤ n') (q : o ≤ m) (q' : o' ≤ m') →
-             trans≤ (mon+ q q') (mon+ p p') ≡ mon+ (trans≤ q p) (trans≤ q' p')
-lemma-mon+ {n = n} z≤n p' z≤n q' = lemma-≤+ n p' q'
-lemma-mon+ (s≤s p) p' z≤n z≤n = refl
-lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q') = cong s≤s (lemma p p' q')
---lemma-mon+ {suc m} {suc m'} {suc n} {suc n'} (s≤s p) (s≤s p') z≤n (s≤s q') = {!!}
-lemma-mon+ (s≤s p) p' (s≤s q) q' = cong s≤s (lemma-mon+ p p' q q')
-
-
 ans : {n n' : ℕ} → (p p' : n ≤ n') → p ≡ p'
 ans z≤n z≤n = refl
 ans (s≤s p) (s≤s p') = cong s≤s (ans p p')
@@ -184,7 +126,7 @@ lemma++ : {m m' n n' : ℕ} {X : Set} (p : m ≤ n) (p' : m' ≤ n')
           (xs : BVec X m) (xs' : BVec X m') →
           subBV (mon+ p p') (xs ++bv xs') ≡ subBV p xs ++bv subBV p' xs'
 lemma++ p p' (bv xs q) (bv xs' q') = cong (bv (xs ++ xs'))
-                                          (ans (trans≤ (mon+ q q') (mon+ p p')) (mon+ (trans≤ q p) (trans≤ q' p'))) --(lemma-mon+ p p' q q')
+                                          (ans (trans≤ (mon+ q q') (mon+ p p')) (mon+ (trans≤ q p) (trans≤ q' p')))
 
 
 subBV-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
@@ -306,11 +248,6 @@ subeq-lemma : {e e' : M} {X Y : Set} →
               subeq {T = TBV} (cong g p) (f xs) ≡ f (subeq {T = TBV} p xs)
 subeq-lemma g f refl xs = refl
 
-{-
-≡2⊑ : {e e' : M} → e ≡ e' → e ⊑ e'
-≡2⊑ {zero} p = z≤n
-≡2⊑ {suc e} refl = s≤s (≡2⊑ refl)
--}
 
 trans-ass : {e e' e'' e''' : M} (p : e ≡ e') (q : e' ≡ e'') (r : e'' ≡ e''') →
             trans (trans p q) r ≡ trans p (trans q r)
@@ -374,12 +311,6 @@ lemma-lift-[]++ {e} {e'} {e''} xs f =
       bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs)
     ∎ 
 
-{-
-lemma-lift-[]++ {zero} {e'} {e''} (bv [] z≤n) f = sym (lemma-[] e'')
-lemma-lift-[]++ {zero} (bv (x ∷ xs) (s≤s p)) f = {!!}
-lemma-lift-[]++ {suc e} {e'} {e''} (bv [] z≤n) f = sym (lemma-[] e'')
-lemma-lift-[]++ {suc e} (bv (x ∷ xs) (s≤s p)) f = {!!}
--}
 
 lemma-dist : {e e' e'' : M} {X Y : Set}
              (xs : BVec X e)
