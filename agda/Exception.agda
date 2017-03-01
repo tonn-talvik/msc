@@ -187,6 +187,8 @@ ExcEffGM = record { OM = ExcEffOM
 
 -------------------------------------------------------------------------
 
+infix 110 _·E_
+infix 100 _⊔_
 _⊔_ : E → E → E
 err ⊔ err = err
 ok ⊔ ok = ok

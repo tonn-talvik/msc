@@ -150,7 +150,7 @@ private
   TND : ND → Set → Set
   TND nd X = List X  -- powerset?
 
-  ηND : {X : Set} → X → TND (nd1) X
+  ηND : {X : Set} → X → TND nd1 X
   ηND x = [ x ]
 
   liftND :  (e e' : ND) {X Y : Set} →

@@ -88,7 +88,7 @@ mutual
   ⟦ VAR x ⟧v ρ = proj x ρ
   ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧ (x , ρ)
   
-  ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ ε σ → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
+  ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ (ε / σ) → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
   ⟦ FAIL {σ} ⟧ ρ = sfail {⟦ σ ⟧t}
   ⟦ TRY_WITH_ {ε} {ε'} t u ⟧ ρ = sor {ε} {ε'} (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
