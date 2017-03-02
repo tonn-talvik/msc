@@ -83,6 +83,9 @@ tcast (st-trans o o') x = tcast o' (tcast o x)
 tcast (st-prod o o') (proj , proj') = tcast o proj , tcast o' proj'
 tcast (st-func e o (st-comp e' o')) x = {!!}
 
+ccast : {ε ε' : E} {σ σ' : VType} → ε / σ ⟪ ε' / σ' → T ε ⟦ σ ⟧t → T ε' ⟦ σ' ⟧t
+ccast (st-comp e o) c = {!!}
+
 mutual
   ⟦_⟧v : {Γ : Ctx} → {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧c → ⟦ σ ⟧t
   ⟦ TT ⟧v ρ = true
@@ -106,5 +109,5 @@ mutual
   ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {ε} {ε'} m n ⟧ ρ = lift {ε} {ε'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
-  ⟦ CCAST t o ⟧ ρ = {!!}
+  ⟦ CCAST t o ⟧ ρ = ccast o (⟦ t ⟧ ρ)
 
