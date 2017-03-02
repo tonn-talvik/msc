@@ -58,6 +58,7 @@ mutual
     SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
     VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
     LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
+    VCAST : ∀ {σ τ} → VTerm Γ σ → σ ≤ τ → VTerm Γ τ
 
 
   data CTerm (Γ : Ctx) : CType → Set where
@@ -70,7 +71,8 @@ mutual
     PREC : ∀ {σ} → VTerm Γ nat →
            CTerm Γ (ok / σ) →
            CTerm (σ ∷ nat ∷ Γ) (ok / σ) → CTerm Γ (ok / σ)
-    LET_IN_ : ∀ {ε ε' σ τ} → CTerm Γ (ε / σ) → CTerm (σ ∷ Γ) (ε' / τ) → CTerm Γ (ε ·E ε' / τ)
+    LET_IN_ : ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → CTerm (σ ∷ Γ) (ε' / σ') → CTerm Γ (ε ·E ε' / σ')
+    CCAST :  ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → ε / σ ⟪ ε' / σ' → CTerm Γ (ε' / σ')
 
 
 lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →

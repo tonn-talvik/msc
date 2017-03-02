@@ -1,10 +1,10 @@
 module ESemantics where
 
-open import Data.Unit hiding (_≟_)
+open import Data.Unit hiding (_≟_; _≤_)
 open import Data.Product
 
 open import Data.Maybe
-open import Data.Nat hiding (_≟_; _⊔_)
+open import Data.Nat hiding (_≟_; _⊔_; _≤_)
 open import Data.Bool hiding (T ; _≟_; _∨_)
 open import Data.List
 open import Data.String hiding (_++_)
@@ -57,8 +57,9 @@ sor {errok} {errok} nothing x' = x'
 ⟦_⟧t : VType → Set
 ⟦ nat ⟧t = ℕ
 ⟦ bool ⟧t = Bool
-⟦ t ⇒ ε / u ⟧t = ⟦ t ⟧t → T ε ⟦ u ⟧t
 ⟦ t ∏ u ⟧t = ⟦ t ⟧t × ⟦ u ⟧t
+⟦ t ⇒ ε / u ⟧t = ⟦ t ⟧t → T ε ⟦ u ⟧t
+
 
 
 ⟦_⟧c : Ctx → Set
@@ -76,6 +77,12 @@ primrecT zero z s = z
 primrecT (suc n) z s = lift {ok} {ok} (s n) (primrecT n z s)
 
 
+tcast : {σ σ' : VType} →  σ ≤ σ' → ⟦ σ ⟧t → ⟦ σ' ⟧t
+tcast st-refl x = x
+tcast (st-trans o o') x = tcast o' (tcast o x)
+tcast (st-prod o o') (proj , proj') = tcast o proj , tcast o' proj'
+tcast (st-func e o (st-comp e' o')) x = {!!}
+
 mutual
   ⟦_⟧v : {Γ : Ctx} → {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧c → ⟦ σ ⟧t
   ⟦ TT ⟧v ρ = true
@@ -87,6 +94,7 @@ mutual
   ⟦ SND p ⟧v ρ = proj₂ (⟦ p ⟧v ρ)
   ⟦ VAR x ⟧v ρ = proj x ρ
   ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧ (x , ρ)
+  ⟦ VCAST x o ⟧v ρ = tcast o (⟦ x ⟧v ρ)
   
   ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ (ε / σ) → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
@@ -98,5 +106,5 @@ mutual
   ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ))
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {ε} {ε'} m n ⟧ ρ = lift {ε} {ε'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
-
+  ⟦ CCAST t o ⟧ ρ = {!!}
 
