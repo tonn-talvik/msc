@@ -53,41 +53,48 @@ sor {errok} {errok} nothing x' = x'
 
 
 ----------------------------------------------------------------------
-  
-⟦_⟧t : VType → Set
-⟦ nat ⟧t = ℕ
-⟦ bool ⟧t = Bool
-⟦ t ∏ u ⟧t = ⟦ t ⟧t × ⟦ u ⟧t
-⟦ t ⇒ ε / u ⟧t = ⟦ t ⟧t → T ε ⟦ u ⟧t
+
+mutual  
+  ⟦_⟧t : VType → Set
+  ⟦ nat ⟧t = ℕ
+  ⟦ bool ⟧t = Bool
+  ⟦ t ∏ u ⟧t = ⟦ t ⟧t × ⟦ u ⟧t
+  ⟦ t ⇒ c ⟧t = ⟦ t ⟧t → ⟦ c ⟧c
+
+  ⟦_⟧c : CType → Set
+  ⟦ ε / t ⟧c = T ε ⟦ t ⟧t
+
+⟦_⟧x : Ctx → Set
+⟦ [] ⟧x = ⊤
+⟦ σ ∷ Γ ⟧x = ⟦ σ ⟧t × ⟦ Γ ⟧x
 
 
-
-⟦_⟧c : Ctx → Set
-⟦ [] ⟧c = ⊤
-⟦ σ ∷ Γ ⟧c = ⟦ σ ⟧t × ⟦ Γ ⟧c
-
-
-proj : {Γ : Ctx} → {σ : VType} → σ ∈ Γ → ⟦ Γ ⟧c → ⟦ σ ⟧t
+proj : {Γ : Ctx} → {σ : VType} → σ ∈ Γ → ⟦ Γ ⟧x → ⟦ σ ⟧t
 proj (here' p) ρ rewrite p = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
-
+{-
 primrecT : {t : Set} → ℕ → T ok t → (ℕ → t → T ok t) → T ok t
 primrecT zero z s = z
 primrecT (suc n) z s = lift {ok} {ok} (s n) (primrecT n z s)
+-}
 
-
-tcast : {σ σ' : VType} →  σ ≤ σ' → ⟦ σ ⟧t → ⟦ σ' ⟧t
-tcast st-refl x = x
-tcast (st-trans o o') x = tcast o' (tcast o x)
-tcast (st-prod o o') (proj , proj') = tcast o proj , tcast o' proj'
-tcast (st-func e o (st-comp e' o')) x = {!!}
-
-ccast : {ε ε' : E} {σ σ' : VType} → ε / σ ⟪ ε' / σ' → T ε ⟦ σ ⟧t → T ε' ⟦ σ' ⟧t
-ccast (st-comp e o) c = {!!}
+primrecT : {e' e'' : E} {t : Set} → ℕ → T e'' t → (ℕ → t → T e' t) → e'' ·E e' ⊑E e'' → T e'' t
+primrecT zero z s p = z
+primrecT {e'} {e''} (suc n) z s p = sub p (lift {e''} {e'} (s n) (primrecT n z s p)) 
 
 mutual
-  ⟦_⟧v : {Γ : Ctx} → {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧c → ⟦ σ ⟧t
+  tcast : {σ σ' : VType} →  σ ≤V σ' → ⟦ σ ⟧t → ⟦ σ' ⟧t
+  tcast st-refl x = x
+  tcast (st-trans o o') x = tcast o' (tcast o x)
+  tcast (st-prod o o') (proj , proj') = tcast o proj , tcast o' proj'
+  tcast (st-func e o) f = λ x → ccast o (f (tcast e x))
+
+  ccast : {c c' : CType} → c ⟪ c' → ⟦ c ⟧c → ⟦ c' ⟧c
+  ccast (st-comp {ε} {ε'} e o) c =   T₁ {ε'} (tcast o) (sub e c)
+
+mutual
+  ⟦_⟧v : {Γ : Ctx} → {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧x → ⟦ σ ⟧t
   ⟦ TT ⟧v ρ = true
   ⟦ FF ⟧v ρ = false
   ⟦ ZZ ⟧v ρ = zero
@@ -99,14 +106,14 @@ mutual
   ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧ (x , ρ)
   ⟦ VCAST x o ⟧v ρ = tcast o (⟦ x ⟧v ρ)
   
-  ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ (ε / σ) → ⟦ Γ ⟧c → T ε ⟦ σ ⟧t
+  ⟦_⟧ : {Γ : Ctx} {ε : E} {σ : VType} → CTerm Γ (ε / σ) → ⟦ Γ ⟧x → T ε ⟦ σ ⟧t
   ⟦ VAL v ⟧ ρ = η (⟦ v ⟧v ρ)
   ⟦ FAIL {σ} ⟧ ρ = sfail {⟦ σ ⟧t}
   ⟦ TRY_WITH_ {ε} {ε'} t u ⟧ ρ = sor {ε} {ε'} (⟦ t ⟧ ρ) (⟦ u ⟧ ρ)
   ⟦ IF_THEN_ELSE_ {ε} {ε'} b m n ⟧ ρ = if ⟦ b ⟧v ρ
                                        then (sub (lub ε ε') (⟦ m ⟧ ρ))
                                        else (sub (lub-sym ε' ε) (⟦ n ⟧ ρ))
-  ⟦ PREC v m n ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ))
+  ⟦ PREC v m n p ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ)) p
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {ε} {ε'} m n ⟧ ρ = lift {ε} {ε'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
   ⟦ CCAST t o ⟧ ρ = ccast o (⟦ t ⟧ ρ)

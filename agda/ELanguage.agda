@@ -31,16 +31,16 @@ mutual
 
 -- subtyping of refined types
 mutual
-  data _≤_ : VType → VType → Set where
-    st-refl : {σ : VType} → σ ≤ σ
-    st-trans : {σ σ' τ : VType} → σ ≤ σ' → σ' ≤ τ → σ ≤ τ
-    st-prod : {σ σ' τ τ' : VType} → σ ≤ σ' → τ ≤ τ' → σ ∏ τ ≤ σ' ∏ τ'
-    st-func : {ε ε' : E} {σ σ' τ τ' : VType} →
-              ε ⊑E ε' → σ ≤ σ' → ε / τ ⟪ ε' / τ' →
-              σ ⇒ ε / τ ≤ σ' ⇒ ε' / τ'
+  data _≤V_ : VType → VType → Set where
+    st-refl : {σ : VType} → σ ≤V σ
+    st-trans : {σ σ' τ : VType} → σ ≤V σ' → σ' ≤V τ → σ ≤V τ
+    st-prod : {σ σ' τ τ' : VType} → σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+    st-func : {σ σ' : VType} {c c' : CType} →
+              σ' ≤V σ → c ⟪ c' →
+              σ ⇒ c ≤V σ' ⇒ c'
 
   data _⟪_ : CType → CType → Set where
-    st-comp : {ε ε' : E} {σ σ' : VType} → ε ⊑E ε' → σ ≤ σ' → ε / σ ⟪ ε' / σ'
+    st-comp : {ε ε' : E} {σ σ' : VType} → ε ⊑E ε' → σ ≤V σ' → ε / σ ⟪ ε' / σ'
 
 
 Ctx = List VType
@@ -58,7 +58,7 @@ mutual
     SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
     VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
     LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
-    VCAST : ∀ {σ τ} → VTerm Γ σ → σ ≤ τ → VTerm Γ τ
+    VCAST : ∀ {σ τ} → VTerm Γ σ → σ ≤V τ → VTerm Γ τ
 
 
   data CTerm (Γ : Ctx) : CType → Set where
@@ -68,9 +68,9 @@ mutual
     IF_THEN_ELSE_ : ∀ {ε ε' σ} → VTerm Γ bool → CTerm Γ (ε / σ) → CTerm Γ (ε' / σ) → CTerm Γ (ε ⊔ ε' / σ)
     _$_ : ∀ {ε σ τ} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ (ε / τ)
     -- FIXME: allow primitive recursion to fail?
-    PREC : ∀ {σ} → VTerm Γ nat →
-           CTerm Γ (ok / σ) →
-           CTerm (σ ∷ nat ∷ Γ) (ok / σ) → CTerm Γ (ok / σ)
+    PREC : ∀ {e' e'' σ} → VTerm Γ nat →
+           CTerm Γ (e'' / σ) →
+           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' ·E e' ⊑E e'' → CTerm Γ (e'' / σ)
     LET_IN_ : ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → CTerm (σ ∷ Γ) (ε' / σ') → CTerm Γ (ε ·E ε' / σ')
     CCAST :  ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → ε / σ ⟪ ε' / σ' → CTerm Γ (ε' / σ')
 
