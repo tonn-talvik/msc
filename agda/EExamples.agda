@@ -6,6 +6,7 @@ open import Data.Unit
 
 open import ELanguage
 open import ESemantics
+open import Sugar
 
 {-
 -- examples without Exception grading

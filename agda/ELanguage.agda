@@ -1,16 +1,11 @@
 module ELanguage where
 
-open import Relation.Nullary
-open import Relation.Binary.Core using (_≡_ ; refl)
-
-open import Data.Nat hiding (_≟_; _⊔_; _≤_)
-open import Data.Fin hiding (lift; _<_; _≤_)
 open import Data.List
-open import Data.String hiding (_≟_)
 
-open import Finiteness
 open import Exception
-
+open import Finiteness
+open import OrderedMonoid
+open OrderedMonoid.OrderedMonoid ExcEffOM
 
 infixl 90 _$_
 infix  80 _/_
@@ -19,7 +14,7 @@ infix  60 _∏_
 
 ------------------------------------------------------------  
 
-mutual
+mutual -- value and computation types
   data VType : Set where
     nat : VType
     bool : VType
@@ -27,72 +22,44 @@ mutual
     _⇒_ : VType → CType → VType
 
   data CType : Set where
-    _/_ : E → VType → CType
+    _/_ : Exc → VType → CType
 
--- subtyping of refined types
-mutual
+
+mutual -- subtyping of refined types
   data _≤V_ : VType → VType → Set where
     st-refl : {σ : VType} → σ ≤V σ
-    st-trans : {σ σ' τ : VType} → σ ≤V σ' → σ' ≤V τ → σ ≤V τ
+    st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
     st-prod : {σ σ' τ τ' : VType} → σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
     st-func : {σ σ' : VType} {c c' : CType} →
               σ' ≤V σ → c ⟪ c' →
               σ ⇒ c ≤V σ' ⇒ c'
 
   data _⟪_ : CType → CType → Set where
-    st-comp : {ε ε' : E} {σ σ' : VType} → ε ⊑E ε' → σ ≤V σ' → ε / σ ⟪ ε' / σ'
+    st-comp : {e e' : E} {σ σ' : VType} → e ⊑ e' → σ ≤V σ' → e / σ ⟪ e' / σ'
 
 
 Ctx = List VType
 
 
-
-
-mutual
+mutual -- value and computation terms
   data VTerm (Γ : Ctx) : VType → Set where
     TT FF : VTerm Γ bool
     ZZ : VTerm Γ nat
     SS : VTerm Γ nat → VTerm Γ nat
-    ⟨_,_⟩ : ∀ {σ τ} → VTerm Γ σ → VTerm Γ τ → VTerm Γ (σ ∏ τ)
-    FST : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ σ
-    SND : ∀ {σ τ} → VTerm Γ (σ ∏ τ) → VTerm Γ τ
-    VAR : ∀ {τ} → τ ∈ Γ → VTerm Γ τ
+    ⟨_,_⟩ : {σ σ' : VType} → VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ∏ σ')
+    FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
+    SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
+    VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
     LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
-    VCAST : ∀ {σ τ} → VTerm Γ σ → σ ≤V τ → VTerm Γ τ
-
+    VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
   data CTerm (Γ : Ctx) : CType → Set where
-    VAL : ∀ {σ} → VTerm Γ σ → CTerm Γ (ok / σ)
-    FAIL : ∀ {σ} → CTerm Γ (err / σ)
-    TRY_WITH_ : ∀ {ε ε' σ} → CTerm Γ (ε / σ) → CTerm Γ (ε' / σ) → CTerm Γ (ε ⊔ ε' / σ)
-    IF_THEN_ELSE_ : ∀ {ε ε' σ} → VTerm Γ bool → CTerm Γ (ε / σ) → CTerm Γ (ε' / σ) → CTerm Γ (ε ⊔ ε' / σ)
-    _$_ : ∀ {ε σ τ} → VTerm Γ (σ ⇒ ε / τ) → VTerm Γ σ → CTerm Γ (ε / τ)
-    -- FIXME: allow primitive recursion to fail?
-    PREC : ∀ {e' e'' σ} → VTerm Γ nat →
-           CTerm Γ (e'' / σ) →
-           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' ·E e' ⊑E e'' → CTerm Γ (e'' / σ)
-    LET_IN_ : ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → CTerm (σ ∷ Γ) (ε' / σ') → CTerm Γ (ε ·E ε' / σ')
-    CCAST :  ∀ {ε ε' σ σ'} → CTerm Γ (ε / σ) → ε / σ ⟪ ε' / σ' → CTerm Γ (ε' / σ')
-
-
-lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
-           ¬ n < length Γ →
-           ¬ suc n < length (τ ∷ Γ)
-lemma-<? _ _ n p (s≤s q) = p q
-
-_<?_ : (n : ℕ) (Γ : Ctx) → Dec (n < length Γ)
-n <? [] = no (λ ())
-zero <? (x ∷ Γ) = yes (s≤s z≤n)
-suc n <? (x ∷ Γ) with n <? Γ
-suc n <? (x ∷ Γ) | yes p = yes (s≤s p)
-suc n <? (x ∷ Γ) | no ¬p = no (lemma-<? Γ x n ¬p)
-
-
-varify :  {Γ : Ctx} (n : ℕ) {p : truncate (n <? Γ)} →
-         VTerm Γ (lkp Γ (fromℕ≤ (extract (n <? Γ) {p})))
-varify {Γ} n {p} = VAR (trace Γ (fromℕ≤ (extract (n <? Γ) {p})))
-
-
-natify : ∀ {Γ} → ℕ → VTerm Γ nat
-natify zero = ZZ
-natify (suc n) = SS (natify n)
+    VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (ok / σ)
+    FAIL : {σ : VType} → CTerm Γ (err / σ)
+    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+    _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
+    PREC : ∀ {e' e'' σ} → VTerm Γ nat → CTerm Γ (e'' / σ) →
+           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm Γ (e'' / σ)
+    LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
+    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')

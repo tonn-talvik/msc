@@ -2,25 +2,28 @@
 
 module OrderedMonoid where
 
-open import Relation.Binary.Core using (_≡_ ; refl)
+open import Relation.Binary.Core using (_≡_)
+
 
 record OrderedMonoid : Set where
+  infix 90 _·_ -- \cdot
+  infix 80 _⊑_ -- \leq \sqsubseteq ⊑ 
   field
-    M : Set
+    E : Set
     
-    _⊑_ : M → M → Set -- \leq \sqsubseteq ⊑ 
+    _⊑_ : E → E → Set
     
-    reflM : {m : M} → m ⊑ m
-    transM : {m n o : M} → m ⊑ n → n ⊑ o → m ⊑ o
+    ⊑-refl : {e : E} → e ⊑ e
+    ⊑-trans : {e e' e'' : E} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
 
-    i : M 
-    _·_ : M → M → M -- \cdot
+    i : E
+    _·_ : E → E → E
 
-    mon : {m n m' n' : M} → m ⊑ m' → n ⊑ n' → (m · n) ⊑ (m' · n')
+    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
 
-    lu : { m : M } → (i · m) ≡ m
-    ru : { m : M } → m ≡ m · i 
-    ass : { m n o : M} → (m · n) · o ≡ m · (n · o)
+    lu : {e : E } → i · e ≡ e
+    ru : {e : E } → e ≡ e · i 
+    ass : {e e' e'' : E} → (e · e') · e'' ≡ e · (e' · e'')
 
 
 

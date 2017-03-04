@@ -1,200 +1,216 @@
 module Exception where
 
-open import Relation.Binary.Core using (_≡_ ; refl)
+open import Data.Maybe
+open import Data.Unit
 open import Function
-open import OrderedMonoid 
+open import Relation.Binary.Core using (_≡_ ; refl)
+
+
+open import OrderedMonoid
 open import GradedMonad
 
-data E : Set where
-  err : E
-  ok : E 
-  errok : E
 
-data _⊑E_ : E → E → Set where
-  reflE : {m : E} → m ⊑E m
-  err⊑Eerrok : err ⊑E errok
-  ok⊑Eerrok : ok ⊑E errok
+data Exc : Set where
+  err : Exc
+  ok : Exc
+  errok : Exc
 
-transE : {m n o : E} → m ⊑E n → n ⊑E o → m ⊑E o
-transE reflE q = q
-transE err⊑Eerrok reflE = err⊑Eerrok
-transE ok⊑Eerrok reflE = ok⊑Eerrok
+private
 
-_·E_ : E → E → E
-ok ·E m = m
-err ·E m = err
-errok ·E err = err
-errok ·E ok = errok
-errok ·E errok = errok
-
-ruE : {e : E} →  e ≡ e ·E ok 
-ruE {err} = refl
-ruE {ok} = refl
-ruE {errok} = refl
-
-assE : {m n o : E} → (m ·E n) ·E o ≡ m ·E (n ·E o)
-assE {err} = refl
-assE {ok} = refl
-assE {errok} {err} = refl
-assE {errok} {ok} = refl
-assE {errok} {errok} {err} = refl
-assE {errok} {errok} {ok} = refl
-assE {errok} {errok} {errok} = refl
+  data _⊑_ : Exc → Exc → Set where
+    ⊑-refl : {e : Exc} → e ⊑ e
+    err⊑errok : err ⊑ errok
+    ok⊑errok : ok ⊑ errok
 
 
-monE : {m n m' n' : E} → m ⊑E m' → n ⊑E n' → (m ·E n) ⊑E (m' ·E n')
-monE {m' = err} reflE q = reflE
-monE {m' = ok} reflE q = q
-monE {m' = errok} {err} reflE reflE = reflE
-monE {m' = errok} {err} err⊑Eerrok reflE = reflE
-monE {m' = errok} {err} ok⊑Eerrok reflE = reflE
-monE {m' = errok} {ok} reflE reflE = reflE
-monE {m' = errok} {ok} err⊑Eerrok reflE = err⊑Eerrok
-monE {m' = errok} {ok} ok⊑Eerrok reflE = ok⊑Eerrok
-monE {m' = errok} {errok} reflE reflE = reflE
-monE {m' = errok} {errok} reflE err⊑Eerrok = err⊑Eerrok
-monE {m' = errok} {errok} reflE ok⊑Eerrok = reflE
-monE {m' = errok} {errok} err⊑Eerrok q = err⊑Eerrok
-monE {m' = errok} {errok} ok⊑Eerrok reflE = reflE
-monE {m' = errok} {errok} ok⊑Eerrok err⊑Eerrok = err⊑Eerrok
-monE {m' = errok} {errok} ok⊑Eerrok ok⊑Eerrok = ok⊑Eerrok
+  ⊑-trans : {e e' e'' : Exc} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
+  ⊑-trans ⊑-refl q = q
+  ⊑-trans err⊑errok ⊑-refl = err⊑errok
+  ⊑-trans ok⊑errok ⊑-refl = ok⊑errok
+
+
+  _·_ : Exc → Exc → Exc
+  ok · e = e
+  err · e = err
+  errok · err = err
+  errok · ok = errok
+  errok · errok = errok
+
+
+  ru : {e : Exc} →  e ≡ e · ok 
+  ru {err} = refl
+  ru {ok} = refl
+  ru {errok} = refl
+
+
+  ass : {e e' e'' : Exc} → (e · e') · e'' ≡ e · (e' · e'')
+  ass {err} = refl
+  ass {ok} = refl
+  ass {errok} {err} = refl
+  ass {errok} {ok} = refl
+  ass {errok} {errok} {err} = refl
+  ass {errok} {errok} {ok} = refl
+  ass {errok} {errok} {errok} = refl
+
+
+  mon : {e e' e'' e''' : Exc} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
+  mon {e'' = err} ⊑-refl q = ⊑-refl
+  mon {e'' = ok} ⊑-refl q = q
+  mon {e'' = errok} {err} ⊑-refl ⊑-refl = ⊑-refl
+  mon {e'' = errok} {err} err⊑errok ⊑-refl = ⊑-refl
+  mon {e'' = errok} {err} ok⊑errok ⊑-refl = ⊑-refl
+  mon {e'' = errok} {ok} ⊑-refl ⊑-refl = ⊑-refl
+  mon {e'' = errok} {ok} err⊑errok ⊑-refl = err⊑errok
+  mon {e'' = errok} {ok} ok⊑errok ⊑-refl = ok⊑errok
+  mon {e'' = errok} {errok} ⊑-refl ⊑-refl = ⊑-refl
+  mon {e'' = errok} {errok} ⊑-refl err⊑errok = err⊑errok
+  mon {e'' = errok} {errok} ⊑-refl ok⊑errok = ⊑-refl
+  mon {e'' = errok} {errok} err⊑errok q = err⊑errok
+  mon {e'' = errok} {errok} ok⊑errok ⊑-refl = ⊑-refl
+  mon {e'' = errok} {errok} ok⊑errok err⊑errok = err⊑errok
+  mon {e'' = errok} {errok} ok⊑errok ok⊑errok = ok⊑errok
 
 
 ExcEffOM : OrderedMonoid
-ExcEffOM = record { M = E 
-                  ; _⊑_ = _⊑E_ 
-                  ; reflM = reflE
-                  ; transM = transE
+ExcEffOM = record { E = Exc 
+                  ; _⊑_ = _⊑_ 
+                  ; ⊑-refl = ⊑-refl
+                  ; ⊑-trans = ⊑-trans
                   ; i = ok
-                  ; _·_ = _·E_
-                  ; mon = monE
+                  ; _·_ = _·_
+                  ; mon = mon
                   ; lu = refl
-                  ; ru = ruE 
-                  ; ass = λ {m} {n} {o} → assE {m} {n} {o}
+                  ; ru = ru 
+                  ; ass = λ {m} {n} {o} → ass {m} {n} {o}
                   }
 
-open import Data.Unit
-open import Data.Maybe
+private
 
-TE : E → Set → Set
-TE err X = ⊤
-TE ok X = X
-TE errok X = Maybe X
-
-ηE : {X : Set} → X → TE ok X
-ηE x = x
-
-open OrderedMonoid.OrderedMonoid
-liftE : {e e' : E} {X Y : Set} →
-      (X → TE e' Y) → TE e X → TE (e ·E e') Y
-liftE {err} f x = tt
-liftE {ok} f x = f x
-liftE {errok} {err} f (just x) = tt
-liftE {errok} {ok} f (just x) = just (f x)
-liftE {errok} {errok} f (just x) = f x
-liftE {errok} {err} f nothing = tt
-liftE {errok} {ok} f nothing = nothing
-liftE {errok} {errok} f nothing = nothing
-
-subE : {e e' : E} {X : Set} → e ⊑E e' → TE e X → TE e' X
-subE reflE x = x
-subE err⊑Eerrok x = nothing
-subE ok⊑Eerrok x = just x
+  T : Exc → Set → Set
+  T err X = ⊤
+  T ok X = X
+  T errok X = Maybe X
 
 
-sub-reflE : {e : E} {X : Set} → (c : TE e X) → subE {e} reflE c ≡ c
-sub-reflE _ = refl
-
-sub-monE : {e e' e'' e''' : E} {X Y : Set} →
-           (p : e ⊑E e'') → (q : e' ⊑E e''') →
-           (f : X → TE e' Y) → (c : TE e X) → 
-           subE (monE p q) (liftE {e} {e'} f c) ≡ liftE {e''} {e'''} (subE q ∘ f) (subE p c)
-sub-monE {e'' = err} reflE q f c = refl
-sub-monE {e'' = ok} reflE q f c = refl
-sub-monE {e'' = errok} {err} p q f c = refl
-sub-monE {e'' = errok} {ok} reflE reflE f c = refl
-sub-monE {e'' = errok} {ok} err⊑Eerrok reflE f c = refl
-sub-monE {e'' = errok} {ok} ok⊑Eerrok reflE f c = refl
-sub-monE {e'' = errok} {errok} reflE reflE f c = refl
-sub-monE {e'' = errok} {errok} reflE err⊑Eerrok f (just x) = refl
-sub-monE {e'' = errok} {errok} reflE err⊑Eerrok f nothing = refl
-sub-monE {e'' = errok} {errok} reflE ok⊑Eerrok f (just x) = refl
-sub-monE {e'' = errok} {errok} reflE ok⊑Eerrok f nothing = refl
-sub-monE {e'' = errok} {errok} err⊑Eerrok q f c = refl
-sub-monE {e'' = errok} {errok} ok⊑Eerrok reflE f c = refl
-sub-monE {e'' = errok} {errok} ok⊑Eerrok err⊑Eerrok f c = refl
-sub-monE {e'' = errok} {errok} ok⊑Eerrok ok⊑Eerrok f c = refl
-
-sub-transE : {e e' e'' : E} {X : Set} →
-             (p : e ⊑E e') → (q : e' ⊑E e'') → (c : TE e X) → 
-             subE q (subE p c) ≡ subE (transE p q) c
-sub-transE reflE q c = refl
-sub-transE err⊑Eerrok reflE c = refl
-sub-transE ok⊑Eerrok reflE c = refl
-
-mlaw1E : {e : E} → {X Y : Set} → (f : X → TE e Y) → (x : X) →
-         liftE {ok} {e} f (ηE x) ≡ f x
-mlaw1E f x = refl
+  η : {X : Set} → X → T ok X
+  η x = x
 
 
-sub-eqE : {e e' : E} {X : Set} → e ≡ e' → TE e X → TE e' X
-sub-eqE = subeq {E} {TE}
+  lift : {e e' : Exc} {X Y : Set} →
+         (X → T e' Y) → T e X → T (e · e') Y
+  lift {err} f x = tt
+  lift {ok} f x = f x
+  lift {errok} {err} f (just x) = tt
+  lift {errok} {ok} f (just x) = just (f x)
+  lift {errok} {errok} f (just x) = f x
+  lift {errok} {err} f nothing = tt
+  lift {errok} {ok} f nothing = nothing
+  lift {errok} {errok} f nothing = nothing
 
---sub-eqE : {e e' : E} {X : Set} → e ≡ e' → TE e X → TE e' X
---sub-eqE {e} {.e} refl = subE {e} reflE
 
-mlaw2E :  {e : E} → {X : Set} → (c : TE e X) →
-          sub-eqE {e} ruE c ≡ liftE {e} {ok} ηE c
-mlaw2E {err} c = refl
-mlaw2E {ok} c = refl
-mlaw2E {errok} (just x) = refl
-mlaw2E {errok} nothing = refl
+  sub : {e e' : Exc} {X : Set} → e ⊑ e' → T e X → T e' X
+  sub ⊑-refl c = c
+  sub err⊑errok c = nothing
+  sub ok⊑errok x = just x
 
-mlaw3E : {e e' e'' : E} → {X Y Z : Set} →
-         (f : X → TE e' Y) → (g : Y → TE e'' Z) → (c : TE e X) → 
-         sub-eqE {(e ·E e') ·E e''} {e ·E (e' ·E e'')}
-                 (assE {e} {e'} {e''})
-                 (liftE {e ·E e'} {e''} g (liftE {e} {e'} f c))
-         ≡ liftE {e} {e' ·E e''} (λ x → liftE {e'} {e''} g (f x)) c
-mlaw3E {err} f g c = refl
-mlaw3E {ok} f g c = refl
-mlaw3E {errok} {err} f g x = refl
-mlaw3E {errok} {ok} {err} f g x = refl
-mlaw3E {errok} {ok} {ok} f g (just x) = refl
-mlaw3E {errok} {ok} {ok} f g nothing = refl
-mlaw3E {errok} {ok} {errok} f g (just x) = refl
-mlaw3E {errok} {ok} {errok} f g nothing = refl
-mlaw3E {errok} {errok} {err} f g x = refl
-mlaw3E {errok} {errok} {ok} f g (just x) = refl
-mlaw3E {errok} {errok} {ok} f g nothing = refl
-mlaw3E {errok} {errok} {errok} f g (just x) = refl
-mlaw3E {errok} {errok} {errok} f g nothing = refl
+
+  sub-refl : {e : Exc} {X : Set} → (c : T e X) → sub {e} ⊑-refl c ≡ c
+  sub-refl _ = refl
+
+
+  sub-mon : {e e' e'' e''' : Exc} {X Y : Set} →
+            (p : e ⊑ e'') → (q : e' ⊑ e''') →
+            (f : X → T e' Y) → (c : T e X) → 
+            sub (mon p q) (lift {e} {e'} f c) ≡ lift {e''} {e'''} (sub q ∘ f) (sub p c)
+  sub-mon {e'' = err} ⊑-refl q f c = refl
+  sub-mon {e'' = ok} ⊑-refl q f c = refl
+  sub-mon {e'' = errok} {err} p q f c = refl
+  sub-mon {e'' = errok} {ok} ⊑-refl ⊑-refl f c = refl
+  sub-mon {e'' = errok} {ok} err⊑errok ⊑-refl f c = refl
+  sub-mon {e'' = errok} {ok} ok⊑errok ⊑-refl f c = refl
+  sub-mon {e'' = errok} {errok} ⊑-refl ⊑-refl f c = refl
+  sub-mon {e'' = errok} {errok} ⊑-refl err⊑errok f (just x) = refl
+  sub-mon {e'' = errok} {errok} ⊑-refl err⊑errok f nothing = refl
+  sub-mon {e'' = errok} {errok} ⊑-refl ok⊑errok f (just x) = refl
+  sub-mon {e'' = errok} {errok} ⊑-refl ok⊑errok f nothing = refl
+  sub-mon {e'' = errok} {errok} err⊑errok q f c = refl
+  sub-mon {e'' = errok} {errok} ok⊑errok ⊑-refl f c = refl
+  sub-mon {e'' = errok} {errok} ok⊑errok err⊑errok f c = refl
+  sub-mon {e'' = errok} {errok} ok⊑errok ok⊑errok f c = refl
+
+
+  sub-trans : {e e' e'' : Exc} {X : Set} →
+              (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
+              sub q (sub p c) ≡ sub (⊑-trans p q) c
+  sub-trans ⊑-refl q c = refl
+  sub-trans err⊑errok ⊑-refl c = refl
+  sub-trans ok⊑errok ⊑-refl c = refl
+
+
+  mlaw1 : {e : Exc} → {X Y : Set} → (f : X → T e Y) → (x : X) →
+          lift {ok} {e} f (η x) ≡ f x
+  mlaw1 f x = refl
+
+
+  sub-eq : {e e' : Exc} {X : Set} → e ≡ e' → T e X → T e' X
+  sub-eq = subeq {Exc} {T}
+
+
+  mlaw2 :  {e : Exc} → {X : Set} → (c : T e X) →
+           sub-eq {e} ru c ≡ lift {e} η c
+  mlaw2 {err} c = refl
+  mlaw2 {ok} c = refl
+  mlaw2 {errok} (just x) = refl
+  mlaw2 {errok} nothing = refl
+
+
+  mlaw3 : {e e' e'' : Exc} → {X Y Z : Set} →
+          (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
+          sub-eq {(e · e') · e''} {e · (e' · e'')}
+                 (ass {e} {e'} {e''})
+                 (lift {e · e'} {e''} g (lift {e} {e'} f c))
+          ≡ lift {e} {e' · e''} (lift {e'} {e''} g ∘ f) c
+  mlaw3 {err} f g c = refl
+  mlaw3 {ok} f g c = refl
+  mlaw3 {errok} {err} f g c = refl
+  mlaw3 {errok} {ok} {err} f g c = refl
+  mlaw3 {errok} {ok} {ok} f g (just x) = refl
+  mlaw3 {errok} {ok} {ok} f g nothing = refl
+  mlaw3 {errok} {ok} {errok} f g (just x) = refl
+  mlaw3 {errok} {ok} {errok} f g nothing = refl
+  mlaw3 {errok} {errok} {err} f g c = refl
+  mlaw3 {errok} {errok} {ok} f g (just x) = refl
+  mlaw3 {errok} {errok} {ok} f g nothing = refl
+  mlaw3 {errok} {errok} {errok} f g (just x) = refl
+  mlaw3 {errok} {errok} {errok} f g nothing = refl
 
 
 ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
-                  ; T = TE
-                  ; η = ηE
-                  ; lift = λ {e} {e'} → liftE {e} {e'}
-                  ; sub = subE
-                  ; sub-mon = sub-monE
-                  ; sub-refl = λ {e} → sub-reflE {e}
-                  ; sub-trans = sub-transE
-                  ; mlaw1 = λ {e} → mlaw1E {e}
-                  ; mlaw2 = λ {e} → mlaw2E {e}
-                  ; mlaw3 = λ {e} {e'} {e''} → mlaw3E {e} {e'} {e''}
+                  ; T = T
+                  ; η = η
+                  ; lift = λ {e} {e'} → lift {e} {e'}
+                  ; sub = sub
+                  ; sub-mon = sub-mon
+                  ; sub-refl = λ {e} → sub-refl {e}
+                  ; sub-trans = sub-trans
+                  ; mlaw1 = λ {e} → mlaw1 {e}
+                  ; mlaw2 = λ {e} → mlaw2 {e}
+                  ; mlaw3 = λ {e} {e'} {e''} → mlaw3 {e} {e'} {e''}
                   }
 
 -------------------------------------------------------------------------
 
-infix 110 _·E_
+infix 110 _·_
 infix 100 _⊔_
-_⊔_ : E → E → E
+
+_⊔_ : Exc → Exc → Exc
 err ⊔ err = err
 ok ⊔ ok = ok
 _ ⊔ _ = errok
 
-⊔-sym : (e e' : E) → e ⊔ e' ≡ e' ⊔ e
+
+⊔-sym : (e e' : Exc) → e ⊔ e' ≡ e' ⊔ e
 ⊔-sym err err = refl
 ⊔-sym err ok = refl
 ⊔-sym err errok = refl
@@ -204,17 +220,19 @@ _ ⊔ _ = errok
 ⊔-sym errok err = refl
 ⊔-sym errok ok = refl
 ⊔-sym errok errok = refl
- 
-lub : (e e' : E) → e ⊑E (e ⊔ e')
-lub err err = reflE
-lub err ok = err⊑Eerrok
-lub err errok = err⊑Eerrok
-lub ok err = ok⊑Eerrok
-lub ok ok = reflE
-lub ok errok = ok⊑Eerrok
-lub errok err = reflE
-lub errok ok = reflE
-lub errok errok = reflE
 
-lub-sym : (e e' : E) → e ⊑E (e' ⊔ e)
+
+lub : (e e' : Exc) → e ⊑ (e ⊔ e')
+lub err err = ⊑-refl
+lub err ok = err⊑errok
+lub err errok = err⊑errok
+lub ok err = ok⊑errok
+lub ok ok = ⊑-refl
+lub ok errok = ok⊑errok
+lub errok err = ⊑-refl
+lub errok ok = ⊑-refl
+lub errok errok = ⊑-refl
+
+
+lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
 lub-sym e e' rewrite ⊔-sym e' e = lub e e'
