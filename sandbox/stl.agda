@@ -1,9 +1,13 @@
 module stl where
 
-open import Data.Nat renaming (ℕ to Nat; _*_ to _n*_)
+open import Data.Nat renaming (ℕ to Nat)
 open import Data.List renaming (_∷_ to _::_)
 open import Data.Bool renaming (_≟_ to _b≟_)
 
+open import Data.Unit
+open import Data.Product
+
+open import MyList
 open import MyTypes
 open import MyExpressions
 open import MyTypeInference
@@ -59,7 +63,7 @@ eplus = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı))      -- 3 m
 
 beta-tester : Cxt -> Raw -> Raw
 beta-tester Γ e with infer Γ e
-beta-tester Γ .(erase t) | ok τ t = β→ t
+beta-tester Γ .(erase t) | ok τ t = β-> t
 beta-tester Γ .(eraseBad b) | bad b = var 666 -- eraseBad b
 
 beta-test : Cxt -> Raw -> Nat -> Raw
@@ -84,23 +88,8 @@ ez = (lam ı (var 2 $ var 0)) $ var 0
 gz = ı :: ı ⇒ ı :: []
 tz = beta-test gz ez
 
-epr : Raw
-epr = (var 0) * (var 1)
-gpr = (ı :: ı :: [])
-tpr = beta-test gpr epr
 
-efst : Raw
-efst = fst (e0 * e1)
-tfst = beta-test [] efst
-efst2 : Raw
-efst2 = fst (var 1 * var 0)
-tfst2 = beta-test gz efst2
---tc-sum = 
+ 
+ 
 
-e-swp-num : Raw
-e-swp-num = lam (((ı ⇒ ı) ∏ (ı ⇒ ı)) ⇒ ((ı ⇒ ı) ∏ (ı ⇒ ı))) ((snd (var 0)) * (fst (var 0)))
-t-swp-num = beta-test [] (e-swp-num $ (e0 * e3))
-
-e-twice : Raw
-e-twice = lam ((ı ⇒ ı) ⇒ (ı ⇒ ı)) (eplus $ (var 0) $ (var 0))
-t-twice = beta-test [] (e-twice $ e1)
+zz = ⟦ (var hd)  $ (var (tl hd)) ⟧t ( (λ x → x * x) ,  ( 3 ,  tt )) 
