@@ -35,7 +35,7 @@ e2 = lam (ı ⇒ ı) (lam ı (var 1 $ (var 1 $ var 0)))
 e3 = lam (ı ⇒ ı) (lam ı (var 1 $ (var 1 $ (var 1 $ var 0))))
 
 esucc : Raw -- λn.λf.λx.f (n f x)
-esucc = lam ((ı ⇒ ı) ⇒ ı ⇒ ı) 
+esucc = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı) )
             (lam (ı ⇒ ı) 
                  (lam ı 
                       (var 1 $ (var 2 $ var 1 $ var 0))))
@@ -71,9 +71,17 @@ tc-succ-2 = beta-test [] (esucc $ e2)
 tc-succ-3 = beta-test [] (esucc $ e3)
 
 ey : Raw
-ey = (lam ı (var 0)) $ (var 1)
-ty = beta-test ([]) ey
+ey = (lam (ı ⇒ ı) (lam ı (var 1 $ var 0))) $ var 1
+gy = (ı :: ı ⇒ ı :: [])
+ty = beta-test gy ey -- we should get: lam i (var 2 $ var 0)
 
-tv0 = beta-test ([]) (var 0)
-tv1 = beta-test ((ı ⇒ ı) :: []) (var 0)
-tv2 = beta-test (ı :: []) (var 0)
+ez : Raw
+ez = (lam ı (var 2 $ var 0)) $ var 0
+gz = ı :: ı ⇒ ı :: []
+tz = beta-test gz ez
+
+-- is-fv is always false for well-typed terms?
+--tz = inc {ı :: ı :: []} 10 (var 1)
+--tz = inc 0 (var 1)
+
+ 

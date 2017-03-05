@@ -23,6 +23,7 @@ is-fv {Γ} (lam σ t) n with length Γ ≟ n -- = is-fv t n
 is-fv (lam σ t) n | yes p = false
 is-fv (lam σ t) n | no ¬p = is-fv t n
 
+{-
 inc : {Γ : Cxt} -> Nat -> Raw -> Raw
 inc zero e = e
 inc {Γ} (suc n) e                     with infer Γ e
@@ -30,8 +31,23 @@ inc (suc n) .(var (index x))          | ok τ (var x) with is-fv (var x) (index 
 inc (suc n) .(erase (var x))          | ok τ (var x) | true = var (suc (index x))
 inc (suc n) .(erase (var x))          | ok τ (var x) | false = var (index x)
 inc {Γ} (suc n) .(erase t $ erase t₁) | ok τ (t $ t₁) = inc {Γ} n (erase t) $ inc {Γ} n (erase t₁)
-inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam σ (inc {σ :: Γ} n (erase t))
-inc (suc n) .(eraseBad b) | bad b =  eraseBad b
+--inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam σ (inc {σ :: Γ} n (erase t))
+inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam σ (inc {σ ⇒ τ :: Γ} n (erase t))
+inc (suc n) .(eraseBad b)             | bad b = var 667 --eraseBad b
+-}
+
+inc : Nat -> Raw -> Raw
+inc n (var x) with x ≤? n
+inc n (var x) | yes p = var x
+inc n (var x) | no ¬p = var (suc x)
+inc n (f $ a) = inc n f $ inc n a
+inc n (lam x e) = lam x e -- TODO
+
+dec : Raw -> Raw
+dec (var zero) = var zero -- var 668
+dec (var (suc x)) = var x
+dec (f $ a) = dec f $ dec a
+dec (lam x e) = lam x e -- (dec e) 
 
 -- substition E[V := R]
 infixl 90 _[_:=_]
@@ -44,21 +60,13 @@ var v   [ x := s ] | no  _ = var (index v)
 lam σ e [ x := s ] | yes _ = lam σ (erase e)
 lam σ e [ x := s ] | no  _ = lam σ (e [ suc x := s ]) -- TODO: is-fv
 -}
-_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc {[]} 1000 s ]) -- TODO: is-fv
+--_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc {[]} 1000 s ]) -- TODO: is-fv
+_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc (0) s ]) -- TODO: index σ?
 
 
 β-> : ∀ {Γ τ} -> Term Γ τ -> Raw -- Term Γ τ
 β-> (var x) = var (index x)
-
 β-> (var x $ e₂) = (β-> (var x)) $ (β-> e₂)
 β-> ((e₁ $ e₂) $ e₃) = β-> (e₁ $ e₂) $ (β-> e₃)
-β-> {Γ} (_$_ {σ} (lam .σ e₁) e₂) = e₁ [ 0 := (β-> e₂) ]
-
-{-
-β-> (f $ a) with f
-β-> (f $ a) | var x = {!!}
-β-> (f $ a) | ff $ ff₁ = (β-> ff)
-β-> (_$_ {σ} f a) | lam .σ ff = {!!}
--}
+β-> {Γ} (_$_ {σ} (lam .σ e₁) e₂) = dec ( e₁ [ 0 := (β-> e₂) ])
 β-> (lam σ e) = lam σ (β-> e)
-
