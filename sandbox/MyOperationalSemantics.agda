@@ -36,18 +36,24 @@ inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam 
 inc (suc n) .(eraseBad b)             | bad b = var 667 --eraseBad b
 -}
 
+{-
 inc : Nat -> Raw -> Raw
 inc n (var x) with x ≤? n
 inc n (var x) | yes p = var x
 inc n (var x) | no ¬p = var (suc x)
 inc n (f $ a) = inc n f $ inc n a
 inc n (lam x e) = lam x e -- TODO
+-}
 
+inc : Raw -> Raw
+inc (var x) = var (suc x)
+inc (f $ a) = inc f $ inc a
+inc (lam x e) = lam x (inc e)
 dec : Raw -> Raw
 dec (var zero) = var zero -- var 668
-dec (var (suc x)) = var x
+dec (var (suc x)) = var (suc x)
 dec (f $ a) = dec f $ dec a
-dec (lam x e) = lam x e -- (dec e) 
+dec (lam x e) = lam x (dec e) 
 
 -- substition E[V := R]
 infixl 90 _[_:=_]
@@ -61,7 +67,7 @@ lam σ e [ x := s ] | yes _ = lam σ (erase e)
 lam σ e [ x := s ] | no  _ = lam σ (e [ suc x := s ]) -- TODO: is-fv
 -}
 --_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc {[]} 1000 s ]) -- TODO: is-fv
-_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc (0) s ]) -- TODO: index σ?
+_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc s ]) -- TODO: index σ?
 
 
 β-> : ∀ {Γ τ} -> Term Γ τ -> Raw -- Term Γ τ

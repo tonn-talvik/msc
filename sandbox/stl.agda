@@ -35,20 +35,26 @@ e2 = lam (ı ⇒ ı) (lam ı (var 1 $ (var 1 $ var 0)))
 e3 = lam (ı ⇒ ı) (lam ı (var 1 $ (var 1 $ (var 1 $ var 0))))
 
 esucc : Raw -- λn.λf.λx.f (n f x)
-esucc = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı) )
-            (lam (ı ⇒ ı) 
-                 (lam ı 
+esucc = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı)) -- 2 n
+            (lam (ı ⇒ ı)           -- 1 f
+                 (lam ı             -- 0 x
                       (var 1 $ (var 2 $ var 1 $ var 0))))
 
--- eplus : Raw -- λm.λn.λf.λx.m f (n f x)
+
+eplus : Raw -- λm.λn.λf.λx.m f (n f x)
+eplus = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı))      -- 3 m
+            (lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı)) -- 2 n
+                 (lam (ı ⇒ ı)           -- 1 f
+                      (lam ı             -- 0 x
+                           (var 3 $ var 1 $ (var 2 $ var 1 $ var 0)))))
+
+
 -- etrue : Raw -- λx.λy.x
 -- efalse : Raw -- λx.λy.y
 -- eand := λp.λq.p q 
 -- eor := λp.λq.p p q
 -- enot := λp.λa.λb.p b a
 -- eifthenelse := λp.λa.λb.p a b 
---Γ = ı :: []
-tc = infer [] e1 -- Γ e
 
 -- very Γ sensitive...
 t-fv : Raw -> Nat -> Bool
@@ -69,6 +75,8 @@ tc-succ-0 = beta-test [] (esucc $ e0)
 tc-succ-1 = beta-test [] (esucc $ e1)
 tc-succ-2 = beta-test [] (esucc $ e2)
 tc-succ-3 = beta-test [] (esucc $ e3)
+
+tc-plus-3-1 = beta-test [] (eplus $ e3 $ e1)
 
 ey : Raw
 ey = (lam (ı ⇒ ı) (lam ı (var 1 $ var 0))) $ var 1
