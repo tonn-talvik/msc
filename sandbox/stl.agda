@@ -56,11 +56,6 @@ eplus = lam ((ı ⇒ ı) ⇒ ( ı ⇒ ı))      -- 3 m
 -- enot := λp.λa.λb.p b a
 -- eifthenelse := λp.λa.λb.p a b 
 
--- very Γ sensitive...
-t-fv : Raw -> Nat -> Bool
-t-fv e n with infer [] e
-t-fv .(erase t) n | ok τ t = is-fv t n
-t-fv .(eraseBad b) n | bad b = false
 
 beta-tester : Cxt -> Raw -> Raw
 beta-tester Γ e with infer Γ e
@@ -77,6 +72,7 @@ tc-succ-2 = beta-test [] (esucc $ e2)
 tc-succ-3 = beta-test [] (esucc $ e3)
 
 tc-plus-3-1 = beta-test [] (eplus $ e3 $ e1)
+tc-plus-2-3 = beta-test [] (eplus $ e2 $ e3)
 
 ey : Raw
 ey = (lam (ı ⇒ ı) (lam ı (var 1 $ var 0))) $ var 1
@@ -88,8 +84,5 @@ ez = (lam ı (var 2 $ var 0)) $ var 0
 gz = ı :: ı ⇒ ı :: []
 tz = beta-test gz ez
 
--- is-fv is always false for well-typed terms?
---tz = inc {ı :: ı :: []} 10 (var 1)
---tz = inc 0 (var 1)
 
  

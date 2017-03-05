@@ -9,70 +9,41 @@ open import MyTypeInference
 
 ----------------------------------------------------------------
 
-open import Relation.Nullary using (¬_; Dec; yes; no)
-open import Data.Bool renaming (_≟_ to _b≟_)
+open import Relation.Nullary using (yes; no)
 open import MyList
+open import Data.Integer renaming (_≤?_ to _z≤?_; _≟_ to _z≟_; suc to zsuc; _+_ to _z+_)
 
--- free variable
-is-fv : ∀ {Γ τ} -> Term Γ τ -> Nat -> Bool
-is-fv (var x) n with (index x) ≟ n
-is-fv (var x) n | yes p = false -- true
-is-fv (var x) n | no ¬p = true --false
-is-fv (t₁ $ t₂) n = is-fv t₁ n ∨ is-fv t₂ n
-is-fv {Γ} (lam σ t) n with length Γ ≟ n -- = is-fv t n
-is-fv (lam σ t) n | yes p = false
-is-fv (lam σ t) n | no ¬p = is-fv t n
+add : Nat -> ℤ -> Nat
+add n z with + n z+ z
+add n z | x with x z≤? - + 1
+add n z | x | yes _ = 999999
+add n z | x | no  _ = ∣ x ∣
 
-{-
-inc : {Γ : Cxt} -> Nat -> Raw -> Raw
-inc zero e = e
-inc {Γ} (suc n) e                     with infer Γ e
-inc (suc n) .(var (index x))          | ok τ (var x) with is-fv (var x) (index x)
-inc (suc n) .(erase (var x))          | ok τ (var x) | true = var (suc (index x))
-inc (suc n) .(erase (var x))          | ok τ (var x) | false = var (index x)
-inc {Γ} (suc n) .(erase t $ erase t₁) | ok τ (t $ t₁) = inc {Γ} n (erase t) $ inc {Γ} n (erase t₁)
---inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam σ (inc {σ :: Γ} n (erase t))
-inc {Γ} (suc n) .(lam σ (erase t))    | ok .(σ ⇒ τ) (lam σ {τ} t) = lam σ (inc {σ ⇒ τ :: Γ} n (erase t))
-inc (suc n) .(eraseBad b)             | bad b = var 667 --eraseBad b
--}
-
-{-
-inc : Nat -> Raw -> Raw
-inc n (var x) with x ≤? n
-inc n (var x) | yes p = var x
-inc n (var x) | no ¬p = var (suc x)
-inc n (f $ a) = inc n f $ inc n a
-inc n (lam x e) = lam x e -- TODO
--}
-
-inc : Raw -> Raw
-inc (var x) = var (suc x)
-inc (f $ a) = inc f $ inc a
-inc (lam x e) = lam x (inc e)
-dec : Raw -> Raw
-dec (var zero) = var zero -- var 668
-dec (var (suc x)) = var (suc x)
-dec (f $ a) = dec f $ dec a
-dec (lam x e) = lam x (dec e) 
-
+-- d-place shift of a term t above cutoff c is ↑[ d , c ] t 
+-- https://github.com/Gabriel439/Haskell-Morte-Library/issues/1
+-- based on De Bruijn indices and described in Benjamin Pierce's
+-- Types and Programming Languages book on page 79 and 80.
+↑[_,_]_ : ℤ -> ℤ -> Raw -> Raw
+↑[ d , c ] var x with c z≤? + x
+↑[ d , c ] var x | yes _ = var (add x d)
+↑[ d , c ] var x | no  _ = var x
+↑[ d , c ] t $ u         = (↑[ d , c ] t) $ (↑[ d , c ] u)
+↑[ d , c ] lam x t       = lam x (↑[ d , zsuc c ] t)
+ 
 -- substition E[V := R]
 infixl 90 _[_:=_]
 _[_:=_] : ∀ {Γ τ} -> Term Γ τ -> Nat -> Raw -> Raw
 var v   [ x := s ] with (index v) ≟ x
 var v   [ x := s ] | yes _ = s
 var v   [ x := s ] | no  _ = var (index v)
-(f $ a) [ x := s ] = f [ x := s ] $ a [ x := s ]
-{-_[_:=_] {Γ} (lam σ e) x s with (length Γ) ≟ x
-lam σ e [ x := s ] | yes _ = lam σ (erase e)
-lam σ e [ x := s ] | no  _ = lam σ (e [ suc x := s ]) -- TODO: is-fv
--}
---_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc {[]} 1000 s ]) -- TODO: is-fv
-_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := inc s ]) -- TODO: index σ?
+(t $ u) [ x := s ] = t [ x := s ] $ u [ x := s ]
+_[_:=_] {Γ} (lam σ e) x s = lam σ (e [ suc x := (↑[ + 1 , + 0 ] s) ])
 
 
 β-> : ∀ {Γ τ} -> Term Γ τ -> Raw -- Term Γ τ
 β-> (var x) = var (index x)
 β-> (var x $ e₂) = (β-> (var x)) $ (β-> e₂)
-β-> ((e₁ $ e₂) $ e₃) = β-> (e₁ $ e₂) $ (β-> e₃)
-β-> {Γ} (_$_ {σ} (lam .σ e₁) e₂) = dec ( e₁ [ 0 := (β-> e₂) ])
+β-> ((t $ u) $ v) = β-> (t $ u) $ (β-> v)
+β-> {Γ} (_$_ {σ} (lam .σ t) u) = ↑[ - + 1 , + 0 ] ( t [ 0 := ↑[ + 1 , + 0 ] (β-> u) ])
 β-> (lam σ e) = lam σ (β-> e)
+
