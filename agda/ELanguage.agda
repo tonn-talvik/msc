@@ -38,7 +38,7 @@ mutual -- value and computation terms
     FST : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ
     SND : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ'
     VAR : {σ : vType} → σ ∈ Γ → vTerm Γ σ
-    LAM : ∀ σ {τ} → cTerm (σ ∷ Γ) τ → vTerm Γ (σ ⇒ τ)
+    LAM : (σ : vType) {τ : cType} → cTerm (σ ∷ Γ) τ → vTerm Γ (σ ⇒ τ)
 --    VCAST : {σ σ' : vType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
   data cTerm (Γ : Context) : cType → Set where
@@ -46,7 +46,7 @@ mutual -- value and computation terms
     FAIL : {σ : vType} → cTerm Γ (// σ)
     TRY_WITH_ : ∀ {σ} → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
     IF_THEN_ELSE_ : ∀ {σ} → vTerm Γ bool → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
-    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
+    _$_ : {σ : vType} {τ : cType} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
 --    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ // τ) → vTerm Γ σ → cTerm Γ (// τ)
 --    PREC : ∀ {σ} → vTerm Γ nat → cTerm Γ σ →
 --           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
@@ -92,8 +92,8 @@ mutual -- value and computation terms
     FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
     SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
     VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
-    LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
---    LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)    
+--    LAM : (σ : VType) {ε : E} {τ : VType} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
+    LAM : (σ : VType) {τ : CType} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)    
     VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
   data CTerm (Γ : Ctx) : CType → Set where
@@ -101,7 +101,7 @@ mutual -- value and computation terms
     FAIL : {σ : VType} → CTerm Γ (err / σ)
     TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
     IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
-    _$_ : ∀ {σ τ} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
+    _$_ : {σ : VType} {τ : CType} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
 --    PREC : ∀ {e' e'' σ} → VTerm Γ nat → CTerm Γ (e'' / σ) →
 --           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm Γ (e'' / σ)
     LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
@@ -125,7 +125,7 @@ erase-ctx [] = []
 erase-ctx (σ ∷ Γ) = erase-vtype σ ∷ erase-ctx Γ
 
 erase-var : {Γ : Ctx} {σ : VType} → σ ∈ Γ → erase-vtype σ ∈ erase-ctx Γ
-erase-var (here' x) = here' (cong erase-vtype x)
+erase-var (here' refl) = here
 erase-var (there p) = there (erase-var p)
 
 mutual
@@ -150,63 +150,43 @@ mutual
   erase (LET t IN t') = LET erase t IN erase t'
   erase (CCAST c x) = {!!}
 
-
-
-
+-----------------------------------------------------------
 -- effect inference
 
-get-func-body : {γ : Context} {σ : vType} {τ : cType} → vTerm γ (σ ⇒ τ) → {!τ!}
-get-func-body = {!!}
+get-func-body : {γ : Context} {σ : vType} {τ : cType} → vTerm γ (σ ⇒ τ) → cTerm (σ ∷ γ) τ
+get-func-body (FST t) = get-func-body {!!}
+get-func-body (SND t) = {!!}
+get-func-body (VAR x) = {!!} -- what if outside world is impure?
+get-func-body (LAM σ x) = x
+
+infer-effect : {γ : Context} {σ : cType} → cTerm γ σ → Exc
+infer-effect (VAL _) = ok
+infer-effect FAIL = err
+infer-effect (TRY t WITH t') = infer-effect t ⊔ infer-effect t'
+infer-effect (IF _ THEN t ELSE t') = infer-effect t ⊔ infer-effect t'
+infer-effect (f $ _) = {!!} --infer-effect (get-func-body f)
+--infer-effect (PREC _ t t') = {!!}
+infer-effect (LET t IN t') = infer-effect t · infer-effect t'
 
 mutual
-
-  infer-effect : {γ : Context} {σ : cType} → cTerm γ σ → Exc
-  infer-effect (VAL _) = ok
-  infer-effect FAIL = err
-  infer-effect (TRY t WITH t') = infer-effect t ⊔ infer-effect t'
-  infer-effect (IF _ THEN t ELSE t') = infer-effect t ⊔ infer-effect t'
-  {-
-  infer-effect (FST ⟨ FST p , p' ⟩ $ x) = {!!}
-  infer-effect (FST ⟨ SND p , p' ⟩ $ x) = {!!}
-  infer-effect (FST ⟨ VAR x , p' ⟩ $ x₁) = {!!}
-  infer-effect (FST ⟨ LAM σ x , p' ⟩ $ _) = infer-effect x
-  infer-effect (FST (FST p) $ x) = {!!}
-  infer-effect (FST (SND p) $ x) = {!!}
-  infer-effect (FST (VAR x) $ x₁) = {!!} -- infer-effect (VAL f) -}
-  infer-effect (FST f $ _) = {!!}
-  infer-effect (SND f $ _) = {!!}
-  infer-effect (VAR x $ _) = {!!}
-  infer-effect (LAM σ x $ _) = infer-effect x
---  infer-effect (PREC _ t t') = {!!}
-  infer-effect (LET t IN t') = infer-effect t · infer-effect t'
-
-  infer-ctype : {γ : Context} (σ : vType) → cTerm γ (// σ) → CType
-  infer-ctype σ (VAL x) = ok / infer-vtype σ {VAL x}
-  infer-ctype σ FAIL = err / infer-vtype  σ
-  infer-ctype σ (TRY c WITH c') = infer-effect c ⊔ infer-effect c' / infer-vtype σ
-  infer-ctype σ (IF _ THEN c ELSE c') = infer-effect c ⊔ infer-effect c' / infer-vtype σ
-  infer-ctype σ (FST f $ _) = {!!}
-  infer-ctype σ (SND f $ _) = {!!}
-  infer-ctype σ (VAR f $ x) = {!!}
-  infer-ctype σ₁ (LAM σ x $ _) = infer-effect x / infer-vtype σ
-  infer-ctype σ (LET c IN c') = infer-effect c · infer-effect c' / infer-vtype σ
-
-  infer-vtype : {γ : Context} (σ : vType) {c : cTerm γ (// σ)} → VType -- needs cTerm
+  infer-vtype : vType → VType -- needs cTerm?
   infer-vtype nat = nat
   infer-vtype bool = bool
   infer-vtype (σ ∏ σ') = infer-vtype σ ∏ infer-vtype σ'
-  infer-vtype (t ⇒ t') {c} = infer-vtype t ⇒ infer-ctype t {!!}
+  infer-vtype (t ⇒ t') = infer-vtype t ⇒ infer-ctype {t'} {!!}
 
-  infer-ctx : Context → Ctx
-  infer-ctx [] = []
-  infer-ctx (σ ∷ γ) = infer-vtype  σ ∷ infer-ctx γ
+  infer-ctype : {σ : cType} {γ : Context} → cTerm γ σ → CType
+  infer-ctype {// σ} t = infer-effect t / infer-vtype σ
 
-  infer-var : (γ : Context) {σ : vType} (x : σ ∈ γ) → infer-vtype  σ ∈ (infer-ctx γ)
-  infer-var [] ()
-  infer-var (σ ∷ []) (here' refl) = {!!}
-  infer-var (σ ∷ x ∷ γ) (here' refl) = {!!}
-  infer-var (x' ∷ γ) (there p) = {!!}
-  
+infer-ctx : Context → Ctx
+infer-ctx [] = []
+infer-ctx (σ ∷ γ) = infer-vtype σ ∷ infer-ctx γ
+
+infer-var : {γ : Context} {σ : vType} → σ ∈ γ → infer-vtype σ ∈ infer-ctx γ
+infer-var (here' refl) = here
+infer-var (there p) = there (infer-var p)
+
+mutual  
   infer-vterm : {γ : Context} {σ : vType} → vTerm γ σ → VTerm (infer-ctx γ) (infer-vtype σ)
   infer-vterm TT = TT
   infer-vterm FF = FF
@@ -215,14 +195,21 @@ mutual
   infer-vterm ⟨ v , v' ⟩ = ⟨ infer-vterm v , infer-vterm v' ⟩
   infer-vterm (FST v) = FST (infer-vterm v)
   infer-vterm (SND v) = SND (infer-vterm v)
-  infer-vterm {γ} (VAR x) = VAR (infer-var γ x)
-  infer-vterm (LAM σ x) = LAM (infer-vtype σ) (infer {!!})
+  infer-vterm {γ} (VAR x) = VAR (infer-var x)
+  infer-vterm (LAM σ x) = LAM (infer-vtype σ) {!!}
   
-  infer : {γ : Context} {σ : vType} → (c : cTerm γ (// σ)) → CTerm (infer-ctx γ) (infer-ctype σ c)
-  infer (VAL x) = {!!} --VAL (infer-vterm x)
+  infer : {γ : Context} {σ : vType} → (t : cTerm γ (// σ)) → CTerm (infer-ctx γ) (infer-ctype t)
+  infer (VAL x) = VAL (infer-vterm x)
   infer FAIL = FAIL
-  infer (TRY t WITH t') = {!!} --TRY infer t WITH infer t'
-  infer (IF x THEN t ELSE t') = {!!} --IF infer-vterm  x THEN infer t ELSE infer t'
-  infer (f $ x) = infer-vterm f $ infer-vterm x
+  infer (TRY t WITH t') = TRY infer t WITH infer t'
+  infer (IF x THEN t ELSE t') = IF infer-vterm x THEN infer t ELSE infer t'
+  infer (f $ x) = {!!} $ infer-vterm x --infer-vterm f $ infer-vterm x
 --  infer γ (PREC x c c') = PREC (infer-vterm γ x) (infer γ c) {!!} {!!}
-  infer (LET t IN t') = {!!} --LET infer t IN infer t'
+  infer (LET t IN t') = LET infer t IN infer t'
+
+
+{-
+data Infer (Γ : Ctx) (σ : CType) : cTerm (erase-ctx Γ) (erase-ctype σ) → Set where
+  ok : (t : CTerm Γ σ) → Infer Γ σ (erase t)
+--  bad : Infer Γ 
+-}
