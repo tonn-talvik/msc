@@ -46,7 +46,8 @@ mutual -- value and computation terms
     FAIL : {σ : vType} → cTerm Γ (// σ)
     TRY_WITH_ : ∀ {σ} → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
     IF_THEN_ELSE_ : ∀ {σ} → vTerm Γ bool → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
-    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ // τ) → vTerm Γ σ → cTerm Γ (// τ)
+    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
+--    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ // τ) → vTerm Γ σ → cTerm Γ (// τ)
 --    PREC : ∀ {σ} → vTerm Γ nat → cTerm Γ σ →
 --           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
     LET_IN_ : ∀ {σ σ'} → cTerm Γ (// σ) → cTerm (σ ∷ Γ) σ' → cTerm Γ σ'
@@ -91,8 +92,8 @@ mutual -- value and computation terms
     FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
     SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
     VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
---    LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
-    LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)    
+    LAM : ∀ σ {ε τ} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
+--    LAM : ∀ σ {τ} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)    
     VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
   data CTerm (Γ : Ctx) : CType → Set where
@@ -107,8 +108,55 @@ mutual -- value and computation terms
     CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
 
 ------------------------------------
+-- effect erasure
+
+mutual
+  erase-vtype : VType → vType
+  erase-vtype nat = nat
+  erase-vtype bool = bool
+  erase-vtype (σ ∏ σ') = erase-vtype σ ∏ erase-vtype σ'
+  erase-vtype (σ ⇒ σ') = erase-vtype σ ⇒ erase-ctype σ'
+
+  erase-ctype : CType → cType
+  erase-ctype (e / σ) = // (erase-vtype σ)
+
+erase-ctx : Ctx → Context
+erase-ctx [] = []
+erase-ctx (σ ∷ Γ) = erase-vtype σ ∷ erase-ctx Γ
+
+erase-var : {Γ : Ctx} {σ : VType} → σ ∈ Γ → erase-vtype σ ∈ erase-ctx Γ
+erase-var (here' x) = here' (cong erase-vtype x)
+erase-var (there p) = there (erase-var p)
+
+mutual
+  erase-vterm : {Γ : Ctx} {σ : VType} → VTerm Γ σ → vTerm (erase-ctx Γ) (erase-vtype σ)
+  erase-vterm TT = TT
+  erase-vterm FF = FF
+  erase-vterm ZZ = ZZ
+  erase-vterm (SS t) = SS (erase-vterm t)
+  erase-vterm ⟨ t , t' ⟩ = ⟨ erase-vterm t , erase-vterm t' ⟩ 
+  erase-vterm (FST t) = FST (erase-vterm t)
+  erase-vterm (SND t) = SND (erase-vterm t)
+  erase-vterm (VAR x) = VAR (erase-var x)
+  erase-vterm (LAM σ x) = LAM (erase-vtype σ) (erase x)
+  erase-vterm (VCAST t x) = {!!}
+
+  erase : {Γ : Ctx} {τ : CType} → CTerm Γ τ → cTerm (erase-ctx Γ) (erase-ctype τ)
+  erase (VAL x) = VAL (erase-vterm x)
+  erase FAIL = FAIL
+  erase (TRY t WITH t') = TRY erase t WITH erase t'
+  erase (IF x THEN t ELSE t') = IF erase-vterm x THEN erase t ELSE erase t'
+  erase (f $ x) = erase-vterm f $ erase-vterm x
+  erase (LET t IN t') = LET erase t IN erase t'
+  erase (CCAST c x) = {!!}
+
+
+
+
 -- effect inference
 
+get-func-body : {γ : Context} {σ : vType} {τ : cType} → vTerm γ (σ ⇒ τ) → {!τ!}
+get-func-body = {!!}
 
 mutual
 
@@ -117,7 +165,13 @@ mutual
   infer-effect FAIL = err
   infer-effect (TRY t WITH t') = infer-effect t ⊔ infer-effect t'
   infer-effect (IF _ THEN t ELSE t') = infer-effect t ⊔ infer-effect t'
-  infer-effect (FST f $ _) = {!!}
+  infer-effect (FST ⟨ FST p , p' ⟩ $ x) = {!!}
+  infer-effect (FST ⟨ SND p , p' ⟩ $ x) = {!!}
+  infer-effect (FST ⟨ VAR x , p' ⟩ $ x₁) = {!!}
+  infer-effect (FST ⟨ LAM σ x , p' ⟩ $ _) = infer-effect x
+  infer-effect (FST (FST p) $ x) = {!!}
+  infer-effect (FST (SND p) $ x) = {!!}
+  infer-effect (FST (VAR x) $ x₁) = {!!} -- infer-effect (VAL f)
   infer-effect (SND f $ _) = {!!}
   infer-effect (VAR x $ _) = {!!}
   infer-effect (LAM σ x $ _) = infer-effect x
