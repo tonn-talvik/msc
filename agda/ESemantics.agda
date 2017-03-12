@@ -1,3 +1,5 @@
+{-# OPTIONS --type-in-type #-}
+
 module ESemantics where
 
 open import Data.Unit hiding (_≟_; _≤_)
@@ -92,7 +94,7 @@ mutual
   ⟦ IF_THEN_ELSE_ {e} {e'} b m n ⟧ ρ = if ⟦ b ⟧v ρ
                                        then (sub (lub e e') (⟦ m ⟧ ρ))
                                        else (sub (lub-sym e' e) (⟦ n ⟧ ρ))
-  ⟦ PREC v m n p ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ)) p
+  --⟦ PREC v m n p ⟧ ρ = primrecT (⟦ v ⟧v ρ) (⟦ m ⟧ ρ) (λ i → λ acc → ⟦ n ⟧ (acc , i , ρ)) p
   ⟦ t $ u ⟧ ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {e} {e'} m n ⟧ ρ = lift {e} {e'} (λ x → ⟦ n ⟧ (x , ρ)) (⟦ m ⟧ ρ)
   ⟦ CCAST t o ⟧ ρ = ccast o (⟦ t ⟧ ρ)

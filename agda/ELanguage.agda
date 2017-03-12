@@ -154,7 +154,7 @@ mutual
 -- effect inference
 
 get-func-body : {γ : Context} {σ : vType} {τ : cType} → vTerm γ (σ ⇒ τ) → cTerm (σ ∷ γ) τ
-get-func-body (FST t) = get-func-body {!!}
+get-func-body (FST t) = {!!} -- get-func-body t
 get-func-body (SND t) = {!!}
 get-func-body (VAR x) = {!!} -- what if outside world is impure?
 get-func-body (LAM σ x) = x
@@ -191,19 +191,22 @@ mutual
   infer-vterm TT = TT
   infer-vterm FF = FF
   infer-vterm ZZ = ZZ
-  infer-vterm (SS v) = SS (infer-vterm v)
-  infer-vterm ⟨ v , v' ⟩ = ⟨ infer-vterm v , infer-vterm v' ⟩
-  infer-vterm (FST v) = FST (infer-vterm v)
-  infer-vterm (SND v) = SND (infer-vterm v)
-  infer-vterm {γ} (VAR x) = VAR (infer-var x)
+  infer-vterm (SS t) = SS (infer-vterm t)
+  infer-vterm ⟨ t , t' ⟩ = ⟨ infer-vterm t , infer-vterm t' ⟩
+  infer-vterm (FST t) = FST (infer-vterm t)
+  infer-vterm (SND t) = SND (infer-vterm t)
+  infer-vterm (VAR x) = VAR (infer-var x)
   infer-vterm (LAM σ x) = LAM (infer-vtype σ) {!!}
+
+  infer-vterm' :  {γ : Context} {σ : vType} {τ : cType} → (t : vTerm γ (σ ⇒ τ)) → VTerm (infer-ctx γ) (infer-vtype σ ⇒ infer-ctype (get-func-body t))
+  infer-vterm' = {!!}
   
   infer : {γ : Context} {σ : vType} → (t : cTerm γ (// σ)) → CTerm (infer-ctx γ) (infer-ctype t)
   infer (VAL x) = VAL (infer-vterm x)
   infer FAIL = FAIL
   infer (TRY t WITH t') = TRY infer t WITH infer t'
   infer (IF x THEN t ELSE t') = IF infer-vterm x THEN infer t ELSE infer t'
-  infer (f $ x) = {!!} $ infer-vterm x --infer-vterm f $ infer-vterm x
+  infer (f $ x) = infer-vterm' f $ infer-vterm x --infer-vterm f $ infer-vterm x
 --  infer γ (PREC x c c') = PREC (infer-vterm γ x) (infer γ c) {!!} {!!}
   infer (LET t IN t') = LET infer t IN infer t'
 
