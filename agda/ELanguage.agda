@@ -16,46 +16,6 @@ infix  80 _/_
 infixr 70 _⇒_
 infix  60 _∏_
 
------------------------------------------------------------
--- Raw types and language
-mutual 
-  data vType : Set where
-    nat : vType
-    bool : vType
-    _∏_ : vType → vType → vType
-    _⇒_ : vType → cType → vType
-  data cType : Set where
-    // : vType → cType
-
-
-Context = List vType
-
-mutual -- value and computation terms
-  data vTerm (Γ : Context) : vType → Set where
-    TT FF : vTerm Γ bool
-    ZZ : vTerm Γ nat
-    SS : vTerm Γ nat → vTerm Γ nat
-    ⟨_,_⟩ : {σ σ' : vType} → vTerm Γ σ → vTerm Γ σ' → vTerm Γ (σ ∏ σ')
-    FST : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ
-    SND : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ'
-    VAR : {σ : vType} → σ ∈ Γ → vTerm Γ σ
-    LAM : (σ : vType) {τ : cType} → cTerm (σ ∷ Γ) τ → vTerm Γ (σ ⇒ τ)
---    VCAST : {σ σ' : vType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
-
-  data cTerm (Γ : Context) : cType → Set where
-    VAL : {σ : vType} → vTerm Γ σ → cTerm Γ (// σ)
-    FAIL : {σ : vType} → cTerm Γ (// σ)
-    TRY_WITH_ : ∀ {σ} → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
-    IF_THEN_ELSE_ : ∀ {σ} → vTerm Γ bool → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
-    _$_ : {σ : vType} {τ : cType} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
---    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ // τ) → vTerm Γ σ → cTerm Γ (// τ)
---    PREC : ∀ {σ} → vTerm Γ nat → cTerm Γ σ →
---           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
-    LET_IN_ : ∀ {σ σ'} → cTerm Γ (// σ) → cTerm (σ ∷ Γ) σ' → cTerm Γ σ'
---    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
-
-
-
 ------------------------------------------------------------  
 -- refined types and language
 
@@ -109,4 +69,59 @@ mutual -- value and computation terms
 --           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm Γ (e'' / σ)
     LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
     CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
+
+
+
+-----------------------------------------------------------
+-- Raw types and language
+mutual 
+  data vType : Set where
+    nat : vType
+    bool : vType
+    _∏_ : vType → vType → vType
+    _⇒_ : vType → cType → vType
+  data cType : Set where
+    // : vType → cType
+
+
+mutual
+  erase-vtype : VType → vType
+  erase-vtype nat = nat
+  erase-vtype bool = bool
+  erase-vtype (σ ∏ σ') = erase-vtype σ ∏ erase-vtype σ'
+  erase-vtype (σ ⇒ σ') = erase-vtype σ ⇒ erase-ctype σ'
+
+  erase-ctype : CType → cType
+  erase-ctype (e / σ) = // (erase-vtype σ)
+
+
+
+mutual -- value and computation terms
+  data vTerm (Γ : Ctx) : vType → Set where
+    TT FF : vTerm Γ bool
+    ZZ : vTerm Γ nat
+    SS : vTerm Γ nat → vTerm Γ nat
+    ⟨_,_⟩ : {σ σ' : vType} → vTerm Γ σ → vTerm Γ σ' → vTerm Γ (σ ∏ σ')
+    FST : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ
+    SND : {σ σ' : vType} → vTerm Γ (σ ∏ σ') → vTerm Γ σ'
+    VAR : {σ : VType} → σ ∈ Γ → vTerm Γ (erase-vtype σ)
+    LAM : (σ : VType) {τ : cType} → cTerm (σ ∷ Γ) τ → vTerm Γ ((erase-vtype σ) ⇒ τ)
+--    VCAST : {σ σ' : vType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
+
+--  teistsugune LAM
+--   LAM : (σ : VType) {τ : cType} → cTerm ((erase-vtype σ) ∷ γ) τ → vTerm γ ((erase-vtype σ) ⇒ τ)
+
+  data cTerm (Γ : Ctx) : cType → Set where
+    VAL : {σ : vType} → vTerm Γ σ → cTerm Γ (// σ)
+    FAIL : {σ : vType} → cTerm Γ (// σ)
+    TRY_WITH_ : ∀ {σ} → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
+    IF_THEN_ELSE_ : ∀ {σ} → vTerm Γ bool → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
+    _$_ : {σ : vType} {τ : cType} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
+--    _$_ : ∀ {σ τ} → vTerm Γ (σ ⇒ // τ) → vTerm Γ σ → cTerm Γ (// τ)
+--    PREC : ∀ {σ} → vTerm Γ nat → cTerm Γ σ →
+--           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
+    LET_IN_ : ∀ {σ σ'} → cTerm Γ (// (erase-vtype σ)) → cTerm (σ ∷ Γ) σ' → cTerm Γ σ'
+--    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
+
+
 
