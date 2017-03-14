@@ -3,6 +3,7 @@
 module EInference where
 
 open import Data.List
+open import Data.Maybe
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; trans ; cong ; subst)
 
 open import ELanguage
@@ -40,55 +41,61 @@ mutual
   erase-vterm (FST t) = FST (erase-vterm t)
   erase-vterm (SND t) = SND (erase-vterm t)
   erase-vterm (VAR x) = VAR x
-  erase-vterm (LAM σ t) = LAM σ (erase t)
+  erase-vterm (LAM σ t) = LAM σ (erase-cterm t)
   erase-vterm {Γ} (VCAST t p) = subst (vTerm Γ) (erase≤V p) (erase-vterm t)
 
-  erase : {Γ : Ctx} {τ : CType} → CTerm Γ τ → cTerm Γ (erase-ctype τ)
-  erase (VAL x) = VAL (erase-vterm x)
-  erase FAIL = FAIL
-  erase (TRY t WITH t') = TRY erase t WITH erase t'
-  erase (IF x THEN t ELSE t') = IF erase-vterm x THEN erase t ELSE erase t'
-  erase (f $ x) = erase-vterm f $ erase-vterm x
-  erase (LET t IN t') = LET erase t IN erase t'
-  erase {Γ} (CCAST t p) = subst (cTerm Γ) (erase≤C p) (erase t)
+  erase-cterm : {Γ : Ctx} {τ : CType} → CTerm Γ τ → cTerm Γ (erase-ctype τ)
+  erase-cterm (VAL x) = VAL (erase-vterm x)
+  erase-cterm FAIL = FAIL
+  erase-cterm (TRY t WITH t') = TRY erase-cterm t WITH erase-cterm t'
+  erase-cterm (IF x THEN t ELSE t') = IF erase-vterm x THEN erase-cterm t ELSE erase-cterm t'
+  erase-cterm (f $ x) = erase-vterm f $ erase-vterm x
+  erase-cterm (LET t IN t') = LET erase-cterm t IN erase-cterm t'
+  erase-cterm {Γ} (CCAST t p) = subst (cTerm Γ) (erase≤C p) (erase-cterm t)
 
 -----------------------------------------------------------
 -- effect inference
 
 mutual 
-  infer-vtype : {σ : vType} {Γ : Ctx} → vTerm Γ σ → VType
-  infer-vtype TT = bool
-  infer-vtype FF = bool
-  infer-vtype ZZ = nat
-  infer-vtype (SS t) = nat
-  infer-vtype ⟨ t , t' ⟩ = infer-vtype t ∏ infer-vtype t'
+  infer-vtype : {Γ : Ctx} {σ : vType} → vTerm Γ σ → Maybe VType
+  infer-vtype TT = just bool
+  infer-vtype FF = just bool
+  infer-vtype ZZ = just nat
+  infer-vtype (SS t) = just nat
+  infer-vtype ⟨ t , t' ⟩ with infer-vtype t | infer-vtype t'
+  ... | just σ | just σ' = just (σ ∏ σ')
+  ... | _      | _       = nothing
   infer-vtype (FST t) with infer-vtype t
-  infer-vtype (FST t) | nat = {!!}
-  infer-vtype (FST t) | bool = {!!}
-  infer-vtype (FST t) | σ ∏ σ' = σ
-  infer-vtype (FST t) | σ ⇒ τ = {!!}
+  ... | just (σ ∏ _) = just σ
+  ... | _            = nothing
   infer-vtype (SND t) with infer-vtype t
-  ... | σ = {!!}
-  infer-vtype {Γ = Γ} (VAR x) = lkp Γ (idx x)
-  infer-vtype {Γ = Γ} (LAM σ t) =  σ ⇒ infer-ctype {Γ = σ ∷ Γ} t
+  ... | just (_ ∏ σ') = just σ'
+  ... | _             = nothing
+  infer-vtype {Γ} (VAR x) = just (lkp Γ (idx x))
+  infer-vtype (LAM σ t) with infer-ctype t
+  ... | just τ = just (σ ⇒ τ)
+  ... | _      = nothing
 
-  infer-ctype : {σ : cType} {Γ : Ctx} → cTerm Γ σ → CType
-  infer-ctype (VAL x) =  ok / infer-vtype x
-  infer-ctype FAIL =  err / {!!}
+  infer-ctype : {σ : cType} {Γ : Ctx} → cTerm Γ σ → Maybe CType
+  infer-ctype (VAL x) with infer-vtype x
+  ... | just σ = just (ok / σ)
+  ... | _      = nothing
+  infer-ctype FAIL = {!!} -- err / {!!}
   infer-ctype (TRY t WITH t') with infer-ctype t | infer-ctype t'
-  ... | e / σ | e' / σ' = e ⊔ e' / {!lub  σ σ'!}
+  ... | just τ | just τ' = τ ⊔C τ'
+  ... | _      | _       = nothing
   infer-ctype (IF x THEN t ELSE t') with infer-ctype t | infer-ctype t'
-  ... | e / σ | e' / σ'  =  e ⊔ e' / {!lub σ σ'!}
-  infer-ctype (f $ t) with infer-vtype f 
-  infer-ctype (f $ t) | nat = {!!}
-  infer-ctype (f $ t) | bool = {!!}
-  infer-ctype (f $ t) | σ ∏ σ' = {!!}
-  infer-ctype (f $ t) | σ ⇒ τ = τ
+  ... | just τ | just τ' = τ ⊔C τ'
+  ... | _      | _       = nothing
+  infer-ctype (f $ t) with infer-vtype f -- FIXME: should match argument too
+  ... | just (σ ⇒ τ) = just τ
+  ... | _            = nothing
   infer-ctype (LET t IN t') with infer-ctype t | infer-ctype t'
-  ... | e / _ | e' / τ' = e · e' / τ' 
+  ... | just (e / _) | just (e' / τ') = just (e · e' / τ')
+  ... | _            | _              = nothing
 
 
-
+{-
 mutual  
   infer-vterm : {Γ : Ctx} {σ : vType} → (t : vTerm Γ σ) → VTerm Γ (infer-vtype t)
   infer-vterm TT = TT
@@ -110,4 +117,4 @@ mutual
 --  infer γ (PREC x c c') = PREC (infer-vterm γ x) (infer γ c) {!!} {!!}
   infer (LET t IN t') = {!!} --LET infer t IN infer t'
 
-
+-}

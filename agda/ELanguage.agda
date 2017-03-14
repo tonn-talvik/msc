@@ -3,6 +3,7 @@
 module ELanguage where
 
 open import Data.List
+open import Data.Maybe
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; cong)
 
 open import Exception
@@ -124,4 +125,22 @@ mutual -- value and computation terms
 --    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
 
 
+mutual -- least upper bound of VType and CType
+  _⊔V_ : VType → VType → Maybe VType
+  nat ⊔V nat = just nat
+  nat ⊔V _   = nothing
+  bool ⊔V bool = just bool
+  bool ⊔V _    = nothing
+  (σ ∏ τ) ⊔V (σ' ∏ τ') with σ ⊔V σ' | τ ⊔V τ'
+  ... | just l | just r = just (l ∏ r)
+  ... | _      | _      = nothing
+  (σ ∏ σ') ⊔V _         = nothing
+  (σ ⇒ τ) ⊔V (σ' ⇒ τ') with σ ⊔V σ' | τ ⊔C τ'
+  ... | just v | just c = just (v ⇒ c)
+  ... | _      | _      = nothing
+  (σ ⇒ τ) ⊔V _ = nothing
 
+  _⊔C_ : CType → CType → Maybe CType
+  (e / σ) ⊔C (e' / σ') with σ ⊔V σ'
+  ... | just v = just (e ⊔ e' / v)
+  ... | _      = nothing
