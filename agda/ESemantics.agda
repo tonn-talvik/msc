@@ -75,7 +75,7 @@ mutual
   ccast (st-comp {ε} {ε'} e o) c = T₁ {ε'} (vcast o) (sub e c)
 
 mutual
-  ⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟦ Γ ⟧x → ⟪ σ ⟫v
+  ⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ (just σ) → ⟦ Γ ⟧x → ⟪ σ ⟫v
   ⟦ TT ⟧v ρ = true
   ⟦ FF ⟧v ρ = false
   ⟦ ZZ ⟧v ρ = zero

@@ -5,9 +5,10 @@ module EInference where
 open import Data.List
 open import Data.Maybe
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; trans ; cong ; subst)
+open import Relation.Nullary
 
 open import ELanguage
-open import ESemantics
+--open import ESemantics
 open import Exception
 open import Finiteness
 open import GradedMonad
@@ -32,7 +33,7 @@ mutual
 
 
 mutual
-  erase-vterm : {Γ : Ctx} {σ : VType} → VTerm Γ σ → vTerm Γ (erase-vtype σ)
+  erase-vterm : {Γ : Ctx} {σ : VType} → VTerm Γ (just σ) → vTerm Γ (erase-vtype σ)
   erase-vterm TT = TT
   erase-vterm FF = FF
   erase-vterm ZZ = ZZ
@@ -44,7 +45,7 @@ mutual
   erase-vterm (LAM σ t) = LAM σ (erase-cterm t)
   erase-vterm {Γ} (VCAST t p) = subst (vTerm Γ) (erase≤V p) (erase-vterm t)
 
-  erase-cterm : {Γ : Ctx} {τ : CType} → CTerm Γ τ → cTerm Γ (erase-ctype τ)
+  erase-cterm : {Γ : Ctx} {τ : CType} → CTerm Γ (just τ) → cTerm Γ (erase-ctype τ)
   erase-cterm (VAL x) = VAL (erase-vterm x)
   erase-cterm FAIL = FAIL
   erase-cterm (TRY t WITH t') = TRY erase-cterm t WITH erase-cterm t'
@@ -73,7 +74,7 @@ mutual
   ... | _             = nothing
   infer-vtype {Γ} (VAR x) = just (lkp Γ (idx x))
   infer-vtype (LAM σ t) with infer-ctype t
-  ... | just τ = just (σ ⇒ τ)
+  ... | just τ = just (σ ⟹ τ)
   ... | _      = nothing
 
   infer-ctype : {σ : cType} {Γ : Ctx} → cTerm Γ σ → Maybe CType
@@ -88,33 +89,82 @@ mutual
   ... | just τ | just τ' = τ ⊔C τ'
   ... | _      | _       = nothing
   infer-ctype (f $ t) with infer-vtype f -- FIXME: should match argument too
-  ... | just (σ ⇒ τ) = just τ
+  ... | just (σ ⟹ τ) = just τ
   ... | _            = nothing
   infer-ctype (LET t IN t') with infer-ctype t | infer-ctype t'
   ... | just (e / _) | just (e' / τ') = just (e · e' / τ')
   ... | _            | _              = nothing
 
 
-{-
-mutual  
-  infer-vterm : {Γ : Ctx} {σ : vType} → (t : vTerm Γ σ) → VTerm Γ (infer-vtype t)
-  infer-vterm TT = TT
-  infer-vterm FF = FF
-  infer-vterm ZZ = ZZ
-  infer-vterm (SS t) = {!!} -- SS (infer-vterm t)
-  infer-vterm ⟨ t , t' ⟩ = ⟨ infer-vterm t , infer-vterm t' ⟩
-  infer-vterm (FST t) = {!!} -- FST (infer-vterm t)
-  infer-vterm (SND t) = {!!} -- SND (infer-vterm t)
-  infer-vterm (VAR x) = {!!} --VAR x
-  infer-vterm (LAM σ t) = LAM σ (infer t)
-  
-  infer : {Γ : Ctx} {σ : cType} → (t : cTerm Γ σ) → CTerm Γ (infer-ctype t)
-  infer (VAL x) = VAL (infer-vterm x)
-  infer FAIL = FAIL
-  infer (TRY t WITH t' ) = {!!} --TRY infer t WITH infer t'
-  infer (IF x THEN t ELSE t') = {!!} --IF infer-vterm x THEN infer t ELSE infer t'
-  infer (f $ x) = {!!} --infer-vterm f $ infer-vterm x
---  infer γ (PREC x c c') = PREC (infer-vterm γ x) (infer γ c) {!!} {!!}
-  infer (LET t IN t') = {!!} --LET infer t IN infer t'
+------------------------------------------------------------------------
+infer-var : {σ σ' : VType} {Γ : Ctx} → (σ ∈ Γ) → Maybe (VTerm Γ (just σ'))
+infer-var {σ} {σ'} x with σ ≡V? σ'
+infer-var x | yes refl = just (VAR x)
+... | _     = nothing
 
--}
+infer-if-else : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') →  Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else {e / σ} {e' / σ'} x t t' with σ ≡V? σ' | (e / σ) ⊔C (e' / σ')
+infer-if-else {e / σ} {e' / .σ} x t t' | yes refl | just (ε / v) = just (IF x THEN CCAST t (st-comp {!!} {!!}) ELSE CCAST t' {!!})
+... | _ | _      = nothing
+
+infer-if-else2 : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') →  Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else2 {e / σ} {e' / σ'} x t t' with e ⊔ e' | σ ⊔V σ'
+... | ε | just v = just (IF x THEN {!!} ELSE {!!})
+... | _ | _      = nothing
+
+infer-if-else' : {σ σ' : VType} {e e' : Exc} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ')) →  Maybe (CTerm Γ (just (e ⊔ e' / σ )))
+infer-if-else' {σ} {σ'} x t t' with σ ≡V? σ'
+infer-if-else' x t t' | yes refl = just (IF x THEN t ELSE t')
+infer-if-else' x t t' | no _ = nothing
+
+infer-app : {σ σ' : VType} {τ : CType} {Γ : Ctx} → VTerm Γ (just (σ ⟹ τ)) → VTerm Γ (just σ') → Maybe (CTerm Γ (just τ))
+infer-app {σ} {σ'} f x with σ ≡V? σ' -- FIXME: allow subtype application too
+infer-app f x | yes refl = just (f $ x)
+infer-app f x | no _     = nothing
+
+
+
+mutual
+  infer-vterm : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → Maybe (VTerm Γ (infer-vtype t))
+  infer-vterm TT = just TT
+  infer-vterm FF = just FF
+  infer-vterm ZZ = just ZZ
+  infer-vterm (SS t) with infer-vtype t | infer-vterm t
+  ... | just nat | just t' = just (SS t')
+  ... | _        | _       = nothing
+  infer-vterm ⟨ t , t' ⟩
+    with infer-vtype t | infer-vterm t | infer-vtype t' | infer-vterm t'
+  ... | just _ | just u | just _ | just u' = just ⟨ u , u' ⟩
+  ... | _      | _      | _      | _       = nothing
+  infer-vterm (FST t) with infer-vtype t | infer-vterm t
+  ... | just (_ ∏ _) | just t' = just (FST t')
+  ... | _            | _       = nothing
+  infer-vterm (SND t) with infer-vtype t | infer-vterm t
+  ... | just (_ ∏ _) | just t' = just (SND t')
+  ... | _            | _       = nothing
+  infer-vterm {Γ} (VAR {σ} x) with infer-vtype (VAR x)
+  ... | just σ' = infer-var x
+  ... | _      = nothing
+  infer-vterm (LAM σ t) with infer-ctype t | infer-cterm t
+  ... | just _ | just t' = just (LAM σ t')
+  ... | _      | _       = nothing
+
+  infer-cterm : {Γ : Ctx} {σ : cType} (t : cTerm Γ σ) → Maybe (CTerm Γ (infer-ctype t))
+  infer-cterm (VAL t) with infer-vtype t | infer-vterm t
+  ... | just _ | just u = just (VAL u)
+  ... | _      | _       = nothing
+  infer-cterm FAIL = {!!}
+  infer-cterm (TRY t WITH t')
+    with infer-ctype t | infer-cterm t | infer-ctype t' | infer-cterm t'
+  ... | just (_ / σ) | just u | just (_ / σ') | just u' = just {!TRY u WITH u'!}
+  ... | _      | _      | _      | _       = nothing
+  infer-cterm (IF x THEN t ELSE t')
+    with infer-vtype x | infer-vterm x |
+         infer-ctype t | infer-cterm t | infer-ctype t' | infer-cterm t'
+  ... | just bool | just x' | just (e / σ) | just u | just (e' / σ') | just u' = infer-if-else x' u u'
+  ... | _         | _       | _      | _      | _      | _ = nothing
+  infer-cterm (f $ x)
+    with infer-vtype f | infer-vterm f | infer-vtype x | infer-vterm x
+  ... | just (_ ⟹ _) | just f' | just _ | just x' = infer-app f' x'
+  ... | _             | _       | _       | _       = nothing
+  infer-cterm (LET t IN t') = {!!}
