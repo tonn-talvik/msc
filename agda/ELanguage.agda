@@ -65,6 +65,12 @@ mutual -- least upper bound of VType and CType
   ... | just v = just (e ⊔ e' / v)
   ... | _      = nothing
 
+  _⊹C_ : CType → CType → Maybe CType
+  (e / σ) ⊹C (e' / σ') with σ ⊔V σ'
+  ... | just v = just (e ⊹ e' / v)
+  ... | _      = nothing
+  
+
 
 
 Ctx = List VType
@@ -111,9 +117,10 @@ mutual -- value and computation terms
   data CTerm (Γ : Ctx) : Maybe CType → Set where
     VAL : {σ : VType} → VTerm Γ (just σ) → CTerm Γ (just (ok / σ))
     FAIL : {σ : VType} → CTerm Γ (just (err / σ))
-    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (just (e ⊔ e' / σ))
-    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ (just bool) →
-                    CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (just (e ⊔ e' / σ))
+    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (just (e ⊹ e' / σ))
+    --TRY_WITH_ : ∀ {τ τ'} → CTerm Γ (just τ) → CTerm Γ (just τ') → CTerm Γ (τ ⊹C τ')    
+--    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (e / σ ⊔C e' / σ)
+    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (just (e ⊔ e' / σ))    
     _$_ : {σ : VType} {τ : CType} → VTerm Γ (just (σ ⟹ τ)) → VTerm Γ (just σ) → CTerm Γ (just τ)
 --    PREC : ∀ {e' e'' σ} → VTerm Γ nat → CTerm Γ (e'' / σ) →
 --           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm Γ (e'' / σ)

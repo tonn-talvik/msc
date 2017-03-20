@@ -82,13 +82,18 @@ mutual
   ... | just σ = just (ok / σ)
   ... | _      = nothing
   infer-ctype FAIL = {!!} -- err / {!!}
+--  infer-ctype (TRY t WITH t') with infer-ctype t | infer-ctype t'
+--  ... | just τ | just τ' = τ ⊹C τ'
+--  ... | _      | _       = nothing
   infer-ctype (TRY t WITH t') with infer-ctype t | infer-ctype t'
-  ... | just τ | just τ' = τ ⊔C τ'
-  ... | _      | _       = nothing
+  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') with σ ⊔V σ'
+  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') | just v = just (e ⊔ e' / v)
+  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') | _ = nothing  
+  infer-ctype (TRY t WITH t') | _            | _       = nothing
   infer-ctype (IF x THEN t ELSE t') with infer-ctype t | infer-ctype t'
   ... | just τ | just τ' = τ ⊔C τ'
   ... | _      | _       = nothing
-  infer-ctype (f $ t) with infer-vtype f -- FIXME: should match argument too
+  infer-ctype (f $ t) with infer-vtype f -- FIXME: should match argument too?
   ... | just (σ ⟹ τ) = just τ
   ... | _            = nothing
   infer-ctype (LET t IN t') with infer-ctype t | infer-ctype t'
@@ -102,20 +107,34 @@ infer-var {σ} {σ'} x with σ ≡V? σ'
 infer-var x | yes refl = just (VAR x)
 ... | _     = nothing
 
-infer-if-else : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') →  Maybe (CTerm Γ (τ ⊔C τ'))
-infer-if-else {e / σ} {e' / σ'} x t t' with σ ≡V? σ' | (e / σ) ⊔C (e' / σ')
-infer-if-else {e / σ} {e' / .σ} x t t' | yes refl | just (ε / v) = just (IF x THEN CCAST t (st-comp {!!} {!!}) ELSE CCAST t' {!!})
-... | _ | _      = nothing
 
-infer-if-else2 : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') →  Maybe (CTerm Γ (τ ⊔C τ'))
-infer-if-else2 {e / σ} {e' / σ'} x t t' with e ⊔ e' | σ ⊔V σ'
-... | ε | just v = just (IF x THEN {!!} ELSE {!!})
-... | _ | _      = nothing
-
-infer-if-else' : {σ σ' : VType} {e e' : Exc} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ')) →  Maybe (CTerm Γ (just (e ⊔ e' / σ )))
+infer-if-else' : {σ σ' : VType} {e e' : Exc} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ')) → Maybe (CTerm Γ (just (e ⊔ e' / σ )))
 infer-if-else' {σ} {σ'} x t t' with σ ≡V? σ'
 infer-if-else' x t t' | yes refl = just (IF x THEN t ELSE t')
 infer-if-else' x t t' | no _ = nothing
+
+infer-if-else : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') → Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else {e / σ} {e' / σ'} x t t' with σ ≡V? σ' | (e / σ) ⊔C (e' / σ')
+infer-if-else {e / σ} {e' / .σ} x t t' | yes refl | just (ε / v) = {!!} --just (IF x THEN {!!} ELSE CCAST t' {!!})
+... | _ | _      = nothing
+
+infer-if-else3 : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') → Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else3 {e / σ} {e' / σ'} x t t' with e / σ ⊔C e' / σ'
+infer-if-else3 {e / σ} {e' / σ'} x t t' | just (ε / τ)  = {!!}
+infer-if-else3 {e / σ} {e' / σ'} x t t' | nothing = nothing
+
+infer-if-else4 : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') → Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else4 {τ} {τ'} x t t'            with τ ⊔C τ'
+infer-if-else4 {e / σ} {e' / σ'} x t t'   | just (e'' / σ'') with σ ≡V? σ'' | σ' ≡V? σ'' | e ≡E? e'' | e' ≡E? e''
+infer-if-else4 {.e / .σ} {.e / .σ} {Γ}  x t t'          | just (e / σ)     | yes refl | yes refl   | yes refl | yes refl = just (subst (λ ε → CTerm Γ (just (ε / σ))) (⊔-itself e) (IF x THEN t ELSE t'))
+infer-if-else4 {e / _} {e' / σ'} x t t'             | just (e'' / σ)   | _        | _  | _        | _  = nothing
+infer-if-else4 x t t'                     | nothing  = nothing
+
+
+infer-if-else2 : {τ τ' : CType} {Γ : Ctx} → VTerm Γ (just bool) → CTerm Γ (just τ) → CTerm Γ (just τ') → Maybe (CTerm Γ (τ ⊔C τ'))
+infer-if-else2 {e / σ} {e' / σ'} x t t' with e ⊔ e' | σ ⊔V σ'
+... | ε | just v = just (IF x THEN {!!} ELSE {!!})
+... | _ | _      = nothing
 
 infer-app : {σ σ' : VType} {τ : CType} {Γ : Ctx} → VTerm Γ (just (σ ⟹ τ)) → VTerm Γ (just σ') → Maybe (CTerm Γ (just τ))
 infer-app {σ} {σ'} f x with σ ≡V? σ' -- FIXME: allow subtype application too
@@ -156,8 +175,10 @@ mutual
   infer-cterm FAIL = {!!}
   infer-cterm (TRY t WITH t')
     with infer-ctype t | infer-cterm t | infer-ctype t' | infer-cterm t'
-  ... | just (_ / σ) | just u | just (_ / σ') | just u' = just {!TRY u WITH u'!}
-  ... | _      | _      | _      | _       = nothing
+  infer-cterm (TRY t WITH t') | just (e / σ) | just u | just (e' / σ') | just u' with σ ≡V? σ'
+  infer-cterm (TRY t WITH t') | just (e / σ) | just u | just (e' / .σ) | just u' | yes refl = just {!TRY ? WITH ?!}
+  infer-cterm (TRY t WITH t') | just (e / σ) | just u | just (e' / σ') | just u' | _ = nothing
+  infer-cterm (TRY t WITH t') | _      | _      | _      | _       = nothing
   infer-cterm (IF x THEN t ELSE t')
     with infer-vtype x | infer-vterm x |
          infer-ctype t | infer-cterm t | infer-ctype t' | infer-cterm t'
@@ -167,4 +188,7 @@ mutual
     with infer-vtype f | infer-vterm f | infer-vtype x | infer-vterm x
   ... | just (_ ⟹ _) | just f' | just _ | just x' = infer-app f' x'
   ... | _             | _       | _       | _       = nothing
-  infer-cterm (LET t IN t') = {!!}
+  infer-cterm (LET t IN t')
+    with infer-ctype t | infer-cterm t | infer-ctype t' | infer-cterm t'
+  ... | just (e / σ) | just u | just (e' / σ') | just u' = just (LET u IN {!u'!}) -- FIXME: match context
+  ... | _            | _      | _              | _       = nothing

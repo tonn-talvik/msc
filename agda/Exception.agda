@@ -236,3 +236,17 @@ lub errok errok = ⊑-refl
 
 lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
 lub-sym e e' rewrite ⊔-sym e' e = lub e e'
+
+⊔-itself : (e : Exc) → e ⊔ e ≡ e
+⊔-itself err = refl
+⊔-itself ok = refl
+⊔-itself errok = refl
+
+---------------------------
+
+infix 120 _⊹_
+_⊹_ : Exc → Exc → Exc
+err ⊹ e' = e'
+ok ⊹ _ = ok
+errok ⊹ ok = ok
+errok ⊹ _ = errok
