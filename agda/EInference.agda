@@ -2,6 +2,7 @@
 
 module EInference where
 
+open import Data.Unit
 open import Data.List
 open import Data.Maybe
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; trans ; cong ; subst)
@@ -62,7 +63,9 @@ mutual
   infer-vtype TT = just bool
   infer-vtype FF = just bool
   infer-vtype ZZ = just nat
-  infer-vtype (SS t) = just nat
+  infer-vtype (SS t) with  infer-vtype t
+  ... | just nat = just nat
+  ... | _        = nothing
   infer-vtype ⟨ t , t' ⟩ with infer-vtype t | infer-vtype t'
   ... | just σ | just σ' = just (σ ∏ σ')
   ... | _      | _       = nothing
@@ -142,7 +145,34 @@ infer-app f x | yes refl = just (f $ x)
 infer-app f x | no _     = nothing
 
 
+data infer-vtermTypeD {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) : Maybe VType →  Set where
+  nothing : infer-vtermTypeD {Γ} {σ} t nothing
+  just : ∀ {τ} → VTerm' Γ τ → infer-vtermTypeD {Γ} {σ} t (just τ)
 
+
+infer-vtermType : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → Set
+infer-vtermType {Γ} {_} t with infer-vtype t 
+... | nothing = ⊤
+... | just τ = VTerm' Γ τ
+  
+mutual 
+  infer-vterm' :  {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → infer-vtermType {Γ} {σ} t 
+  infer-vterm' TT = TT
+  infer-vterm' FF = FF
+  infer-vterm' ZZ = ZZ
+  infer-vterm' (SS t) with infer-vtype t | infer-vterm' t 
+  infer-vterm' (SS t) | just nat | u =  SS u
+  infer-vterm' (SS t) | just bool | u = tt
+  infer-vterm' (SS t) | just (x ∏ x₁) | u = tt
+  infer-vterm' (SS t) | just (x ⟹ x₁) | u = tt
+  infer-vterm' (SS t) | nothing | tt = tt
+  infer-vterm' ⟨ t , t₁ ⟩ = {!!}
+  infer-vterm' (FST t) = {!!}
+  infer-vterm' (SND t) = {!!}
+  infer-vterm' (VAR x) = {!!}
+  infer-vterm' (LAM σ x) = {!!}
+
+  
 mutual
   infer-vterm : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → Maybe (VTerm Γ (infer-vtype t))
   infer-vterm TT = just TT

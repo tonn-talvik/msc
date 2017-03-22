@@ -2,6 +2,7 @@
 
 module ELanguage where
 
+open import Data.Unit
 open import Data.List
 open import Data.Maybe
 open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; cong; subst)
@@ -34,8 +35,9 @@ mutual -- value and computation types
 
 mutual -- subtyping of refined types
   data _≤V_ : VType → VType → Set where
+    st-bn : bool ≤V nat
     st-refl : {σ : VType} → σ ≤V σ
-    st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
+--    st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
     st-prod : {σ σ' τ τ' : VType} → σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
     st-func : {σ σ' : VType} {τ τ' : CType} →
               σ' ≤V σ → τ ≤C τ' →
@@ -45,11 +47,25 @@ mutual -- subtyping of refined types
     st-comp : {e e' : E} {σ σ' : VType} → e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
 
 
+mutual 
+  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
+  st-trans st-bn st-refl = st-bn
+  st-trans st-refl q = q
+  st-trans (st-prod p p₁) st-refl = st-prod p p₁
+  st-trans (st-prod p p₁) (st-prod q q₁) = st-prod (st-trans p q) (st-trans p₁ q₁)
+  st-trans (st-func p p₁) st-refl = st-func p p₁
+  st-trans (st-func p p₁) (st-func q q₁) = st-func (st-trans q p) (sct-trans p₁ q₁)
+
+  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
+  sct-trans p q = {!!}
+
 mutual -- least upper bound of VType and CType
   _⊔V_ : VType → VType → Maybe VType
   nat ⊔V nat = just nat
-  nat ⊔V _   = nothing
+  nat ⊔V bool = just nat
+  nat ⊔V _  = nothing
   bool ⊔V bool = just bool
+  bool ⊔V nat = just nat
   bool ⊔V _    = nothing
   (σ ∏ τ) ⊔V (σ' ∏ τ') with σ ⊔V σ' | τ ⊔V τ'
   ... | just l | just r = just (l ∏ r)
@@ -72,35 +88,61 @@ mutual -- least upper bound of VType and CType
   
 
 
+--data Inspect {A : Set}(x : A) : Set where
+--  it : (y : A) -> x ≡ y -> Inspect x
+
+--inspect : {A : Set}(x : A) -> Inspect x
+--inspect x = it x refl
+
+ubV' : (σ σ' : VType) → {τ : VType} → σ ⊔V σ' ≡ just τ → σ ≤V τ 
+ubV' nat nat refl = st-refl
+ubV' nat bool refl = st-refl 
+ubV' nat (σ' ∏ σ'') ()
+ubV' nat (σ' ⟹ x) ()
+ubV' bool nat refl = st-bn
+ubV' bool bool refl = st-refl
+ubV' bool (σ' ∏ σ'') p = {!!}
+ubV' bool (σ' ⟹ x) p = {!!}
+ubV' (σ ∏ σ₁) nat p = {!!}
+ubV' (σ ∏ σ₁) bool p = {!!}
+ubV' (σ ∏ σ₁) (σ' ∏ σ'') p with inspect (σ ⊔V σ') | inspect (σ₁ ⊔V σ'') 
+ubV' (σ ∏ σ₁) (σ' ∏ σ'') refl | it (just x) q  | it (just x₁) r = st-prod (ubV' σ σ' {!q!}) {!!} 
+ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | _ | nothing
+ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | nothing | _
+ubV' (σ ∏ σ₁) (σ' ⟹ x) ()
+ubV' (σ ⟹ x) σ' p = {!!} 
+
+--ubV : (σ σ' : VType) → (λ {(just τ) → σ ≤V τ ; (nothing) → ⊤} ) σ ⊔V σ' 
+--ubV = ?
 
 Ctx = List VType
 
 
 mutual -- value and computation terms
-{-
-  data VTerm (Γ : Ctx) : VType → Set where
-    TT FF : VTerm Γ bool
-    ZZ : VTerm Γ nat
-    SS : VTerm Γ nat → VTerm Γ nat
-    ⟨_,_⟩ : {σ σ' : VType} → VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ∏ σ')
-    FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
-    SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
-    VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
---    LAM : (σ : VType) {ε : E} {τ : VType} → CTerm (σ ∷ Γ) (ε / τ) → VTerm Γ (σ ⇒ ε / τ)
-    LAM : (σ : VType) {τ : CType} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)    
-    VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
-  data CTerm (Γ : Ctx) : CType → Set where
-    VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (ok / σ)
-    FAIL : {σ : VType} → CTerm Γ (err / σ)
-    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
-    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
-    _$_ : {σ : VType} {τ : CType} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
---    PREC : ∀ {e' e'' σ} → VTerm Γ nat → CTerm Γ (e'' / σ) →
---           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm Γ (e'' / σ)
-    LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
-    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
--}
+  data VTerm' (Γ : Ctx) : VType → Set where
+    TT FF : VTerm' Γ bool
+    ZZ : VTerm' Γ nat
+    SS : VTerm' Γ nat → VTerm' Γ nat
+    ⟨_,_⟩ : {σ σ' : VType} → VTerm' Γ σ → VTerm' Γ σ' → VTerm' Γ (σ ∏ σ')
+    FST : {σ σ' : VType} → VTerm' Γ (σ ∏ σ') → VTerm' Γ σ
+    SND : {σ σ' : VType} → VTerm' Γ (σ ∏ σ') → VTerm' Γ σ'
+    VAR : {σ : VType} → σ ∈ Γ → VTerm' Γ σ
+--    LAM : (σ : VType) {ε : E} {τ : VType} → CTerm' (σ ∷ Γ) (ε / τ) → VTerm' Γ (σ ⇒ ε / τ)
+    LAM : (σ : VType) {τ : CType} → CTerm' (σ ∷ Γ) τ → VTerm' Γ (σ ⟹ τ)    
+    VCAST : {σ σ' : VType} → VTerm' Γ σ → σ ≤V σ' → VTerm' Γ σ'
+
+  data CTerm' (Γ : Ctx) : CType → Set where
+    VAL : {σ : VType} → VTerm' Γ σ → CTerm' Γ (ok / σ)
+    FAIL : {σ : VType} → CTerm' Γ (err / σ)
+    TRY_WITH_ : ∀ {e e' σ} → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊔ e' / σ)
+    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm' Γ bool → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊔ e' / σ)
+    _$_ : {σ : VType} {τ : CType} → VTerm' Γ (σ ⟹ τ) → VTerm' Γ σ → CTerm' Γ τ
+--    PREC : ∀ {e' e'' σ} → VTerm' Γ nat → CTerm' Γ (e'' / σ) →
+--           CTerm' (σ ∷ nat ∷ Γ) (e' / σ) → e'' · e' ⊑ e'' → CTerm' Γ (e'' / σ)
+    LET_IN_ : ∀ {e e' σ σ'} → CTerm' Γ (e / σ) → CTerm' (σ ∷ Γ) (e' / σ') → CTerm' Γ (e · e' / σ')
+    CCAST :  ∀ {e e' σ σ'} → CTerm' Γ (e / σ) → e / σ ≤C e' / σ' → CTerm' Γ (e' / σ')
+
 
   data VTerm (Γ : Ctx) : Maybe VType → Set where
     TT FF : VTerm Γ (just bool)
@@ -181,24 +223,35 @@ mutual -- value and computation terms
 --    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
 
 
-{-
+
+lemma : {σ σ' τ τ' : VType} → ¬ σ ≤V σ' → ¬ σ ∏ τ ≤V σ' ∏ τ'
+lemma {σ} {.σ} ¬p st-refl = ¬p st-refl
+lemma ¬p (st-prod p _) =  ¬p p
+
 mutual -- subtyping of refined types isn't decidable, is it?
+{-
   lemma-nat≰Vbool : ¬ (nat ≤V bool)
   lemma-nat≰Vbool (st-trans st-refl q) = lemma-nat≰Vbool q
   lemma-nat≰Vbool (st-trans (st-trans p p') st-refl) = lemma-nat≰Vbool (st-trans p p')
   lemma-nat≰Vbool (st-trans (st-trans {σ' = τ} p p') (st-trans {σ' = τ'} q q')) = {!!}
-
+-}
   _≤V?_ : (σ σ' : VType) → Dec (σ ≤V σ')
   nat ≤V? nat = yes st-refl
-  nat ≤V? bool = no lemma-nat≰Vbool
-  nat ≤V? (σ' ∏ σ'') = {!!}
-  nat ≤V? (σ' ⇒ x) = {!!}
-  bool ≤V? σ' = {!!}
-  (σ ∏ τ) ≤V? σ' = {!!}
-  (σ ⇒ τ) ≤V? σ' = {!!}
+  nat ≤V? bool = no ( λ ())
+  nat ≤V? (σ' ∏ σ'') = no (λ ())
+  nat ≤V? (σ' ⟹ x) = no (λ ())
+  bool ≤V? nat = yes st-bn
+  bool ≤V? bool = yes st-refl
+  bool ≤V? σ' ∏ σ'' = no (λ ())
+  bool ≤V? σ' ⟹ x = no (λ ())
+  σ ∏ τ ≤V? nat = no (λ ())
+  σ ∏ τ ≤V? bool = no (λ ())
+  σ ∏ τ ≤V? σ' ∏ σ'' with σ ≤V? σ' 
+  σ ∏ τ ≤V? σ' ∏ σ'' | yes p = {!!}
+  σ ∏ τ ≤V? σ' ∏ σ'' | no ¬p = no (lemma ¬p) -- {! no (λ { (st-refl) → ¬p st-refl ; (st-prod p _) → ¬p p }) !} 
+  σ ∏ τ ≤V? σ' ⟹ x = no (λ ())
+  (σ ⟹ τ) ≤V? σ' = {!!}
 
-  
--}
 
 open import Data.Empty
 open import Function
