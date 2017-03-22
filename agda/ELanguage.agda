@@ -47,17 +47,16 @@ mutual -- subtyping of refined types
     st-comp : {e e' : E} {σ σ' : VType} → e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
 
 
-mutual 
+mutual -- subtype transitivity
   st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
-  st-trans st-bn st-refl = st-bn
   st-trans st-refl q = q
-  st-trans (st-prod p p₁) st-refl = st-prod p p₁
-  st-trans (st-prod p p₁) (st-prod q q₁) = st-prod (st-trans p q) (st-trans p₁ q₁)
-  st-trans (st-func p p₁) st-refl = st-func p p₁
-  st-trans (st-func p p₁) (st-func q q₁) = st-func (st-trans q p) (sct-trans p₁ q₁)
+  -- st-trans st-bn st-refl = st-bn -- NOTE: this line is eaten by following line
+  st-trans p st-refl = p
+  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q) (st-trans p' q')
+  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p) (sct-trans p' q')
 
   sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
-  sct-trans p q = {!!}
+  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p') (st-trans q q')
 
 mutual -- least upper bound of VType and CType
   _⊔V_ : VType → VType → Maybe VType
@@ -94,6 +93,7 @@ mutual -- least upper bound of VType and CType
 --inspect : {A : Set}(x : A) -> Inspect x
 --inspect x = it x refl
 
+{-
 ubV' : (σ σ' : VType) → {τ : VType} → σ ⊔V σ' ≡ just τ → σ ≤V τ 
 ubV' nat nat refl = st-refl
 ubV' nat bool refl = st-refl 
@@ -111,7 +111,7 @@ ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | _ | nothing
 ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | nothing | _
 ubV' (σ ∏ σ₁) (σ' ⟹ x) ()
 ubV' (σ ⟹ x) σ' p = {!!} 
-
+-}
 --ubV : (σ σ' : VType) → (λ {(just τ) → σ ≤V τ ; (nothing) → ⊤} ) σ ⊔V σ' 
 --ubV = ?
 
@@ -223,70 +223,28 @@ mutual -- value and computation terms
 --    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
 
 
+------------------------------------------------------------------------
 
-lemma : {σ σ' τ τ' : VType} → ¬ σ ≤V σ' → ¬ σ ∏ τ ≤V σ' ∏ τ'
-lemma {σ} {.σ} ¬p st-refl = ¬p st-refl
-lemma ¬p (st-prod p _) =  ¬p p
+fst-≢  : {σ σ' τ τ' : VType} → ¬ σ ≡ σ' → ¬ σ ∏ τ ≡ σ' ∏ τ'
+fst-≢ ¬p refl = ¬p refl
 
-mutual -- subtyping of refined types isn't decidable, is it?
-{-
-  lemma-nat≰Vbool : ¬ (nat ≤V bool)
-  lemma-nat≰Vbool (st-trans st-refl q) = lemma-nat≰Vbool q
-  lemma-nat≰Vbool (st-trans (st-trans p p') st-refl) = lemma-nat≰Vbool (st-trans p p')
-  lemma-nat≰Vbool (st-trans (st-trans {σ' = τ} p p') (st-trans {σ' = τ'} q q')) = {!!}
--}
-  _≤V?_ : (σ σ' : VType) → Dec (σ ≤V σ')
-  nat ≤V? nat = yes st-refl
-  nat ≤V? bool = no ( λ ())
-  nat ≤V? (σ' ∏ σ'') = no (λ ())
-  nat ≤V? (σ' ⟹ x) = no (λ ())
-  bool ≤V? nat = yes st-bn
-  bool ≤V? bool = yes st-refl
-  bool ≤V? σ' ∏ σ'' = no (λ ())
-  bool ≤V? σ' ⟹ x = no (λ ())
-  σ ∏ τ ≤V? nat = no (λ ())
-  σ ∏ τ ≤V? bool = no (λ ())
-  σ ∏ τ ≤V? σ' ∏ σ'' with σ ≤V? σ' 
-  σ ∏ τ ≤V? σ' ∏ σ'' | yes p = {!!}
-  σ ∏ τ ≤V? σ' ∏ σ'' | no ¬p = no (lemma ¬p) -- {! no (λ { (st-refl) → ¬p st-refl ; (st-prod p _) → ¬p p }) !} 
-  σ ∏ τ ≤V? σ' ⟹ x = no (λ ())
-  (σ ⟹ τ) ≤V? σ' = {!!}
+snd-≢  : {σ σ' τ τ' : VType} → ¬ τ ≡ τ' → ¬ σ ∏ τ ≡ σ' ∏ τ'
+snd-≢ ¬q refl = ¬q refl
+
+arg-≢ : {σ σ' : VType} {τ τ' : CType} → ¬ σ ≡ σ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+arg-≢ ¬p refl = ¬p refl
+
+cmp-≢  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≡ τ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+cmp-≢ ¬p refl = ¬p refl
+
+eff-≢  : {e e' : Exc} {σ σ' : VType} → ¬ e ≡ e' → ¬ e / σ ≡ e' / σ'
+eff-≢ ¬p refl = ¬p refl
+
+bdy-≢  : {e e' : Exc} {σ σ' : VType} → ¬ σ ≡ σ' → ¬ e / σ ≡ e' / σ'
+bdy-≢ ¬p refl = ¬p refl
 
 
-open import Data.Empty
-open import Function
-
-proj-fst-≡ : {σ σ' τ τ' : VType} → σ ∏ τ ≡ σ' ∏ τ' → σ ≡ σ'
-proj-fst-≡ refl = refl
-
-proj-snd-≡ : {σ σ' τ τ' : VType} → σ ∏ τ ≡ σ' ∏ τ' → τ ≡ τ'
-proj-snd-≡ refl = refl
-
-proj-arg-≡ : {σ σ' : VType} {τ τ' : CType} → σ ⟹ τ ≡ σ' ⟹ τ' → σ ≡ σ'
-proj-arg-≡ refl = refl
-
-proj-cmp-≡ : {σ σ' : VType} {τ τ' : CType} → σ ⟹ τ ≡ σ' ⟹ τ' → τ ≡ τ'
-proj-cmp-≡ refl = refl
-
-proj-eff-≡ : {e e' : Exc} {σ σ' : VType} → e / σ ≡ e' / σ' → e ≡ e'
-proj-eff-≡ refl = refl
-
-proj-bdy-≡ : {e e' : Exc} {σ σ' : VType} → e / σ ≡ e' / σ' → σ ≡ σ'
-proj-bdy-≡ refl = refl
-
--- this should be defined in Exception
-_≡E?_ : (e e' : Exc) → Dec (e ≡ e')
-err ≡E? err = yes refl
-err ≡E? ok = no (λ ())
-err ≡E? errok = no (λ ())
-ok ≡E? err = no (λ ())
-ok ≡E? ok = yes refl
-ok ≡E? errok = no (λ ())
-errok ≡E? err = no (λ ())
-errok ≡E? ok = no (λ ())
-errok ≡E? errok = yes refl
-
-mutual
+mutual -- equality deciders
   _≡V?_ : (σ σ' : VType) → Dec (σ ≡ σ')
   nat ≡V? nat = yes refl
   nat ≡V? bool = no (λ ())
@@ -300,19 +258,75 @@ mutual
   (_ ∏ _) ≡V? bool = no (λ ())
   (σ ∏ σ') ≡V? (τ ∏ τ') with σ ≡V? τ | σ' ≡V? τ'
   (σ ∏ σ') ≡V? (.σ ∏ .σ') | yes refl | yes refl = yes refl
-  ... | no ¬p | _     = no (¬p ∘ proj-fst-≡)
-  ... | _     | no ¬q = no (¬q ∘ proj-snd-≡)
+  ... | no ¬p | _     = no (fst-≢ ¬p)
+  ... | _     | no ¬q = no (snd-≢ ¬q)
   (_ ∏ _) ≡V? (_ ⟹ _) = no (λ ())
   (_ ⟹ _) ≡V? nat = no (λ ())
   (_ ⟹ _) ≡V? bool = no (λ ())
   (_ ⟹ _) ≡V? (_ ∏ _) = no (λ ())
   (σ ⟹ τ) ≡V? (σ' ⟹ τ') with σ ≡V? σ' | τ ≡C? τ'
   (σ ⟹ τ) ≡V? (.σ ⟹ .τ) | yes refl | yes refl = yes refl
-  ... | no ¬p | _     = no (¬p ∘ proj-arg-≡)
-  ... | _     | no ¬q = no (¬q ∘ proj-cmp-≡)
+  ... | no ¬p | _     = no (arg-≢ ¬p)
+  ... | _     | no ¬q = no (cmp-≢ ¬q)
   
   _≡C?_ : (τ τ' : CType) → Dec (τ ≡ τ')
   (e / σ) ≡C? (e' / σ') with e ≡E? e' | σ ≡V? σ'
   (e / σ) ≡C? (.e / .σ) | yes refl | yes refl = yes refl
-  ... | no ¬p | _     = no (¬p ∘ proj-eff-≡)
-  ... | _     | no ¬q = no (¬q ∘ proj-bdy-≡)
+  ... | no ¬p | _     = no (eff-≢ ¬p)
+  ... | _     | no ¬q = no (bdy-≢ ¬q)
+
+
+
+fst-≰V : {σ σ' τ τ' : VType} → ¬ σ ≤V σ' → ¬ σ ∏ τ ≤V σ' ∏ τ'
+fst-≰V {σ} {.σ} ¬p st-refl = ¬p st-refl
+fst-≰V ¬p (st-prod p _) =  ¬p p
+
+snd-≰V : {σ σ' τ τ' : VType} → ¬ τ ≤V τ' → ¬ σ ∏ τ ≤V σ' ∏ τ'
+snd-≰V {σ} {.σ} ¬q st-refl = ¬q st-refl
+snd-≰V ¬q (st-prod _ q) =  ¬q q
+
+arg-≰V : {σ σ' : VType} {τ τ' : CType} → ¬ σ' ≤V σ → ¬ σ ⟹ τ ≤V σ' ⟹ τ'
+arg-≰V ¬p st-refl = ¬p st-refl
+arg-≰V ¬p (st-func q q') = ¬p q
+
+cmp-≰V  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≤C τ' → ¬ σ ⟹ τ ≤V σ' ⟹ τ'
+cmp-≰V {τ = _ / _} ¬p st-refl = ¬p (st-comp ⊑-refl st-refl)
+cmp-≰V ¬p (st-func q q') = ¬p q'
+
+eff-≰C : {e e' : Exc} {σ σ' : VType} → ¬ e ⊑ e' → ¬ e / σ ≤C e' / σ'
+eff-≰C ¬p (st-comp p _) = ¬p p
+
+bdy-≰C : {e e' : Exc} {σ σ' : VType} → ¬ σ ≤V σ' → ¬ e / σ ≤C e' / σ'
+bdy-≰C ¬q (st-comp _ q) = ¬q q
+
+mutual -- inequality deciders
+  _≤V?_ : (σ σ' : VType) → Dec (σ ≤V σ')
+  nat ≤V? nat = yes st-refl
+  nat ≤V? bool = no ( λ ())
+  nat ≤V? (_ ∏ _) = no (λ ())
+  nat ≤V? (_ ⟹ _) = no (λ ())
+  bool ≤V? nat = yes st-bn
+  bool ≤V? bool = yes st-refl
+  bool ≤V? _ ∏ _ = no (λ ())
+  bool ≤V? _ ⟹ _ = no (λ ())
+  _ ∏ _ ≤V? nat = no (λ ())
+  _ ∏ _ ≤V? bool = no (λ ())
+  σ ∏ σ' ≤V? τ ∏ τ' with σ ≤V? τ | σ' ≤V? τ'
+  ... | yes p | yes q = yes (st-prod p q)
+  ... | no ¬p | _     = no (fst-≰V ¬p)
+  ... | _     | no ¬q = no (snd-≰V ¬q)
+  _ ∏ _ ≤V? _ ⟹ _ = no (λ ())
+  (_ ⟹ _) ≤V? nat = no (λ ())
+  (_ ⟹ _) ≤V? bool = no (λ ())
+  (_ ⟹ _) ≤V? (σ' ∏ σ'') = no (λ ())
+  (σ ⟹ τ) ≤V? (σ' ⟹ τ') with σ' ≤V? σ | τ ≤C? τ'
+  ... | yes p | yes q = yes (st-func p q)
+  ... | no ¬p | _     = no (arg-≰V ¬p)
+  ... | _     | no ¬q = no (cmp-≰V ¬q)
+
+  _≤C?_ : (τ τ' : CType) → Dec (τ ≤C τ')
+  (e / σ) ≤C? (e' / σ') with e ⊑? e' | σ ≤V? σ'
+  ... | yes p | yes q = yes (st-comp p q)
+  ... | no ¬p | _     = no (eff-≰C ¬p)
+  ... | _     | no ¬q = no (bdy-≰C ¬q)
+

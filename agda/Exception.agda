@@ -4,7 +4,7 @@ open import Data.Maybe
 open import Data.Unit
 open import Function
 open import Relation.Binary.Core using (_≡_ ; refl)
-
+open import Relation.Nullary
 
 open import OrderedMonoid
 open import GradedMonad
@@ -250,3 +250,29 @@ err ⊹ e' = e'
 ok ⊹ _ = ok
 errok ⊹ ok = ok
 errok ⊹ _ = errok
+
+
+--------------------------------
+-- deciders
+
+_≡E?_ : (e e' : Exc) → Dec (e ≡ e')
+err ≡E? err = yes refl
+err ≡E? ok = no (λ ())
+err ≡E? errok = no (λ ())
+ok ≡E? err = no (λ ())
+ok ≡E? ok = yes refl
+ok ≡E? errok = no (λ ())
+errok ≡E? err = no (λ ())
+errok ≡E? ok = no (λ ())
+errok ≡E? errok = yes refl
+
+_⊑?_ : (e e' : Exc) → Dec (e ⊑ e')
+err ⊑? err = yes ⊑-refl
+err ⊑? ok = no (λ ())
+err ⊑? errok = yes err⊑errok
+ok ⊑? err = no (λ ())
+ok ⊑? ok = yes ⊑-refl
+ok ⊑? errok = yes ok⊑errok
+errok ⊑? err = no (λ ())
+errok ⊑? ok = no (λ ())
+errok ⊑? errok = yes ⊑-refl
