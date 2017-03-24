@@ -125,7 +125,13 @@ infer-ctermType : {Γ : Ctx} {τ : cType} (t : cTerm Γ τ) → Set
 infer-ctermType {Γ} {_} t with infer-ctype t 
 ... | nothing = ⊤
 ... | just τ = CTerm' Γ τ
-  
+
+infer-if-else : {τ τ' ⊔τ : CType} → (_ : τ ⊔C τ' ≡ just ⊔τ) → {Γ : Ctx} (x : VTerm' Γ bool) (u : CTerm' Γ τ) (u' : CTerm' Γ τ') → CTerm' Γ ⊔τ
+infer-if-else {τ} {τ'} {⊔τ} x u u' with τ ≤C? ⊔τ | τ' ≤C? ⊔τ
+infer-if-else x u u' | yes p | yes q = {!IF x THEN (CCAST ? ?) ELSE (CCAST ? ?)!}
+infer-if-else x u u' | yes p | no ¬p = {!!}
+infer-if-else x u u' | no ¬p | q = {!!}
+
 mutual -- refined term inference
   infer-vterm' : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → infer-vtermType {Γ} {σ} t 
   infer-vterm' TT = TT
@@ -153,7 +159,7 @@ mutual -- refined term inference
   ... | just (_ ∏ _) | u = SND u
   ... | just (_ ⟹ _) | _ = tt
   ... | nothing | _ = tt
-  infer-vterm' (VAR x) = {!!} -- FIXME
+  infer-vterm' {Γ} (VAR x) = VAR (trace Γ (idx x))
   infer-vterm' (LAM σ t) with infer-ctype t | infer-cterm' t
   ... | just _ | u = LAM σ u
   ... | nothing | u = tt
@@ -168,9 +174,20 @@ mutual -- refined term inference
   infer-cterm' (IF x THEN t ELSE t') | just nat | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' with infer-ctype t | infer-cterm' t
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u with infer-ctype t' | infer-cterm' t'
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' with τ ⊔C τ' 
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | just σ = {!!}
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' with τ ⊔C τ'
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | just ⊔τ = infer-if-else {!!} x' u u'
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | nothing = tt
+
+{-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') with (e / σ) ≤C? (e'' / σ'')
+  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') | yes p = IF x' THEN CCAST u {!p!} ELSE CCAST u' {!!}
+  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') | no ¬p = {!!}
+  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing = tt-}
+  {-
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) with (e / τ ) ≤C? (e'' / σ) --= IF x' THEN CCAST u {!!} ELSE {!u'!}
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) | yes p = IF x' THEN CCAST u {!p!} ELSE {!!}
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) | no ¬p = {!!}
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | nothing = tt
+  -}
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just _ | u | nothing | u' = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | nothing | u = tt
   infer-cterm' (IF x THEN t ELSE t') | just (_ ∏ _) | _ = tt

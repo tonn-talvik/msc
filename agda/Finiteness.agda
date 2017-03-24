@@ -190,7 +190,7 @@ deceqfunext p f g | no  q =  no ( λ r → q ( λ x → cong (λ h → h x) {f} 
 
 
 data Inspect {A : Set}(x : A) : Set where
-  it : (y : A) →  x ≡ y →  Inspect x
+  it : (y : A) → x ≡ y →  Inspect x
 
 inspect : {A : Set}(x : A) → Inspect x
 inspect x = it x refl

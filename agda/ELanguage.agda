@@ -5,11 +5,12 @@ module ELanguage where
 open import Data.Unit
 open import Data.List
 open import Data.Maybe
-open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; cong; subst)
+open import Relation.Binary.PropositionalEquality --using (_≡_ ; refl; cong; subst; inspect)
+open Reveal_·_is_
 open import Relation.Nullary
 
 open import Exception
-open import Finiteness
+open import Finiteness hiding (it; inspect)
 open import OrderedMonoid
 open OrderedMonoid.OrderedMonoid ExcEffOM
 
@@ -80,38 +81,40 @@ mutual -- least upper bound of VType and CType
   ... | just v = just (e ⊔ e' / v)
   ... | _      = nothing
 
-  _⊹C_ : CType → CType → Maybe CType
-  (e / σ) ⊹C (e' / σ') with σ ⊔V σ'
-  ... | just v = just (e ⊹ e' / v)
-  ... | _      = nothing
-  
+_⊹C_ : CType → CType → Maybe CType
+(e / σ) ⊹C (e' / σ') with σ ⊔V σ'
+... | just v = just (e ⊹ e' / v)
+... | _      = nothing
 
 
---data Inspect {A : Set}(x : A) : Set where
---  it : (y : A) -> x ≡ y -> Inspect x
+mutual
+  ubV' : (σ σ' : VType) → {τ : VType} → σ ⊔V σ' ≡ just τ → σ ≤V τ 
+  ubV' nat nat refl = st-refl
+  ubV' nat bool refl = st-refl 
+  ubV' nat (_ ∏ _) ()
+  ubV' nat (_ ⟹ _) ()
+  ubV' bool nat refl = st-bn
+  ubV' bool bool refl = st-refl
+  ubV' bool (_ ∏ _) ()
+  ubV' bool (_ ⟹ _) ()
+  ubV' (_ ∏ _) nat ()
+  ubV' (_ ∏ _) bool ()
+  ubV' (σ ∏ σ') (τ ∏ τ') p with σ ⊔V τ | inspect (_⊔V_ σ) τ | σ' ⊔V τ' | inspect (_⊔V_ σ') τ'
+  ubV' (σ ∏ σ') (τ ∏ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-prod (ubV' σ τ q) (ubV' σ' τ' q')
+  ubV' (σ ∏ σ') (τ ∏ τ') () | just _  | _ | nothing | _
+  ubV' (σ ∏ σ') (τ ∏ τ') () | nothing | _ | _       | _
+  ubV' (_ ∏ _) (_ ⟹ _) ()
+  ubV' (_ ⟹ _) nat ()
+  ubV' (_ ⟹ _) bool ()
+  ubV' (_ ⟹ _) (_ ∏ _) ()
+  ubV' (σ ⟹ τ) (σ' ⟹ τ') p with σ ⊔V σ' | inspect (_⊔V_ σ) σ' | τ ⊔C τ' | inspect (_⊔C_ τ) τ'
+  ubV' (σ ⟹ τ) (σ' ⟹ τ') refl | just x | [ q ] | just _ | [ q' ] = st-func {σ} {{!!}} {!!} (ubC' τ τ' q')
+  ubV' (σ ⟹ τ) (σ' ⟹ τ') () | just _ | _ | nothing | _
+  ubV' (σ ⟹ τ) (σ' ⟹ τ') () | nothing | _ | _ | _
 
---inspect : {A : Set}(x : A) -> Inspect x
---inspect x = it x refl
+  ubC' : (τ τ' : CType) → {τ'' : CType} → τ ⊔C τ' ≡ just τ'' → τ ≤C τ''
+  ubC' τ τ' p = {!!}
 
-{-
-ubV' : (σ σ' : VType) → {τ : VType} → σ ⊔V σ' ≡ just τ → σ ≤V τ 
-ubV' nat nat refl = st-refl
-ubV' nat bool refl = st-refl 
-ubV' nat (σ' ∏ σ'') ()
-ubV' nat (σ' ⟹ x) ()
-ubV' bool nat refl = st-bn
-ubV' bool bool refl = st-refl
-ubV' bool (σ' ∏ σ'') p = {!!}
-ubV' bool (σ' ⟹ x) p = {!!}
-ubV' (σ ∏ σ₁) nat p = {!!}
-ubV' (σ ∏ σ₁) bool p = {!!}
-ubV' (σ ∏ σ₁) (σ' ∏ σ'') p with inspect (σ ⊔V σ') | inspect (σ₁ ⊔V σ'') 
-ubV' (σ ∏ σ₁) (σ' ∏ σ'') refl | it (just x) q  | it (just x₁) r = st-prod (ubV' σ σ' {!q!}) {!!} 
-ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | _ | nothing
-ubV' (σ ∏ σ₁) (σ' ∏ σ'') () | nothing | _
-ubV' (σ ∏ σ₁) (σ' ⟹ x) ()
-ubV' (σ ⟹ x) σ' p = {!!} 
--}
 --ubV : (σ σ' : VType) → (λ {(just τ) → σ ≤V τ ; (nothing) → ⊤} ) σ ⊔V σ' 
 --ubV = ?
 
