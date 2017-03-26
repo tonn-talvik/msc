@@ -202,7 +202,7 @@ ExcEffGM = record { OM = ExcEffOM
 -------------------------------------------------------------------------
 
 infix 110 _·_
-infix 100 _⊔_
+infix 100 _⊔_ _⊓_
 
 _⊔_ : Exc → Exc → Exc
 err ⊔ err = err
@@ -276,3 +276,25 @@ ok ⊑? errok = yes ok⊑errok
 errok ⊑? err = no (λ ())
 errok ⊑? ok = no (λ ())
 errok ⊑? errok = yes ⊑-refl
+
+-------------------------------------
+
+_⊓_ : Exc → Exc → Maybe Exc
+err ⊓ err = just err
+err ⊓ ok = nothing
+err ⊓ errok = just err
+ok ⊓ err = nothing
+ok ⊓ ok = just ok
+ok ⊓ errok = just ok
+errok ⊓ e' = just e'
+
+glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
+glb err err refl = ⊑-refl
+glb err ok ()
+glb err errok refl = ⊑-refl
+glb ok err ()
+glb ok ok refl = ⊑-refl
+glb ok errok refl = ⊑-refl
+glb errok err refl = err⊑errok
+glb errok ok refl = ok⊑errok
+glb errok errok refl = ⊑-refl
