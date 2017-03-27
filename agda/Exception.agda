@@ -288,6 +288,17 @@ ok ⊓ ok = just ok
 ok ⊓ errok = just ok
 errok ⊓ e' = just e'
 
+⊓-sym : (e e' : Exc) → e ⊓ e' ≡ e' ⊓ e
+⊓-sym err err = refl
+⊓-sym err ok = refl
+⊓-sym err errok = refl
+⊓-sym ok err = refl
+⊓-sym ok ok = refl
+⊓-sym ok errok = refl
+⊓-sym errok err = refl
+⊓-sym errok ok = refl
+⊓-sym errok errok = refl
+
 glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
 glb err err refl = ⊑-refl
 glb err ok ()

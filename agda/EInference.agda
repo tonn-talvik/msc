@@ -5,13 +5,14 @@ module EInference where
 open import Data.Unit
 open import Data.List
 open import Data.Maybe
-open import Relation.Binary.PropositionalEquality using (_≡_ ; refl; trans ; cong ; subst)
+open import Relation.Binary.PropositionalEquality --using (_≡_ ; refl; trans ; cong ; subst)
+--open Reveal_·_is_
 open import Relation.Nullary
 
 open import ELanguage
 --open import ESemantics
 open import Exception
-open import Finiteness
+open import Finiteness hiding (inspect)
 open import GradedMonad
 open import OrderedMonoid
 open GradedMonad.GradedMonad ExcEffGM
@@ -126,11 +127,9 @@ infer-ctermType {Γ} {_} t with infer-ctype t
 ... | nothing = ⊤
 ... | just τ = CTerm' Γ τ
 
-infer-if-else : {τ τ' ⊔τ : CType} → (_ : τ ⊔C τ' ≡ just ⊔τ) → {Γ : Ctx} (x : VTerm' Γ bool) (u : CTerm' Γ τ) (u' : CTerm' Γ τ') → CTerm' Γ ⊔τ
-infer-if-else {τ} {τ'} {⊔τ} x u u' with τ ≤C? ⊔τ | τ' ≤C? ⊔τ
-infer-if-else x u u' | yes p | yes q = {!IF x THEN (CCAST ? ?) ELSE (CCAST ? ?)!}
-infer-if-else x u u' | yes p | no ¬p = {!!}
-infer-if-else x u u' | no ¬p | q = {!!}
+
+whatsthis : {e : Exc} (σ σ' : VType) {σ⊔σ' : VType} → (σ ⊔V σ') ≡ just σ⊔σ' → (e / σ) ≤C (e / σ⊔σ')
+whatsthis σ σ' p = st-comp ⊑-refl (ubV σ σ' p)
 
 mutual -- refined term inference
   infer-vterm' : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → infer-vtermType {Γ} {σ} t 
@@ -174,9 +173,10 @@ mutual -- refined term inference
   infer-cterm' (IF x THEN t ELSE t') | just nat | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' with infer-ctype t | infer-cterm' t
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u with infer-ctype t' | infer-cterm' t'
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' with τ ⊔C τ'
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | just ⊔τ = infer-if-else {!!} x' u u'
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | nothing = tt
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' with (e / σ) ⊔C (e' / σ') | σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just _ | just ⊔σ | [ q ] = IF x' THEN CCAST u (st-comp ⊑-refl (ubV σ σ' q)) ELSE CCAST u' (st-comp ⊑-refl (ubV σ' σ (⊔V-sym))) -- FIXME: symmetry!
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just _  | nothing | _ = tt
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing | _ | _ = {!!}
 
 {-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') with (e / σ) ≤C? (e'' / σ'')
   infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') | yes p = IF x' THEN CCAST u {!p!} ELSE CCAST u' {!!}
