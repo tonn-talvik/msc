@@ -242,8 +242,9 @@ mutual -- value and computation terms
 
   data CTerm' (Γ : Ctx) : CType → Set where
     VAL : {σ : VType} → VTerm' Γ σ → CTerm' Γ (ok / σ)
-    FAIL : {σ : VType} → CTerm' Γ (err / σ)
-    TRY_WITH_ : ∀ {e e' σ} → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊔ e' / σ)
+    FAIL : (σ : VType) → CTerm' Γ (err / σ)
+    --TRY_WITH_ : ∀ {e e' σ} → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊔ e' / σ)
+    TRY_WITH_ : ∀ {e e' σ} → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊹ e' / σ) 
     IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm' Γ bool → CTerm' Γ (e / σ) → CTerm' Γ (e' / σ) → CTerm' Γ (e ⊔ e' / σ)
     _$_ : {σ : VType} {τ : CType} → VTerm' Γ (σ ⟹ τ) → VTerm' Γ σ → CTerm' Γ τ
 --    PREC : ∀ {e' e'' σ} → VTerm' Γ nat → CTerm' Γ (e'' / σ) →
@@ -266,7 +267,7 @@ mutual -- value and computation terms
 
   data CTerm (Γ : Ctx) : Maybe CType → Set where
     VAL : {σ : VType} → VTerm Γ (just σ) → CTerm Γ (just (ok / σ))
-    FAIL : {σ : VType} → CTerm Γ (just (err / σ))
+    FAIL : (σ : VType) → CTerm Γ (just (err / σ))
     TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (just (e ⊹ e' / σ))
     --TRY_WITH_ : ∀ {τ τ'} → CTerm Γ (just τ) → CTerm Γ (just τ') → CTerm Γ (τ ⊹C τ')    
 --    IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ (just bool) → CTerm Γ (just (e / σ)) → CTerm Γ (just (e' / σ)) → CTerm Γ (e / σ ⊔C e' / σ)
@@ -320,7 +321,7 @@ mutual -- value and computation terms
 
   data cTerm (Γ : Ctx) : cType → Set where
     VAL : {σ : vType} → vTerm Γ σ → cTerm Γ (// σ)
-    FAIL : {σ : vType} → cTerm Γ (// σ)
+    FAIL : (σ : VType) → cTerm Γ (// (erase-vtype σ))
     TRY_WITH_ : ∀ {σ} → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
     IF_THEN_ELSE_ : ∀ {σ} → vTerm Γ bool → cTerm Γ σ → cTerm Γ σ → cTerm Γ σ
     _$_ : {σ : vType} {τ : cType} → vTerm Γ (σ ⇒ τ) → vTerm Γ σ → cTerm Γ (τ)    
