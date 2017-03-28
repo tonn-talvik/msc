@@ -173,54 +173,54 @@ mutual -- construct inequality proof from given lower and upper bound
 --ubV' = {!!}
 
 mutual
-  ⊔V-sym : {σ σ' : VType} → σ ⊔V σ' ≡ σ' ⊔V σ
-  ⊔V-sym {nat} {nat} = refl
-  ⊔V-sym {nat} {bool} = refl
-  ⊔V-sym {nat} {_ ∏ _} = refl
-  ⊔V-sym {nat} {_ ⟹ _} = refl
-  ⊔V-sym {bool} {nat} = refl
-  ⊔V-sym {bool} {bool} = refl
-  ⊔V-sym {bool} {_ ∏ _} = refl
-  ⊔V-sym {bool} {_ ⟹ _} = refl
-  ⊔V-sym {_ ∏ _} {nat} = refl
-  ⊔V-sym {_ ∏ _} {bool} = refl
-  ⊔V-sym {σ ∏ τ} {σ' ∏ τ'} with σ ⊔V σ' | τ ⊔V τ' | ⊔V-sym {σ} {σ'} | ⊔V-sym {τ} {τ'}
+  ⊔V-sym : (σ σ' : VType) → σ ⊔V σ' ≡ σ' ⊔V σ
+  ⊔V-sym nat nat = refl
+  ⊔V-sym nat bool = refl
+  ⊔V-sym nat (_ ∏ _) = refl
+  ⊔V-sym nat (_ ⟹ _) = refl
+  ⊔V-sym bool nat = refl
+  ⊔V-sym bool bool = refl
+  ⊔V-sym bool (_ ∏ _) = refl
+  ⊔V-sym bool (_ ⟹ _) = refl
+  ⊔V-sym (_ ∏ _) nat = refl
+  ⊔V-sym (_ ∏ _) bool = refl
+  ⊔V-sym (σ ∏ τ) (σ' ∏ τ') with σ ⊔V σ' | τ ⊔V τ' | ⊔V-sym σ σ' | ⊔V-sym τ τ'
   ... | _ | _ | refl | refl = refl
-  ⊔V-sym {_ ∏ _} {_ ⟹ _} = refl
-  ⊔V-sym {_ ⟹ _} {nat} = refl
-  ⊔V-sym {_ ⟹ _} {bool} = refl
-  ⊔V-sym {_ ⟹ _} {_ ∏ _} = refl
-  ⊔V-sym {σ ⟹ τ} {σ' ⟹ τ'} with σ ⊓V σ' | τ ⊔C τ' | ⊓V-sym {σ} {σ'} | ⊔C-sym {τ} {τ'}
-  ... | _ | _ | refl | refl = refl
-
-  ⊔C-sym : {τ τ' : CType} → τ ⊔C τ' ≡ τ' ⊔C τ
-  ⊔C-sym {e / σ} {e' / σ'} with σ ⊔V σ' | σ' ⊔V σ | ⊔V-sym {σ} {σ'} -- FIXME: why the symmetry here?
-  ⊔C-sym {e / σ} {e' / σ'} | just x | just .x | refl  = cong (λ ε → just (ε / x)) (⊔-sym e e')
-  ⊔C-sym {e / σ} {e' / σ'} | just _ | nothing | ()
-  ⊔C-sym {e / σ} {e' / σ'} | nothing | nothing | refl = refl
-
-  ⊓V-sym : {σ σ' : VType} → σ ⊓V σ' ≡ σ' ⊓V σ
-  ⊓V-sym {nat} {nat} = refl
-  ⊓V-sym {nat} {bool} = refl
-  ⊓V-sym {nat} {_ ∏ _} = refl
-  ⊓V-sym {nat} {_ ⟹ _} = refl
-  ⊓V-sym {bool} {nat} = refl
-  ⊓V-sym {bool} {bool} = refl
-  ⊓V-sym {bool} {_ ∏ _} = refl
-  ⊓V-sym {bool} {_ ⟹ _} = refl
-  ⊓V-sym {_ ∏ _} {nat} = refl
-  ⊓V-sym {_ ∏ _} {bool} = refl
-  ⊓V-sym {σ ∏ τ} {σ' ∏ τ'} with σ ⊓V σ' | τ ⊓V τ' | ⊓V-sym {σ} {σ'} | ⊓V-sym {τ} {τ'}
-  ... | _ | _ | refl | refl = refl
-  ⊓V-sym {_ ∏ _} {_ ⟹ _} = refl
-  ⊓V-sym {_ ⟹ _} {nat} = refl
-  ⊓V-sym {_ ⟹ _} {bool} = refl
-  ⊓V-sym {_ ⟹ _} {_ ∏ _} = refl
-  ⊓V-sym {σ ⟹ τ} {σ' ⟹ τ'} with σ ⊔V σ' | τ ⊓C τ' | ⊔V-sym {σ} {σ'} | ⊓C-sym {τ} {τ'}
+  ⊔V-sym (_ ∏ _) (_ ⟹ _) = refl
+  ⊔V-sym (_ ⟹ _) nat = refl
+  ⊔V-sym (_ ⟹ _) bool = refl
+  ⊔V-sym (_ ⟹ _) (_ ∏ _) = refl
+  ⊔V-sym (σ ⟹ τ) (σ' ⟹ τ') with σ ⊓V σ' | τ ⊔C τ' | ⊓V-sym σ σ' | ⊔C-sym τ τ'
   ... | _ | _ | refl | refl = refl
 
-  ⊓C-sym : {τ τ' : CType} → τ ⊓C τ' ≡ τ' ⊓C τ
-  ⊓C-sym {e / σ} {e' / σ'} with e ⊓ e' | e' ⊓ e | σ ⊓V σ' | σ' ⊓V σ | ⊓-sym e e' | ⊓V-sym {σ} {σ'}
+  ⊔C-sym : (τ τ' : CType) → τ ⊔C τ' ≡ τ' ⊔C τ
+  ⊔C-sym (e / σ) (e' / σ') with σ ⊔V σ' | σ' ⊔V σ | ⊔V-sym σ σ' -- FIXME: why the symmetry here?
+  ⊔C-sym (e / σ) (e' / σ') | just x | just .x | refl  = cong (λ ε → just (ε / x)) (⊔-sym e e')
+  ⊔C-sym (e / σ) (e' / σ') | just _ | nothing | ()
+  ⊔C-sym (e / σ) (e' / σ') | nothing | nothing | refl = refl
+
+  ⊓V-sym : (σ σ' : VType) → σ ⊓V σ' ≡ σ' ⊓V σ
+  ⊓V-sym nat nat = refl
+  ⊓V-sym nat bool = refl
+  ⊓V-sym nat (_ ∏ _) = refl
+  ⊓V-sym nat (_ ⟹ _) = refl
+  ⊓V-sym bool nat = refl
+  ⊓V-sym bool bool = refl
+  ⊓V-sym bool (_ ∏ _) = refl
+  ⊓V-sym bool (_ ⟹ _) = refl
+  ⊓V-sym (_ ∏ _) nat = refl
+  ⊓V-sym (_ ∏ _) bool = refl
+  ⊓V-sym (σ ∏ τ) (σ' ∏ τ') with σ ⊓V σ' | τ ⊓V τ' | ⊓V-sym σ σ' | ⊓V-sym τ τ'
+  ... | _ | _ | refl | refl = refl
+  ⊓V-sym (_ ∏ _) (_ ⟹ _) = refl
+  ⊓V-sym (_ ⟹ _) nat = refl
+  ⊓V-sym (_ ⟹ _) bool = refl
+  ⊓V-sym (_ ⟹ _) (_ ∏ _) = refl
+  ⊓V-sym (σ ⟹ τ) (σ' ⟹ τ') with σ ⊔V σ' | τ ⊓C τ' | ⊔V-sym σ σ' | ⊓C-sym τ τ'
+  ... | _ | _ | refl | refl = refl
+
+  ⊓C-sym : (τ τ' : CType) → τ ⊓C τ' ≡ τ' ⊓C τ
+  ⊓C-sym (e / σ) (e' / σ') with e ⊓ e' | e' ⊓ e | σ ⊓V σ' | σ' ⊓V σ | ⊓-sym e e' | ⊓V-sym σ σ'
   ... | _ | _ | _ | _ | refl | refl = refl
   
 Ctx = List VType

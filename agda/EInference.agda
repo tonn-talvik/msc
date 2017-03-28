@@ -169,30 +169,23 @@ mutual -- refined term inference
   ... | nothing | u = tt
   infer-cterm' FAIL = {!!}
   infer-cterm' (TRY t WITH t') = {!!}
+
   infer-cterm' (IF x THEN t ELSE t') with infer-vtype x | infer-vterm' x
   infer-cterm' (IF x THEN t ELSE t') | just nat | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' with infer-ctype t | infer-cterm' t
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u with infer-ctype t' | infer-cterm' t'
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' with (e / σ) ⊔C (e' / σ') | σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just _ | just ⊔σ | [ q ] = IF x' THEN CCAST u (st-comp ⊑-refl (ubV σ σ' q)) ELSE CCAST u' (st-comp ⊑-refl (ubV σ' σ (⊔V-sym))) -- FIXME: symmetry!
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just _ | just ⊔σ | [ q ] =
+    IF x' THEN CCAST u (st-comp ⊑-refl (ubV σ σ' q))
+          ELSE CCAST u' (st-comp ⊑-refl (ubV σ' σ (trans (⊔V-sym σ' σ) q)))
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just _  | nothing | _ = tt
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing | _ | _ = {!!}
-
-{-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') with (e / σ) ≤C? (e'' / σ'')
-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') | yes p = IF x' THEN CCAST u {!p!} ELSE CCAST u' {!!}
-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just (e'' / σ'') | no ¬p = {!!}
-  infer-cterm' (IF x₂ THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing = tt-}
-  {-
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) with (e / τ ) ≤C? (e'' / σ) --= IF x' THEN CCAST u {!!} ELSE {!u'!}
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) | yes p = IF x' THEN CCAST u {!p!} ELSE {!!}
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / τ) | u | just (e' / τ') | u' | just (e'' / σ) | no ¬p = {!!}
-  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u | just τ' | u' | nothing = tt
-  -}
+  infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing | m | _ = {!!}
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just _ | u | nothing | u' = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | nothing | u = tt
   infer-cterm' (IF x THEN t ELSE t') | just (_ ∏ _) | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | just (_ ⟹ _) | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | nothing | _ = tt
+  
   infer-cterm' (f $ x) with infer-vtype f | infer-vterm' f | infer-vtype x | infer-vterm' x
   infer-cterm' (f $ x) | just nat | _ | _ | _ = tt
   infer-cterm' (f $ x) | just bool | _ | _ | _ = tt
