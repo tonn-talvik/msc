@@ -5,14 +5,14 @@ module EInference where
 open import Data.Unit
 open import Data.List
 open import Data.Maybe
-open import Relation.Binary.PropositionalEquality --using (_≡_ ; refl; trans ; cong ; subst)
+open import Relation.Binary.PropositionalEquality
 --open Reveal_·_is_
 open import Relation.Nullary
 
 open import ELanguage
 --open import ESemantics
 open import Exception
-open import Finiteness hiding (inspect)
+open import Finiteness
 open import GradedMonad
 open import OrderedMonoid
 open GradedMonad.GradedMonad ExcEffGM
@@ -89,11 +89,6 @@ mutual -- refined type inference
   infer-ctype (TRY t WITH t') with infer-ctype t | infer-ctype t'
   ... | just τ | just τ' = τ ⊹C τ'
   ... | _      | _       = nothing
-{-  infer-ctype (TRY t WITH t') with infer-ctype t | infer-ctype t' 
-  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') with σ ⊔V σ' -- FIXME: shouldn't it be _⊹C_
-  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') | just v = just (e ⊔ e' / v)
-  infer-ctype (TRY t WITH t') | just (e / σ) | just (e' / σ') | _ = nothing  
-  infer-ctype (TRY t WITH t') | _            | _              = nothing-}
   infer-ctype (IF x THEN t ELSE t') with infer-vtype x | infer-ctype t | infer-ctype t'
   ... | just bool | just τ | just τ' = τ ⊔C τ'
   ... | _         | _      | _       = nothing

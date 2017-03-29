@@ -5,12 +5,12 @@ module ELanguage where
 open import Data.Unit
 open import Data.List
 open import Data.Maybe
-open import Relation.Binary.PropositionalEquality --using (_≡_ ; refl; cong; subst; inspect)
+open import Relation.Binary.PropositionalEquality
 open Reveal_·_is_
 open import Relation.Nullary
 
 open import Exception
-open import Finiteness hiding (it; inspect)
+open import Finiteness
 open import OrderedMonoid
 open OrderedMonoid.OrderedMonoid ExcEffOM
 
