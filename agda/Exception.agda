@@ -6,6 +6,8 @@ open import Function
 open import Relation.Binary.Core using (_≡_ ; refl)
 open import Relation.Nullary
 
+open import Relation.Binary.PropositionalEquality
+
 open import OrderedMonoid
 open import GradedMonad
 
@@ -100,10 +102,9 @@ private
          (X → T e' Y) → T e X → T (e · e') Y
   lift {err} f x = tt
   lift {ok} f x = f x
-  lift {errok} {err} f (just x) = tt
+  lift {errok} {err} f _ = tt
   lift {errok} {ok} f (just x) = just (f x)
   lift {errok} {errok} f (just x) = f x
-  lift {errok} {err} f nothing = tt
   lift {errok} {ok} f nothing = nothing
   lift {errok} {errok} f nothing = nothing
 
@@ -318,3 +319,35 @@ glb ok errok refl = ⊑-refl
 glb errok err refl = err⊑errok
 glb errok ok refl = ok⊑errok
 glb errok errok refl = ⊑-refl
+
+
+{-
+
+need to compare:
+
+lift {errok} {errok · e'}  (λ x → lift {errok} {e'} (λ y → ⟦ n ⟧c (y , x , ρ)) (⟦ m ⟧c ρ)) ((⟦ m ⟧c ρ)
+
+lift {errok} {e'} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
+
+
+-}
+
+thing : {e' : Exc} → errok · (errok · e') ≡ errok · e'
+thing {e'} = sym ( ass {errok} {errok} {e'})
+
+
+optim : {e' : Exc}{X Y : Set}  → (m : T errok X) → (n : X → X → T e' Y) → 
+  sub-eq (thing {e'}) (lift {errok} {errok · e'}  (λ x → lift {errok} {e'} (λ y → n y x) m) (m))
+    ≡ lift {errok} {e'} (λ x → n x x) (m)
+optim {err} m n = refl
+optim {ok} (just x) n =  refl
+optim {ok} nothing n = refl
+optim {errok} (just x) n = refl
+optim {errok} nothing n = refl 
+
+
+deadcode : {e' : Exc}{X Y : Set}  → (m : T ok X) → (n : T e' Y) → 
+  lift {ok} {e'} (λ _ → n) (m)
+    ≡ n
+deadcode m n  = refl
+
