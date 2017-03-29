@@ -128,8 +128,12 @@ infer-ctermType {Γ} {_} t with infer-ctype t
 ... | just τ = CTerm' Γ τ
 
 
-whatsthis : {e : Exc} (σ σ' : VType) {σ⊔σ' : VType} → (σ ⊔V σ') ≡ just σ⊔σ' → (e / σ) ≤C (e / σ⊔σ')
-whatsthis σ σ' p = st-comp ⊑-refl (ubV σ σ' p)
+⊔V-subtype : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : Exc} → e / σ ≤C e / σ⊔σ'
+⊔V-subtype {σ} {σ'} p = st-comp ⊑-refl (ubV σ σ' p)
+
+⊔V-subtype-sym : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : Exc} → e / σ' ≤C e / σ⊔σ'
+⊔V-subtype-sym {σ} {σ'} p = ⊔V-subtype (trans (⊔V-sym σ' σ) p)
+
 
 mutual -- refined term inference
   infer-vterm' : {Γ : Ctx} {σ : vType} (t : vTerm Γ σ) → infer-vtermType {Γ} {σ} t 
@@ -174,10 +178,9 @@ mutual -- refined term inference
   
   infer-cterm' (TRY t WITH t') with infer-ctype t | infer-cterm' t | infer-ctype t' | infer-cterm' t'
   infer-cterm' (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  infer-cterm' (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' | just x | [ p ] = TRY CCAST u {!!} WITH CCAST u' {!!}
-  -- following works for CTerm' Γ (e ⊔ e' / σ), that is if-else
-  --  TRY  CCAST u (st-comp ⊑-refl (ubV σ σ' p))
-  --  WITH CCAST u' (st-comp ⊑-refl (ubV σ' σ (trans (⊔V-sym σ' σ) p)))
+  infer-cterm' (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' | just x | [ p ] =
+    TRY  CCAST u (⊔V-subtype p)
+    WITH CCAST u' (⊔V-subtype-sym {σ} p)
   infer-cterm' (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' | nothing | _ = tt
   infer-cterm' (TRY t WITH t') | just (_ / _) | _ | nothing | _ = tt
   infer-cterm' (TRY t WITH t') | nothing | _ | _ | _ = tt
@@ -188,8 +191,8 @@ mutual -- refined term inference
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just τ | u with infer-ctype t' | infer-cterm' t'
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just ⊔σ | [ p ] =
-    IF x' THEN CCAST u (st-comp ⊑-refl (ubV σ σ' p))
-          ELSE CCAST u' (st-comp ⊑-refl (ubV σ' σ (trans (⊔V-sym σ' σ) p)))
+    IF x' THEN CCAST u (⊔V-subtype p)
+          ELSE CCAST u' (⊔V-subtype-sym {σ} p)
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing | _ = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | just _ | u | nothing | u' = tt
   infer-cterm' (IF x THEN t ELSE t') | just bool | x' | nothing | u = tt
