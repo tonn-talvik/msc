@@ -252,16 +252,6 @@ ok ⊹ _ = ok
 errok ⊹ ok = ok
 errok ⊹ _ = errok
 
-{-
-thing : (e e' : Exc) → e ⊑ e ⊹ e' -- this thing is not true
-thing err err = ⊑-refl
-thing err ok = {!!} -- nothing
-thing err errok = err⊑errok
-thing ok _ = ⊑-refl
-thing errok err = ⊑-refl
-thing errok ok = {!!} -- backwards
-thing errok errok = ⊑-refl
--}
 --------------------------------
 -- deciders
 

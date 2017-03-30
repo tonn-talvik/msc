@@ -50,6 +50,5 @@ mutual
     TRY_WITH_ : cTerm → cTerm → cTerm
     IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
     _$_ : vTerm → vTerm → cTerm
-  --    PREC : ∀ {σ} → vTerm Γ nat → cTerm Γ σ →
-  --           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
+    PREC : vTerm → cTerm → cTerm → cTerm
     LET_IN_ : cTerm → cTerm → cTerm
