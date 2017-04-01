@@ -40,6 +40,58 @@ mutual -- subtype transitivity
 
 -------------------------------------------------------------
 
+fst-≢  : {σ σ' τ τ' : VType} → ¬ σ ≡ σ' → ¬ σ ∏ τ ≡ σ' ∏ τ'
+fst-≢ ¬p refl = ¬p refl
+
+snd-≢  : {σ σ' τ τ' : VType} → ¬ τ ≡ τ' → ¬ σ ∏ τ ≡ σ' ∏ τ'
+snd-≢ ¬q refl = ¬q refl
+
+arg-≢ : {σ σ' : VType} {τ τ' : CType} → ¬ σ ≡ σ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+arg-≢ ¬p refl = ¬p refl
+
+cmp-≢  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≡ τ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+cmp-≢ ¬p refl = ¬p refl
+
+eff-≢  : {e e' : Exc} {σ σ' : VType} → ¬ e ≡ e' → ¬ e / σ ≡ e' / σ'
+eff-≢ ¬p refl = ¬p refl
+
+bdy-≢  : {e e' : Exc} {σ σ' : VType} → ¬ σ ≡ σ' → ¬ e / σ ≡ e' / σ'
+bdy-≢ ¬p refl = ¬p refl
+
+
+mutual -- equality deciders
+  _≡V?_ : (σ σ' : VType) → Dec (σ ≡ σ')
+  nat ≡V? nat = yes refl
+  nat ≡V? bool = no (λ ())
+  nat ≡V? (_ ∏ _) = no (λ ())  
+  nat ≡V? (_ ⟹ _) = no (λ ())    
+  bool ≡V? nat = no (λ ())
+  bool ≡V? bool = yes refl
+  bool ≡V? (_ ∏ _) = no (λ ())
+  bool ≡V? (_ ⟹ _) = no (λ ())
+  (_ ∏ _) ≡V? nat = no (λ ())
+  (_ ∏ _) ≡V? bool = no (λ ())
+  (σ ∏ σ') ≡V? (τ ∏ τ') with σ ≡V? τ | σ' ≡V? τ'
+  (σ ∏ σ') ≡V? (.σ ∏ .σ') | yes refl | yes refl = yes refl
+  ... | no ¬p | _     = no (fst-≢ ¬p)
+  ... | _     | no ¬q = no (snd-≢ ¬q)
+  (_ ∏ _) ≡V? (_ ⟹ _) = no (λ ())
+  (_ ⟹ _) ≡V? nat = no (λ ())
+  (_ ⟹ _) ≡V? bool = no (λ ())
+  (_ ⟹ _) ≡V? (_ ∏ _) = no (λ ())
+  (σ ⟹ τ) ≡V? (σ' ⟹ τ') with σ ≡V? σ' | τ ≡C? τ'
+  (σ ⟹ τ) ≡V? (.σ ⟹ .τ) | yes refl | yes refl = yes refl
+  ... | no ¬p | _     = no (arg-≢ ¬p)
+  ... | _     | no ¬q = no (cmp-≢ ¬q)
+  
+  _≡C?_ : (τ τ' : CType) → Dec (τ ≡ τ')
+  (e / σ) ≡C? (e' / σ') with e ≡E? e' | σ ≡V? σ'
+  (e / σ) ≡C? (.e / .σ) | yes refl | yes refl = yes refl
+  ... | no ¬p | _     = no (eff-≢ ¬p)
+  ... | _     | no ¬q = no (bdy-≢ ¬q)
+
+------------------------------------------------------------------------------
+
 fst-≰V : {σ σ' τ τ' : VType} → ¬ σ ≤V σ' → ¬ σ ∏ τ ≤V σ' ∏ τ'
 fst-≰V {σ} {.σ} ¬p st-refl = ¬p st-refl
 fst-≰V ¬p (st-prod p _) =  ¬p p
@@ -268,17 +320,19 @@ mutual -- value and computation terms
     FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
     SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
     VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
-    LAM : (σ : VType) {τ : CType} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⟹ τ)    
+    LAM : (σ : VType) {τ : CType} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⟹ τ)
     VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
   data CTerm (Γ : Ctx) : CType → Set where
     VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (ok / σ)
     FAIL : (σ : VType) → CTerm Γ (err / σ)
-    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ) 
+    TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
     IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
     _$_ : {σ : VType} {τ : CType} → VTerm Γ (σ ⟹ τ) → VTerm Γ σ → CTerm Γ τ
-    PREC : ∀ {e e' σ σ' σ⊔σ'} → VTerm Γ nat → CTerm Γ (e / σ) →
-           CTerm (σ ∷ nat ∷ Γ) (e' / σ' ) → e · e' ⊑ e → σ ⊔V σ' ≡ just σ⊔σ' → CTerm Γ (e / σ⊔σ')
+--    PREC : ∀ {e e' σ σ' σ⊔σ'} → VTerm Γ nat → CTerm Γ (e / σ) →
+--           CTerm (σ ∷ nat ∷ Γ) (e' / σ') → e · e' ⊑ e → σ ⊔V σ' ≡ just σ⊔σ' → CTerm Γ (e / σ⊔σ')
+    PREC : ∀ {e e' σ} → VTerm Γ nat → CTerm Γ (e / σ) →
+           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e · e' ⊑ e → CTerm Γ (e / σ)
     LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
     CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
 
