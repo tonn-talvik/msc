@@ -1,9 +1,9 @@
 module Semantics where
 
-open import Data.Bool hiding (T ; _≟_; _∨_)
+open import Data.Bool hiding (T)
 open import Data.List
 open import Data.Maybe
-open import Data.Nat hiding (_≟_; _⊔_; _≤_)
+open import Data.Nat hiding (_⊔_)
 open import Data.Product
 open import Data.Unit
 open import Relation.Binary.Core
@@ -44,11 +44,11 @@ mutual
   vcast : {σ σ' : VType} →  σ ≤V σ' → ⟪ σ ⟫v → ⟪ σ' ⟫v
   vcast st-refl x = x
   vcast st-bn x = bool2nat x
-  vcast (st-prod o o') (l , r) = vcast o l , vcast o' r
-  vcast (st-func e o) f = λ x → ccast o (f (vcast e x))
+  vcast (st-prod p q) (l , r) = vcast p l , vcast q r
+  vcast (st-func p q) f = λ x → ccast q (f (vcast p x))
 
   ccast : {τ τ' : CType} → τ ≤C τ' → ⟪ τ ⟫c → ⟪ τ' ⟫c
-  ccast (st-comp {ε} {ε'} e o) c = T₁ {ε'} (vcast o) (sub e c)
+  ccast (st-comp {_} {e'} p q) c = T₁ {e'} (vcast q) (sub p c)
 
 
 
@@ -93,9 +93,11 @@ mutual
   ⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
   ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
   ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
-                                       then (sub (lub e e') (⟦ t ⟧c ρ))
-                                       else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
-  ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ) (⟦ t ⟧c ρ) ((λ i → λ acc → ⟦ t' ⟧c (acc , i , ρ))) p
+                                         then (sub (lub e e') (⟦ t ⟧c ρ))
+                                         else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
+  ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ)
+                                  (⟦ t ⟧c ρ)
+                                  ((λ i → λ acc → ⟦ t' ⟧c (acc , i , ρ))) p
   ⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = lift {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
   ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)

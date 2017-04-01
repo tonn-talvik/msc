@@ -24,7 +24,7 @@ errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})
 
 
-dup-comp : {e : Exc}{X Y : Set}  → (m : T errok X) → (n : X → X → T e Y) → 
+dup-comp : {e : Exc} {X Y : Set} → (m : T errok X) → (n : X → X → T e Y) → 
            sub-eq (errok-seq e) (lift {errok} {errok · e}
                                       (λ x → lift {errok} {e} (λ y → n y x) m)
                                       m)

@@ -329,8 +329,6 @@ mutual -- value and computation terms
     TRY_WITH_ : ∀ {e e' σ} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
     IF_THEN_ELSE_ : ∀ {e e' σ} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
     _$_ : {σ : VType} {τ : CType} → VTerm Γ (σ ⟹ τ) → VTerm Γ σ → CTerm Γ τ
---    PREC : ∀ {e e' σ σ' σ⊔σ'} → VTerm Γ nat → CTerm Γ (e / σ) →
---           CTerm (σ ∷ nat ∷ Γ) (e' / σ') → e · e' ⊑ e → σ ⊔V σ' ≡ just σ⊔σ' → CTerm Γ (e / σ⊔σ')
     PREC : ∀ {e e' σ} → VTerm Γ nat → CTerm Γ (e / σ) →
            CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e · e' ⊑ e → CTerm Γ (e / σ)
     LET_IN_ : ∀ {e e' σ σ'} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
