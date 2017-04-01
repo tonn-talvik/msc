@@ -1,21 +1,35 @@
 module Inference where
 
-open import Data.Fin
+open import Data.Fin hiding (_<_)
 open import Data.List
 open import Data.Maybe
+open import Data.Nat
 open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
 open import Raw
 open import Refined
-open import Sugar
 open import Exception
 open import Finiteness
 open import GradedMonad
 open import OrderedMonoid
 open GradedMonad.GradedMonad ExcEffGM
 open OrderedMonoid.OrderedMonoid ExcEffOM
+
+
+lemma-<? : (Γ : Ctx) (τ : VType) (n : ℕ) →
+           ¬ n < length Γ →
+           ¬ suc n < length (τ ∷ Γ)
+lemma-<? _ _ n p (s≤s q) = p q
+
+_<?_ : (n : ℕ) (Γ : Ctx) → Dec (n < length Γ)
+n <? [] = no (λ ())
+zero <? (x ∷ Γ) = yes (s≤s z≤n)
+suc n <? (x ∷ Γ) with n <? Γ
+suc n <? (x ∷ Γ) | yes p = yes (s≤s p)
+suc n <? (x ∷ Γ) | no ¬p = no (lemma-<? Γ x n ¬p)
+
 
 -----------------------------------------------------------
 -- effect inference
@@ -114,7 +128,6 @@ infer-ctermType Γ t with infer-ctype Γ t
 
 ⊔V-subtype-sym : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : Exc} → e / σ' ≤C e / σ⊔σ'
 ⊔V-subtype-sym {σ} {σ'} p = ⊔V-subtype (trans (⊔V-sym σ' σ) p)
-
 
 
 mutual -- refined term inference
