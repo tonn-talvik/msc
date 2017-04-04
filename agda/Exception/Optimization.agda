@@ -1,6 +1,7 @@
 module Optimization where
 
 open import Data.Maybe
+open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
 open import Exception
@@ -9,15 +10,22 @@ open import GradedMonad
 open GradedMonad.GradedMonad ExcEffGM
 open OrderedMonoid.OrderedMonoid ExcEffOM
 
-{-
 
+fail : {X : Set} (m : T err X) → m ≡ tt
+fail m = refl
+
+
+dead-comp : {e : Exc} {X Y : Set} → (m : T ok X) → (n : T e Y) →
+            lift {ok} {e} (λ _ → n) m ≡ n
+dead-comp m n  = refl
+
+
+{-
 need to compare:
 
 lift {errok} {errok · e'}  (λ x → lift {errok} {e'} (λ y → ⟦ n ⟧c (y , x , ρ)) (⟦ m ⟧c ρ)) ((⟦ m ⟧c ρ)
 
 lift {errok} {e'} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
-
-
 -}
 
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
@@ -35,7 +43,3 @@ dup-comp {ok} nothing n = refl
 dup-comp {errok} (just x) n = refl
 dup-comp {errok} nothing n = refl 
 
-
-dead-comp : {e : Exc} {X Y : Set} → (m : T ok X) → (n : T e Y) →
-            lift {ok} {e} (λ _ → n) m ≡ n
-dead-comp m n  = refl
