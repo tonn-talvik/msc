@@ -42,17 +42,17 @@ ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o})
 
 
 ℕ* : OrderedMonoid
-ℕ* = record { M = ℕ
-             ; _⊑_ = _≡_
-             ; reflM = refl
-             ; transM = trans
-             ; i = 1
-             ; _·_ = _*_
-             ; mon = cong₂ _*_
-             ; lu = lu* 
-             ; ru =  ru* 
-             ; ass = λ {m n o} → ass* {m} {n} {o}
-             }
+ℕ* = record { E = ℕ
+            ; _⊑_ = _≡_
+            ; ⊑-refl = refl
+            ; ⊑-trans = trans
+            ; i = 1
+            ; _·_ = _*_
+            ; mon = cong₂ _*_
+            ; lu = lu* 
+            ; ru =  ru* 
+            ; ass = λ {m n o} → ass* {m} {n} {o}
+            }
 
 open OrderedMonoid.OrderedMonoid ℕ*
  
@@ -75,7 +75,7 @@ subV∷ : {m n : ℕ} {X : Set} {x : X} {xs : Vec X m} {ys : Vec X n} →
 subV∷ refl refl = refl
 
 
-sub-mon : {e e' e'' e''' : M} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
+sub-mon : {e e' e'' e''' : E} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
           (f : X → Vec Y e') (c : Vec X e) →
           subV (mon p q) (liftV f c) ≡
           liftV ((subV q) ∘ f) (subV p c)
@@ -87,13 +87,13 @@ ru++ []       = refl
 ru++ (x ∷ xs) = subV∷ lu (ru++ xs)
 
 
-sub-refl : {e : M} {X : Set} (c : Vec X e) → subV reflM c ≡ c
+sub-refl : {e : E} {X : Set} (c : Vec X e) → subV ⊑-refl c ≡ c
 sub-refl _ = refl
 
 
-sub-trans : {e e' e'' : M} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
+sub-trans : {e e' e'' : E} {X : Set} (p : e ⊑ e') (q : e' ⊑ e'')
       (c : Vec X e) →
-      subV q (subV p c) ≡ subV (transM p q) c
+      subV q (subV p c) ≡ subV (⊑-trans p q) c
 sub-trans refl refl c = refl
 
 
@@ -108,7 +108,7 @@ mlaw2V []       = refl
 mlaw2V (x ∷ xs) = subV∷ {x = x} {xs = xs} ru (mlaw2V xs) 
 
 
-lemma++ : {e e' e'' : M} {X : Set}
+lemma++ : {e e' e'' : E} {X : Set}
           (xs : Vec X e) (xs' : Vec X e') (xs'' : Vec X e'') →
           subV (+ass {e} {e'} {e''}) (xs ++ (xs' ++ xs''))
           ≡ (xs ++ xs') ++ xs''
@@ -116,14 +116,14 @@ lemma++ [] xs' xs'' = refl
 lemma++ {suc e} {e'} {e''} (x ∷ xs) xs' xs'' = subV∷ (+ass {e} {e'} {e''}) (lemma++ xs xs' xs'')
 
 
-subV-lemma : {e e' : M} {X Y : Set} →
-             (g : M → M) → (f : {e : M} → Vec X e → Vec Y (g e)) →
+subV-lemma : {e e' : E} {X Y : Set} →
+             (g : E → E) → (f : {e : E} → Vec X e → Vec Y (g e)) →
              (p : e ≡ e') → (xs : Vec X e) →
              subV (cong g p) (f xs) ≡ f (subV p xs)
 subV-lemma g f refl xs =  refl
 
 
-lemma-dist : {e e' e'' : M} {X Y : Set}
+lemma-dist : {e e' e'' : E} {X Y : Set}
              (xs : Vec X e)
              (xs' : Vec X e')
              (f : X → Vec Y e'') →
@@ -151,7 +151,7 @@ lemma-dist {suc e} {e'} {e''} (x ∷ xs) xs' f =
     liftV f (x ∷ xs) ++ liftV f xs'
   ∎
 
-mlaw3V : {e e' e'' : M} {X Y Z : Set} (f : X → Vec Y e')
+mlaw3V : {e e' e'' : E} {X Y Z : Set} (f : X → Vec Y e')
          (g : Y → Vec Z e'') (c : Vec X e) →
          subV (ass* {e} {e'} {e''}) (liftV g (liftV f c))
          ≡ liftV (λ x → liftV g (f x)) c
@@ -177,14 +177,14 @@ mlaw3V {suc e} {e'} {e''} f g (x ∷ xs) =
 
 NDV : GradedMonad
 NDV = record { OM = ℕ*
-                 ; T = λ e X → Vec X e
-                 ; η = ηV
-                 ; lift = liftV 
-                 ; sub = subV 
-                 ; sub-mon = sub-mon
-                 ; sub-refl = sub-refl
-                 ; sub-trans = sub-trans
-                 ; mlaw1 = mlaw1V
-                 ; mlaw2 = mlaw2V
-                 ; mlaw3 = mlaw3V
-                 }
+             ; T = λ e X → Vec X e
+             ; η = ηV
+             ; lift = liftV 
+             ; sub = subV 
+             ; sub-mon = sub-mon
+             ; sub-refl = sub-refl
+             ; sub-trans = sub-trans
+             ; mlaw1 = mlaw1V
+             ; mlaw2 = mlaw2V
+             ; mlaw3 = mlaw3V
+             }

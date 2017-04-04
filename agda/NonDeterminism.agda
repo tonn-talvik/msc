@@ -129,10 +129,10 @@ private
 
 
 NDEffOM : OrderedMonoid
-NDEffOM = record { M = ND
+NDEffOM = record { E = ND
                  ; _⊑_ = _⊑ND_
-                 ; reflM = λ {m} → refl-⊑ND m
-                 ; transM = λ {m} {n} {o} → trans-⊑ND m n o
+                 ; ⊑-refl = λ {m} → refl-⊑ND m
+                 ; ⊑-trans = λ {m} {n} {o} → trans-⊑ND m n o
                  ; i = nd1
                  ; _·_ = _⊙_ -- \odot ⊙
                  ; mon = λ {m} {n} {m'} {n'} → mon-⊙ m n m' n'
