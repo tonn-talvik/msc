@@ -52,10 +52,10 @@ arg-≢ ¬p refl = ¬p refl
 cmp-≢  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≡ τ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
 cmp-≢ ¬p refl = ¬p refl
 
-eff-≢  : {e e' : Exc} {σ σ' : VType} → ¬ e ≡ e' → ¬ e / σ ≡ e' / σ'
+eff-≢  : {e e' : E} {σ σ' : VType} → ¬ e ≡ e' → ¬ e / σ ≡ e' / σ'
 eff-≢ ¬p refl = ¬p refl
 
-bdy-≢  : {e e' : Exc} {σ σ' : VType} → ¬ σ ≡ σ' → ¬ e / σ ≡ e' / σ'
+bdy-≢  : {e e' : E} {σ σ' : VType} → ¬ σ ≡ σ' → ¬ e / σ ≡ e' / σ'
 bdy-≢ ¬p refl = ¬p refl
 
 
@@ -108,10 +108,10 @@ cmp-≰V  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≤C τ' → ¬ σ ⟹ �
 cmp-≰V {τ = _ / _} ¬p st-refl = ¬p (st-comp ⊑-refl st-refl)
 cmp-≰V ¬p (st-func q q') = ¬p q'
 
-eff-≰C : {e e' : Exc} {σ σ' : VType} → ¬ e ⊑ e' → ¬ e / σ ≤C e' / σ'
+eff-≰C : {e e' : E} {σ σ' : VType} → ¬ e ⊑ e' → ¬ e / σ ≤C e' / σ'
 eff-≰C ¬p (st-comp p _) = ¬p p
 
-bdy-≰C : {e e' : Exc} {σ σ' : VType} → ¬ σ ≤V σ' → ¬ e / σ ≤C e' / σ'
+bdy-≰C : {e e' : E} {σ σ' : VType} → ¬ σ ≤V σ' → ¬ e / σ ≤C e' / σ'
 bdy-≰C ¬q (st-comp _ q) = ¬q q
 
 mutual -- inequality deciders

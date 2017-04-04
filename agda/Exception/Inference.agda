@@ -102,10 +102,10 @@ infer-ctermType Γ t with infer-ctype Γ t
 ... | just τ = CTerm Γ τ
 
 
-⊔V-subtype : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : Exc} → e / σ ≤C e / σ⊔σ'
+⊔V-subtype : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : E} → e / σ ≤C e / σ⊔σ'
 ⊔V-subtype {σ} {σ'} p = st-comp ⊑-refl (ubV σ σ' p)
 
-⊔V-subtype-sym : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : Exc} → e / σ' ≤C e / σ⊔σ'
+⊔V-subtype-sym : {σ σ' : VType} {σ⊔σ' : VType} → σ ⊔V σ' ≡ just σ⊔σ' → {e : E} → e / σ' ≤C e / σ⊔σ'
 ⊔V-subtype-sym {σ} {σ'} p = ⊔V-subtype (trans (⊔V-sym σ' σ) p)
 
 
