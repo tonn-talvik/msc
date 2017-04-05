@@ -110,11 +110,6 @@ subBV : {e e' : E} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
 subBV p (bv x q) = bv x (⊑-trans q p)
 
 
-_+++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
-bv [] (z≤n {m}) +++bv ys = subBV (mon+ (z≤n {m}) refl≤) ys 
-bv (x ∷ xs) (s≤s p) +++bv ys = x ∷bv (bv xs p +++bv ys)  
-
-
 ans : {n n' : ℕ} → (p p' : n ≤ n') → p ≡ p'
 ans z≤n z≤n = refl
 ans (s≤s p) (s≤s p') = cong s≤s (ans p p')
@@ -248,10 +243,6 @@ subeq-lemma : {e e' : E} {X Y : Set} →
               subeq {T = TBV} (cong g p) (f xs) ≡ f (subeq {T = TBV} p xs)
 subeq-lemma g f refl xs = refl
 
-
-trans-ass : {e e' e'' e''' : E} (p : e ≡ e') (q : e' ≡ e'') (r : e'' ≡ e''') →
-            trans (trans p q) r ≡ trans p (trans q r)
-trans-ass refl q r = refl
 
 
 subeq-trans : {e e' e'' : E} {X : Set} (p : e ≡ e') (q : e' ≡ e'')
