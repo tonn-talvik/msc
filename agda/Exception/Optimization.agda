@@ -61,7 +61,33 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c 
 
 
 -- commutativity
--- ?
+
+·-comm : (e e' : Exc) {e'' : Exc} → e · (e' · e'') ≡ e' · (e · e'')
+·-comm err err = refl
+·-comm err ok = refl
+·-comm err errok = refl
+·-comm ok err = refl
+·-comm ok ok = refl
+·-comm ok errok = refl
+·-comm errok err = refl
+·-comm errok ok = refl
+·-comm errok errok = refl
+
+skippy : {e : Exc} {Γ : Ctx} {X Y : VType} →
+         CTerm Γ (e / Y) → CTerm (X ∷ Γ) (e / Y)
+skippy {e} {Y = Y} m = subst (λ Γ → CTerm Γ (e / Y)) {!sure, trust me!} m
+
+swappy : {e : Exc} {Γ : Ctx} {X Y Z : VType} →
+         CTerm (X ∷ Y ∷ Γ) (e / Z) → CTerm (Y ∷ X ∷ Γ) (e / Z)
+swappy m = {!!}
+
+-- show m&n independence?
+comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X Y Z : VType}
+       (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) →(o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
+       sub-eq (·-comm e₁ e₂)
+       (⟦ LET m IN LET skippy n IN o ⟧c ρ) ≡ ⟦ LET n IN LET skippy m IN swappy o ⟧c ρ
+comm m n o = {!!}
+
 
 -- distribution
 
