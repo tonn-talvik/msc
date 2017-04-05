@@ -9,6 +9,11 @@ open import Exception
 open Grading.OrderedMonoid ExcEffOM
 open Grading.GradedMonad ExcEffGM
 
+-- Types are parameterized over Effect dependent functions
+-- Deciders: _⊑?_ _≡E?_
+-- Bounds: _⊔_ _⊓_ ⊔-sym ⊓-sym
+-- lub glb
+
 
 infix  80 _/_
 infixr 70 _⟹_
