@@ -5,11 +5,9 @@ open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
 open import Exception
-open import OrderedMonoid
-open import GradedMonad
-open GradedMonad.GradedMonad ExcEffGM
-open OrderedMonoid.OrderedMonoid ExcEffOM
-
+open import Grading
+open Grading.OrderedMonoid ExcEffOM
+open Grading.GradedMonad ExcEffGM
 
 fail : {X : Set} (m : T err X) → m ≡ tt
 fail m = refl
@@ -17,7 +15,7 @@ fail m = refl
 
 dead-comp : {e : Exc} {X Y : Set} → (m : T ok X) → (n : T e Y) →
             lift {ok} {e} (λ _ → n) m ≡ n
-dead-comp m n  = refl
+dead-comp m n = refl
 
 
 {-

@@ -9,14 +9,13 @@ open import Relation.Binary.PropositionalEquality
 open import Relation.Nullary
 
 open import Raw
+open import Types
 open import Refined
 open import Exception
 open import Finiteness
-open import GradedMonad
-open import OrderedMonoid
-open GradedMonad.GradedMonad ExcEffGM
-open OrderedMonoid.OrderedMonoid ExcEffOM
-
+open import Grading
+open Grading.OrderedMonoid ExcEffOM
+open Grading.GradedMonad ExcEffGM
 
 lemma-<? : (Γ : Ctx) (σ : VType) (n : ℕ) →
            ¬ n < length Γ → ¬ suc n < length (σ ∷ Γ)

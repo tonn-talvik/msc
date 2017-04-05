@@ -9,12 +9,12 @@ open import Data.Unit
 open import Relation.Binary.Core
 
 open import Finiteness
-open import GradedMonad
-open import OrderedMonoid
+open import Grading
 open import Exception
-open OrderedMonoid.OrderedMonoid ExcEffOM
-open GradedMonad.GradedMonad ExcEffGM
+open Grading.OrderedMonoid ExcEffOM
+open Grading.GradedMonad ExcEffGM
 open import Raw
+open import Types
 open import Refined
 open import Inference
 

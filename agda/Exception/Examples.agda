@@ -10,15 +10,15 @@ open import Data.Unit
 open import Relation.Binary.Core
 
 open import Raw
+open import Types
 open import Refined
 open import Inference
 open import Semantics
 
 open import Exception
-open import OrderedMonoid
-open import GradedMonad
-open GradedMonad.GradedMonad ExcEffGM
-open OrderedMonoid.OrderedMonoid ExcEffOM
+open import Grading
+open Grading.GradedMonad ExcEffGM
+open Grading.OrderedMonoid ExcEffOM
 
 open import Optimization
 

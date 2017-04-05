@@ -8,8 +8,7 @@ open import Relation.Nullary
 
 open import Relation.Binary.PropositionalEquality
 
-open import OrderedMonoid
-open import GradedMonad
+open import Grading
 
 
 data Exc : Set where
