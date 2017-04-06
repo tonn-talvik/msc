@@ -3,10 +3,12 @@
 module ELanguage where
 
 open import Data.Unit
+open import Data.Nat hiding ( _⊓_ ; _⊔_ ) 
+open import Data.Fin
 open import Data.List
 open import Data.Maybe
 open import Relation.Binary.PropositionalEquality
-open Reveal_·_is_
+--open Reveal_·_is_
 open import Relation.Nullary
 
 open import Exception
@@ -107,7 +109,7 @@ _⊹C_ : CType → CType → Maybe CType
 ... | just v = just (e ⊹ e' / v)
 ... | _      = nothing
 
-
+{-
 mutual -- construct inequality proof from given lower and upper bound
   lbV : (σ σ' : VType) → {τ : VType} → σ ⊓V σ' ≡ just τ → τ ≤V σ
   lbV nat nat refl = st-refl
@@ -222,7 +224,7 @@ mutual
   ⊓C-sym : (τ τ' : CType) → τ ⊓C τ' ≡ τ' ⊓C τ
   ⊓C-sym (e / σ) (e' / σ') with e ⊓ e' | e' ⊓ e | σ ⊓V σ' | σ' ⊓V σ | ⊓-sym e e' | ⊓V-sym σ σ'
   ... | _ | _ | _ | _ | refl | refl = refl
-  
+  -}
 Ctx = List VType
 
 
@@ -279,6 +281,74 @@ mutual -- value and computation terms
     CCAST :  ∀ {e e' σ σ'} → CTerm Γ (just (e / σ)) → e / σ ≤C e' / σ' → CTerm Γ (just (e' / σ'))
 
 
+---------------------------------------------------------------
+
+mutual
+  wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
+  wkT Γ σ zero = σ ∷ Γ
+  wkT [] σ (suc x) =  σ ∷ []
+  wkT (σ' ∷ Γ) σ (suc x) = σ' ∷ wkT Γ σ x 
+
+  wkvar : {Γ : Ctx} → {σ : VType} → (x : Fin (suc (length Γ))) → {τ : VType}
+     → τ ∈ Γ → τ ∈ wkT Γ σ x
+  wkvar zero y = there y
+  wkvar (suc x) (here' refl) = here' refl
+  wkvar (suc x) (there y) = there (wkvar x y) 
+  
+
+{-
+  wkT .(τ ∷ Γ) σ (just (here' {τ} {Γ} x)) = τ ∷ σ ∷ Γ
+  wkT .(τ ∷ Γ) σ (just (there {τ} {Γ} x)) = τ ∷ wkT Γ σ (just x)
+  wkT Γ σ nothing = σ ∷ Γ
+-}
+
+  wkV : {Γ : Ctx} {σ τ : VType} → (x : Fin (suc (length Γ))) → VTerm' Γ τ → VTerm' (wkT Γ σ x) τ
+  wkV x TT = TT
+  wkV x FF = FF
+  wkV x ZZ = ZZ
+  wkV x (SS t) = SS (wkV x t)
+  wkV x ⟨ t , t₁ ⟩ = ⟨ wkV x t , wkV x t₁ ⟩
+  wkV x (FST t) = FST (wkV x t)
+  wkV x (SND t) = SND (wkV x t)
+  wkV x (VAR x') = VAR (wkvar x x')
+  wkV x (LAM σ t) = LAM σ (wkC (suc x) t)
+  wkV x (VCAST t p) = VCAST (wkV x t) p
+
+  
+  wkC : {Γ : Ctx} {σ : VType} {τ : CType}  (x : Fin (suc (length Γ))) → CTerm' Γ τ → CTerm' (wkT Γ σ x) τ
+  wkC x (VAL y) = VAL (wkV x y) 
+  wkC x (FAIL σ₁) = FAIL σ₁
+  wkC x (TRY t WITH u) = TRY (wkC x t) WITH (wkC x u)
+  wkC x (IF b THEN t ELSE u) = IF (wkV x b) THEN (wkC x t) ELSE (wkC x u)
+  wkC x (t $ u) = wkV x t $ wkV x u
+  wkC x (LET t IN u) = LET (wkC x t) IN (wkC (suc x) u)
+  wkC x (CCAST t p) = CCAST (wkC x t) p 
+
+{-
+
+  ctrV : {Γ : Ctx} {σ τ : VType} → VTerm' (σ ∷ σ ∷ Γ) τ → VTerm' (σ ∷ Γ) τ
+  ctrV TT = TT
+  ctrV FF = FF
+  ctrV ZZ = {!!}
+  ctrV (SS t) = SS (ctrV t)
+  ctrV ⟨ t , t₁ ⟩ = {!!}
+  ctrV (FST t) = {!!}
+  ctrV (SND t) = {!!}
+  ctrV (VAR (here' x)) =  VAR (here' x)
+  ctrV (VAR (there x)) =  VAR x
+  ctrV (LAM σ₁ x) = {!!}
+  ctrV (VCAST t x) = {!!}
+
+  ctrC : {Γ : Ctx} {σ : VType} {τ : CType} → CTerm' (σ ∷ σ ∷ Γ) τ → CTerm' (σ ∷ Γ) τ
+  ctrC (VAL x) = {!!}
+  ctrC (FAIL σ₁) = {!!}
+  ctrC (TRY t WITH t₁) = {!!}
+  ctrC (IF x THEN t ELSE t₁) = {!!}
+  ctrC (x $ x₁) = {!!}
+  ctrC (LET t IN t₁) = {!!}
+  ctrC (CCAST t x) = {!!}
+
+-}
 
 -----------------------------------------------------------
 -- Raw types and language
@@ -330,6 +400,11 @@ mutual -- value and computation terms
 --           cTerm (σ ∷ nat ∷ Γ) σ → cTerm Γ σ
     LET_IN_ : ∀ {σ σ'} → cTerm Γ (// (erase-vtype σ)) → cTerm (σ ∷ Γ) σ' → cTerm Γ σ'
 --    CCAST :  ∀ {e e' σ σ'} → CTerm Γ (e / σ) → e / σ ⟪ e' / σ' → CTerm Γ (e' / σ')
+
+
+-----------------------------------------------------------------------
+
+
 
 
 ------------------------------------------------------------------------
