@@ -97,7 +97,7 @@ mutual
                                          else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
   ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ)
                                   (⟦ t ⟧c ρ)
-                                  ((λ i → λ acc → ⟦ t' ⟧c (acc , i , ρ))) p
+                                  ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
   ⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
   ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = lift {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
   ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
