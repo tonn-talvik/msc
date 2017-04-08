@@ -2,7 +2,15 @@
 \usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm]{geometry}
 \usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
 
-\usepackage[utf8]{inputenc}
+%\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+
+%\usepackage{amssymb}
+%\usepackage{bbm}
+%\usepackage[greek,english]{babel}
+%\usepackage{autofe}
+
+
 
 \usepackage{fancyhdr}
 \fancypagestyle{FirstPage}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{Tallinn 2017}}
@@ -10,19 +18,52 @@
 \renewcommand*\contentsname{\hfil Sisukord\hfil}
 
 \usepackage{biblatex}
-%\usepackage{setspace}
-
 \bibliography{thesis}
 
-  
-\title{Efekti analüüside ja nendel põhinevate programmiteisenduste sertifitseerimine}
-\author{Tõnn Talvik}
-\date{2017}
 
 %\linespread{1.4}
 \renewcommand{\baselinestretch}{1.5}
+
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{12pt}
+
+\usepackage{titlesec}
+
+% http://tex.stackexchange.com/questions/299969/titlesec-loss-of-section-numbering-with-the-new-update-2016-03-15
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd{\ttlh@hang}{\parindent\z@}{\parindent\z@\leavevmode}{}{}
+\patchcmd{\ttlh@hang}{\noindent}{}{}{}
+\makeatother
+
+\titlespacing*{\section}{0pt}{60pt}{18pt}
+\titlespacing*{\subsection}{0pt}{60pt}{18pt}
+
+\usepackage{listings}
+\lstdefinelanguage{agda}{
+  morekeywords={abstract,constructor,data,field,
+    forall,hiding,import,in,infix,infixl,infixr,let,
+    module,mutual,open,postulate,primitive,Prop,
+    private,public,quoteGoal,quoteTerm,quote,record,
+    renaming,rewrite,Set,syntax,unquote,using,where,with},%
+  keywordstyle=\bfseries,
+  comment=[l]{--},
+  morecomment=[s]{\{-}{-\}}
+}
+
+
+\lstset{language=agda,basicstyle=\linespread{0.8}}
+%\newfontfamily\listingsfont[Scale=.7]{DejaVu Sans Mono}
+%\lstset{basicstyle=\listingsfont}
+
+\usepackage{float}
+\floatstyle{boxed} 
+\restylefloat{figure}
+
+\usepackage{caption}
+\captionsetup[figure]{name=Joonis}
+
+
 \begin{document}
 
 
@@ -54,7 +95,7 @@
   \setcounter{page}{2}
 % ------------------------------------------------------------
 
-\section*{\hfil Autorideklaratsioon\hfil}
+\section*{\begin{center}Autorideklaratsioon\end{center}}
 
 Kinnitan, et olen koostanud antud lõputöö iseseisvalt ning seda ei ole kellegi teise poolt varem kaitsmisele esitatud. Kõik töö koostamisel kasutatud teiste autorite tööd, olulised seisukohad, kirjandusallikatest ja mujalt pärinevad andmed on töös viidatud.
 
@@ -63,13 +104,15 @@ Autor: Tõnn Talvik
 8. mai 2017
 \clearpage
 
-\section*{\hfil Annotatsioon\hfil}
+\section*{\begin{center}Annotatsioon\end{center}}
 
+[tekst]
+         
 Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, [jooniste arv] joonist, [tabelite arv] tabelit.
 \clearpage
 
-\section*{\hfil Abstract\hfil}
-\section*{Certification of effect analysis and program transformations based on the analysis}
+\section*{\hfil Abstract\hfil\\
+\begin{center}Certification of effect analysis and program transformations based on the analysis\end{center}}
 [text]
 The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, [figures] figures, [tables] tables.
 \clearpage
@@ -77,10 +120,28 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 \tableofcontents
 \clearpage
 
+\listoffigures
+\clearpage
+
+
+
+
+
+
+
 \section{Sissejuhatus}
 
-This is obvious \cite{Benton2016}.
+Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
+andes samuti ülevaate töö ülesehitusest. Sissejuhatuses kirjeldatakse ka töö
+lähtetingimused, alamülesanded ja vajadusel ka täiendavad nõuded (vt jaotist 2.4 ).
+This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
+Lõputöös peab sisalduma selge lõpetaja poolt lahendatava ülesande püstitus.
+
+Magistritöös esitatakse lahendatava ülesande püstitus töö sissejuhatuses, kattes
+järgmised punktid:
+- töös lahendatavad küsimused ja lähtetingimused,
+- eritingimused, mida on rakendatud ülesande lahendamisel/ülesande püstitamisel.
 \clearpage
 
 \section{Eranditega keel}
@@ -88,6 +149,17 @@ aoe ushoae suhtoase hutasone hutsanohtinahtoisanht
 
 \subsection{Erandite gradeering}
 asoe hut
+
+\begin{figure}
+  \begin{lstlisting}
+  data Exc : Set where
+    err : Exc
+    ok : Exc -- kommentaar
+    errok : Exc
+
+  \end{lstlisting}
+  \caption{Erandite andmetüübi konstruktorid.}
+\end{figure}
 
 \subsection{Tüübituletus}
 aoeu
@@ -102,10 +174,11 @@ aeoust haoseu th
 aseo huasousato usaoheu s
 
 \section{Kokkuvõte}
+Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
+küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 
-sauset hastohue stahoeus thaost hutsoanhu estoahue
 
-
+\renewcommand{\baselinestretch}{1.15}
 \printbibliography[title={Kasutatud kirjandus}]
 
 \end{document}
