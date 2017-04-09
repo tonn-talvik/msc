@@ -1,28 +1,27 @@
 \documentclass[a4paper,12pt]{article}
-\usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm]{geometry}
+\usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm,showframe]{geometry}
 \usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
 
-%\usepackage{ucs}
-\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{unicode-math}
 
-%\usepackage{amssymb}
-%\usepackage{bbm}
-%\usepackage[greek,english]{babel}
-%\usepackage{autofe}
-
+%\setmathfont[Scale=0.85]{Lucida Bright Math OT}
+%\setmathfont{TeX Gyre Pagella Math}
 
 
 \usepackage{fancyhdr}
 \fancypagestyle{FirstPage}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{Tallinn 2017}}
 
-\renewcommand*\contentsname{\hfil Sisukord\hfil}
+\renewcommand*\contentsname{\vskip 60pt\centering Sisukord}
+\renewcommand*\listfigurename{\vskip 60pt\centering Jooniste loetelu}
 
 \usepackage{biblatex}
 \bibliography{thesis}
 
 
 %\linespread{1.4}
-\renewcommand{\baselinestretch}{1.5}
+%\renewcommand{\baselinestretch}{1.5}
 
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{12pt}
@@ -36,25 +35,28 @@
 \patchcmd{\ttlh@hang}{\noindent}{}{}{}
 \makeatother
 
+%\titleformat{\section}[block]{\color{blue}\Large\bfseries\filcenter}{}{1em}{}
 \titlespacing*{\section}{0pt}{60pt}{18pt}
-\titlespacing*{\subsection}{0pt}{60pt}{18pt}
+\titlespacing*{\subsection}{0pt}{24pt}{12pt}
+% III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
+\usepackage{underscore}
 \usepackage{listings}
 \lstdefinelanguage{agda}{
   morekeywords={abstract,constructor,data,field,
     forall,hiding,import,in,infix,infixl,infixr,let,
     module,mutual,open,postulate,primitive,Prop,
     private,public,quoteGoal,quoteTerm,quote,record,
-    renaming,rewrite,Set,syntax,unquote,using,where,with},%
+    renaming,rewrite,Set,syntax,unquote,using,where,with},
   keywordstyle=\bfseries,
-  comment=[l]{--},
+  mathescape=true,
+  basicstyle=\fontsize{11}{11}\selectfont\ttfamily,
+  %comment=[l]{--},
   morecomment=[s]{\{-}{-\}}
 }
 
 
-\lstset{language=agda,basicstyle=\linespread{0.8}}
-%\newfontfamily\listingsfont[Scale=.7]{DejaVu Sans Mono}
-%\lstset{basicstyle=\listingsfont}
+\lstset{language=agda}
 
 \usepackage{float}
 \floatstyle{boxed} 
@@ -63,9 +65,9 @@
 \usepackage{caption}
 \captionsetup[figure]{name=Joonis}
 
-
+\usepackage{setspace}
 \begin{document}
-
+\onehalfspacing
 
 % ------------------------------------------------------------
   \begin{center}
@@ -75,7 +77,7 @@
     \vfill
     
     Tõnn Talvik 132619IAPM
-    \vskip 4em 
+    \vskip 3em 
     \LARGE\textsc{efekti analüüside ja nendel põhinevate programmiteisenduste sertifitseerimine}\\
     \normalsize\vskip 4em 
     Magistritöö\\
@@ -95,7 +97,7 @@
   \setcounter{page}{2}
 % ------------------------------------------------------------
 
-\section*{\begin{center}Autorideklaratsioon\end{center}}
+\section*{\vskip 60pt\centering Autorideklaratsioon}
 
 Kinnitan, et olen koostanud antud lõputöö iseseisvalt ning seda ei ole kellegi teise poolt varem kaitsmisele esitatud. Kõik töö koostamisel kasutatud teiste autorite tööd, olulised seisukohad, kirjandusallikatest ja mujalt pärinevad andmed on töös viidatud.
 
@@ -104,15 +106,14 @@ Autor: Tõnn Talvik
 8. mai 2017
 \clearpage
 
-\section*{\begin{center}Annotatsioon\end{center}}
-
+\section*{\vskip 60pt\centering Annotatsioon}
 [tekst]
          
 Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, [jooniste arv] joonist, [tabelite arv] tabelit.
 \clearpage
 
-\section*{\hfil Abstract\hfil\\
-\begin{center}Certification of effect analysis and program transformations based on the analysis\end{center}}
+\section*{\vskip 60pt\centering Abstract\\
+Certification of effect analysis and program transformations based on the analysis}
 [text]
 The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, [figures] figures, [tables] tables.
 \clearpage
@@ -152,16 +153,36 @@ asoe hut
 
 \begin{figure}
   \begin{lstlisting}
-  data Exc : Set where
-    err : Exc
-    ok : Exc -- kommentaar
-    errok : Exc
+data Exc : Set where
+  err : Exc
+  ok : Exc -- kommentaar
+  errok : Exc
 
   \end{lstlisting}
   \caption{Erandite andmetüübi konstruktorid.}
 \end{figure}
 
 \subsection{Tüübituletus}
+_f_ : a → b\[
+∀X [ ∅ ∉ X ⇒ ∃f:X ⟶  ⋃ X\ ∀A ∈ X (f(A) ∈ A )λ ∀ ∃ ⟦ ⟪ · ⊔ ⊓ Γ ρ ε  ⊑   ¬ ≡ ≢ ≤ ≰ ∏ ⇒  ℕ ]\]
+\begin{figure}
+  \begin{lstlisting}
+  private
+  data _$⊑$_ : Exc →  Exc → Set where
+    $⊑$-refl : {e : Exc} →  e $⊑$ e
+    err$⊑$errok : err $⊑$ errok
+    ok$⊑$errok : ok ⊑ errok
+$λ ∀ ∃ ⟦ ⟧ ⟪ ⟫ · ⊔ ⊓ Γ ρ ε   ¬ ≡ ≢ ≤ ≰ ∏ ⇒ \_  ℕ $
+  {-
+  data Exc : Set where
+    err : Exc
+    ok : Exc -- kommentaar 
+    errok : Exc
+  -}
+  \end{lstlisting}
+  \caption{Erandite andmetüübi konstruktorid.}
+\end{figure}
+
 aoeu
 \subsection{Semantika}
 aoeu
@@ -173,12 +194,16 @@ aeoust haoseu th
 \section{Mitte-deterministlik keel}
 aseo huasousato usaoheu s
 
+\clearpage
+
 \section{Kokkuvõte}
 Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
 küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 
+\clearpage
 
 \renewcommand{\baselinestretch}{1.15}
-\printbibliography[title={Kasutatud kirjandus}]
+\fontsize{11}{11}\selectfont
+\printbibliography[title={\vskip 60pt\centering Kasutatud kirjandus}]
 
 \end{document}
