@@ -19,6 +19,9 @@
 \usepackage{biblatex}
 \bibliography{thesis}
 
+\usepackage{hyperref}
+
+\usepackage[figure,table]{totalcount}
 
 %\linespread{1.4}
 %\renewcommand{\baselinestretch}{1.5}
@@ -52,7 +55,8 @@
   mathescape=true,
   basicstyle=\fontsize{11}{11}\selectfont\ttfamily,
   %comment=[l]{--},
-  morecomment=[s]{\{-}{-\}}
+  morecomment=[s]{\{-}{-\}},
+  escapechar=\&
 }
 
 
@@ -109,13 +113,13 @@ Autor: Tõnn Talvik
 \section*{\vskip 60pt\centering Annotatsioon}
 [tekst]
          
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, [jooniste arv] joonist, [tabelite arv] tabelit.
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, \totalfigures\ joonist, [tabelite arv] tabelit.
 \clearpage
 
 \section*{\vskip 60pt\centering Abstract\\
 Certification of effect analysis and program transformations based on the analysis}
 [text]
-The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, [figures] figures, [tables] tables.
+The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, \totalfigures\ figures, [tables] tables.
 \clearpage
 
 \tableofcontents
@@ -132,21 +136,60 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 
 \section{Sissejuhatus}
 
-Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
-andes samuti ülevaate töö ülesehitusest. Sissejuhatuses kirjeldatakse ka töö
-lähtetingimused, alamülesanded ja vajadusel ka täiendavad nõuded (vt jaotist 2.4 ).
-This is obvious \cite{Benton2016}. \cite{Katsumata2014}
+Töö eesmärgiks on realiseerida sõltuvate tüüpidega programmeerimiskeeles Agda idee tõestus taseme
+raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
+Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korrektsed.
+% Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
+% andes samuti ülevaate töö ülesehitusest. Sissejuhatuses kirjeldatakse ka töö
+% lähtetingimused, alamülesanded ja vajadusel ka täiendavad nõuded (vt jaotist 2.4 ).
 
-Lõputöös peab sisalduma selge lõpetaja poolt lahendatava ülesande püstitus.
+% Lõputöös peab sisalduma selge lõpetaja poolt lahendatava ülesande püstitus.
 
-Magistritöös esitatakse lahendatava ülesande püstitus töö sissejuhatuses, kattes
-järgmised punktid:
-- töös lahendatavad küsimused ja lähtetingimused,
-- eritingimused, mida on rakendatud ülesande lahendamisel/ülesande püstitamisel.
+% Magistritöös esitatakse lahendatava ülesande püstitus töö sissejuhatuses, kattes järgmised punktid:
+% - töös lahendatavad küsimused ja lähtetingimused,
+% - eritingimused, mida on rakendatud ülesande lahendamisel/ülesande püstitamisel.
+
+% Reproducibility
+Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
+Lähtekoodi kompileerimiseks on kasutatud Agda versiooni 2.5.1.1 koos standardteegi versiooniga 0.12.
+Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS jt varamutest.
+
+
 \clearpage
 
-\section{Eranditega keel}
-aoe ushoae suhtoase hutasone hutsanohtinahtoisanht
+\section{Erandid}
+
+\subsection{Eranditega keel}
+Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
+Keele laienduseks on erandid.
+Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel \ref{fig:exc.raw}.
+
+\begin{figure}
+  \begin{lstlisting}
+mutual
+  data vTerm : Set where
+    TT FF : vTerm
+    ZZ : vTerm
+    SS : vTerm → vTerm
+    $⟨$_,_$⟩$ : vTerm → vTerm → vTerm
+    FST SND : vTerm → vTerm
+    VAR : $ℕ$ → vTerm
+    LAM : VType → cTerm → vTerm
+
+  data cTerm : Set where
+    VAL : vTerm → cTerm
+    FAIL : VType → cTerm
+    TRY_WITH_ : cTerm → cTerm → cTerm
+    IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
+    _&\$&_ : vTerm → vTerm → cTerm
+    PREC : vTerm → cTerm → cTerm → cTerm
+    LET_IN_ : cTerm → cTerm → cTerm
+
+  \end{lstlisting}
+  \caption{Eranditega keele väärtus- ja arvutustermid.}
+  \label{fig:exc.raw}
+\end{figure}
+
 
 \subsection{Erandite gradeering}
 asoe hut
@@ -193,6 +236,7 @@ aeoust haoseu th
 
 \section{Mitte-deterministlik keel}
 aseo huasousato usaoheu s
+This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
 \clearpage
 
