@@ -44,7 +44,10 @@
 % III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
 \usepackage{underscore}
+%\usepackage{fontspec}
+%\setmonofont{Consolas}
 \usepackage{listings}
+%\usepackage{inconsolata}
 \lstdefinelanguage{agda}{
   morekeywords={abstract,constructor,data,field,
     forall,hiding,import,in,infix,infixl,infixr,let,
@@ -53,7 +56,7 @@
     renaming,rewrite,Set,syntax,unquote,using,where,with},
   keywordstyle=\bfseries,
   mathescape=true,
-  basicstyle=\fontsize{11}{11}\selectfont\ttfamily,
+  basicstyle=\fontsize{11}{11}\selectfont\sffamily,
   %comment=[l]{--},
   morecomment=[s]{\{-}{-\}},
   escapechar=\&
@@ -68,6 +71,9 @@
 
 \usepackage{caption}
 \captionsetup[figure]{name=Joonis}
+
+
+\renewcommand{\labelitemi}{$\smblksquare$}
 
 \usepackage{setspace}
 \begin{document}
@@ -136,6 +142,11 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 
 \section{Sissejuhatus}
 
+% background and motivation?
+Taust: efektid ja monaadid. Moggi, Benton, Katsumata.
+
+% https://courses.cs.ttu.ee/pages/Problem_Statement
+
 Töö eesmärgiks on realiseerida sõltuvate tüüpidega programmeerimiskeeles Agda idee tõestus taseme
 raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
 Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korrektsed.
@@ -162,7 +173,41 @@ Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS jt varamute
 \subsection{Eranditega keel}
 Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
 Keele laienduseks on erandid.
+
+Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
+Lubatud väärtustüübid VType on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
+Arvutustüüpideks on efektiga E annoteeritud väärtustüübid. Efekt E on defineeritud peatükis \ref{ssec:exc.grading}.
+\begin{figure}
+  \begin{lstlisting}
+mutual
+  data VType : Set where
+    nat : VType
+    bool : VType
+    _$∏$_ : VType →  VType → VType
+    _$⟹$_ : VType →&\ &CType →&\ &VType
+
+  data CType : Set where
+    _/_ : E → VType → CType
+  \end{lstlisting}
+  \caption{Eranditega keele tüübid.}
+  \label{fig:exc.types}
+\end{figure}
+
+
 Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel \ref{fig:exc.raw}.
+% pragmatics
+Termide konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standard funktsioonidega.
+Järgnevalt on selgitatud konstruktorite tähendust.
+\begin{itemize}
+  \item TT ja FF koostavad vastavalt tõeväärtused tõene ja väär.
+  \item ZZ koostab naturaalarvu 0 ja konstruktor SS oma argumendist järgneva naturaalarvu.
+  \item $⟨$_,_$⟩$ koostab oma argumentide paari e. korrutise.
+  \item FST ja SND koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
+  \item VAR koostab De Bruijn'i indeksiga määratud muutuja.
+  \item LAM on funktsiooni abstraktsioon, seejuures funktsiooni kehaks on arvutusterm
+\end{itemize}
+
+
 
 \begin{figure}
   \begin{lstlisting}
@@ -171,9 +216,9 @@ mutual
     TT FF : vTerm
     ZZ : vTerm
     SS : vTerm → vTerm
-    $⟨$_,_$⟩$ : vTerm → vTerm → vTerm
+    $⟨$_,_$⟩$ : vTerm →  vTerm → vTerm
     FST SND : vTerm → vTerm
-    VAR : $ℕ$ → vTerm
+    VAR : $ℕ$ →  vTerm
     LAM : VType → cTerm → vTerm
 
   data cTerm : Set where
@@ -191,7 +236,7 @@ mutual
 \end{figure}
 
 
-\subsection{Erandite gradeering}
+\subsection{Erandite gradeering} \label{ssec:exc.grading}
 asoe hut
 
 \begin{figure}
@@ -237,6 +282,13 @@ aeoust haoseu th
 \section{Mitte-deterministlik keel}
 aseo huasousato usaoheu s
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
+
+\clearpage
+
+\section{Võimalikud edasiarendused}
+
+- muteeritava oleku laiendused\\
+- mittedeterminismi teine gradeering nd0,1,01,1+,N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
 
 \clearpage
 
