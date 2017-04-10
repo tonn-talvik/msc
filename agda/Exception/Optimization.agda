@@ -22,7 +22,7 @@ open import Types
 
 wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
 wkT Γ σ zero = σ ∷ Γ
-wkT [] σ (suc x) =  σ ∷ []
+wkT [] σ (suc x) = σ ∷ []
 wkT (σ' ∷ Γ) σ (suc x) = σ' ∷ wkT Γ σ x 
 
 wkvar : {Γ : Ctx} {σ : VType} →
@@ -221,21 +221,18 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c 
 ·-comm errok ok = refl
 ·-comm errok errok = refl
 
-skippy : {e : Exc} {Γ : Ctx} {X Y : VType} →
-         CTerm Γ (e / Y) → CTerm (X ∷ Γ) (e / Y)
-skippy {e} {Y = Y} m = subst (λ Γ → CTerm Γ (e / Y)) {!sure, trust me!} m
-
+{-
 swappy : {e : Exc} {Γ : Ctx} {X Y Z : VType} →
          CTerm (X ∷ Y ∷ Γ) (e / Z) → CTerm (Y ∷ X ∷ Γ) (e / Z)
 swappy m = {!!}
 
 -- show m&n independence?
 comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X Y Z : VType}
-       (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) →(o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
+       (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) (o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
        sub-eq (·-comm e₁ e₂)
-       (⟦ LET m IN LET skippy n IN o ⟧c ρ) ≡ ⟦ LET n IN LET skippy m IN swappy o ⟧c ρ
+              (⟦ LET m IN LET wkC zero n IN o ⟧c ρ) ≡ ⟦ LET n IN LET wkC zero m IN swappy o ⟧c ρ
 comm m n o = {!!}
-
+-}
 
 -- distribution
 
@@ -299,9 +296,10 @@ dup-comp {errok} nothing n = refl
 {-
 dup-comp' : {Γ : Ctx} {X Y : VType} {e : Exc}
             (m : CTerm Γ (errok / X)) (n : CTerm (X ∷ X ∷ Γ) (e / Y)) →
-            ⟦ LET m IN LET m IN n ⟧c ≡ ⟦ LET m IN n x/y ⟧c
+            ⟦ LET m IN LET wkC zero m IN ? ⟧c ≡ ⟦ LET m IN n ⟧c
 dup-comp' = ?
 -}
+
 
 dup-comp2 : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X Y : VType}
             (m : CTerm Γ (errok / X)) (n : CTerm (X ∷ X ∷ Γ) (e / Y)) → 

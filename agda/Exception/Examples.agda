@@ -22,6 +22,28 @@ open Grading.OrderedMonoid ExcEffOM
 
 open import Optimization
 
+ADD : vTerm
+ADD = LAM nat
+          (VAL (LAM nat
+                    (PREC (VAR 0)
+                          (VAL (VAR 1))
+                          (VAL (SS (VAR 0))))))
+
+ADD-3-and-4 : cTerm
+ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
+              IN VAR 0 $ (SS (SS (SS (SS ZZ))))
+
+BAD-ONE : cTerm
+BAD-ONE = ZZ $ TT
+
+infer-add = infer-vterm [] ADD
+infer-add-3-and-4 = infer-cterm [] ADD-3-and-4
+
+sem-add = ⟦ infer-add ⟧v tt
+sem-add-3-and-4 = ⟦ infer-add-3-and-4 ⟧c tt
+
+
+
 raw1 raw2 raw3 : cTerm
 raw1 = IF FF THEN VAL ZZ ELSE (FAIL nat)
 raw2 = IF (VAR 0) THEN (FAIL nat) ELSE (FAIL nat)

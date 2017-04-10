@@ -205,3 +205,63 @@ mutual -- refined term inference
   infer-cterm Γ (LET t IN t') | just (_ / _) | _ | nothing | _ = tt
   infer-cterm Γ (LET t IN t') | nothing | _  = tt
 
+
+-----------------------------------------------------------
+-- effect erasure
+
+{-
+mutual
+  erase-vtype : VType → vType
+  erase-vtype nat = nat
+  erase-vtype bool = bool
+  erase-vtype (σ ∏ σ') = erase-vtype σ π erase-vtype σ'
+  erase-vtype (σ ⟹ σ') = erase-vtype σ ⇒ erase-ctype σ'
+
+  erase-ctype : CType → cType
+  erase-ctype (e / σ) = // (erase-vtype σ)
+
+
+
+mutual
+  erase≤V : {σ τ : VType} → σ ≤V τ → erase-vtype σ ≡ erase-vtype τ
+  erase≤V st-bn = {!!}
+  erase≤V st-refl = refl
+  erase≤V (st-prod p p') rewrite erase≤V p | erase≤V p' = refl
+  erase≤V (st-func p q) rewrite erase≤V p | erase≤C q = refl
+
+  erase≤C : {σ τ : CType} → σ ≤C τ → erase-ctype σ ≡ erase-ctype τ
+  erase≤C (st-comp _ p) = cong // (erase≤V p)
+-}
+
+
+mutual
+  erase-vterm : {Γ : Ctx} {σ : VType} → VTerm Γ σ → vTerm
+  erase-vterm TT = TT
+  erase-vterm FF = FF
+  erase-vterm ZZ = ZZ
+  erase-vterm (SS t) = SS (erase-vterm t)
+  erase-vterm ⟨ t , t' ⟩ = ⟨ erase-vterm t , erase-vterm t' ⟩ 
+  erase-vterm (FST t) = FST (erase-vterm t)
+  erase-vterm (SND t) = SND (erase-vterm t)
+  erase-vterm (VAR x) = VAR (toℕ (idx x))
+  erase-vterm (LAM σ t) = LAM σ (erase-cterm t)
+  erase-vterm (VCAST t p) = erase-vterm t
+
+  erase-cterm : {Γ : Ctx} {τ : CType} → CTerm Γ τ → cTerm
+  erase-cterm (VAL x) = VAL (erase-vterm x)
+  erase-cterm (FAIL σ) = FAIL σ
+  erase-cterm (TRY t WITH t') = TRY erase-cterm t WITH erase-cterm t'
+  erase-cterm (IF x THEN t ELSE t') = IF erase-vterm x THEN erase-cterm t ELSE erase-cterm t'
+  erase-cterm (f $ x) = erase-vterm f $ erase-vterm x
+  erase-cterm (PREC x t t' p) = PREC (erase-vterm x) (erase-cterm t) (erase-cterm t')
+  erase-cterm (LET t IN t') = LET erase-cterm t IN erase-cterm t'
+  erase-cterm {Γ} (CCAST t p) = erase-cterm t
+
+---------------------------------------------------------------------------------------------
+
+--infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : infer-ctermType Γ t) → erase t' ≡ t -- leq
+--infer-corr = {!!}
+
+--infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) →
+--             infer-ctype Γ (erase-cterm t) ≡ just τ → (t' : infer-ctermType Γ (erase-cterm t)) → t' ≤C t
+--infer-corr = ?
