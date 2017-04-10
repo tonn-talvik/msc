@@ -47,10 +47,7 @@
 % III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
 \usepackage{underscore}
-%\usepackage{fontspec}
-%\setmonofont{Consolas}
 \usepackage{listings}
-%\usepackage{inconsolata}
 \lstdefinelanguage{agda}{
   morekeywords={abstract,constructor,data,field,
     forall,hiding,import,in,infix,infixl,infixr,let,
@@ -64,8 +61,6 @@
   morecomment=[s]{\{-}{-\}},
   escapechar=\&
 }
-
-
 \lstset{language=agda}
 
 \usepackage{float}
@@ -75,6 +70,7 @@
 \usepackage{caption}
 \captionsetup[figure]{name=Joonis}
 
+\usepackage{tikz}
 
 \renewcommand{\labelitemi}{$\smblksquare$}
 
@@ -163,7 +159,8 @@ Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korre
 % - töös lahendatavad küsimused ja lähtetingimused,
 % - eritingimused, mida on rakendatud ülesande lahendamisel/ülesande püstitamisel.
 
-rääkida Agdast
+% Rigor
+rääkida Agdast ja tõestustest
 
 % Reproducibility
 Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
@@ -283,43 +280,111 @@ Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (vt alapeatü
 
 \subsection{Erandite gradeering} \label{ssec:exc.grading}
 
-
+Joonisel \ref{fig:exc.exc} on toodud erandite efekti hinnang Exc: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte. Toodud on hinnangute järjestatusseos _$⊑$_, mis moodustab järgneva võre:
+\begin{center}
+  \begin{tikzpicture}
+    \node (top) at (0,0) {errok};
+    \node [below left  of=top] (left)  {err};
+    \node [below right of=top] (right) {ok};
+    \draw (top) -- (left);
+    \draw (top) -- (right);
+  \end{tikzpicture}
+\end{center}
 \begin{figure}
   \begin{lstlisting}
 data Exc : Set where
   err : Exc
-  ok : Exc -- kommentaar
+  ok : Exc
   errok : Exc
-
+  
+data _&$⊑$&_ : Exc → Exc → Set where
+  &$⊑$&-refl : {e : Exc} → e &$⊑$& e
+  err&$⊑$&errok : err &$⊑$& errok
+  ok&$⊑$&errok : ok &$⊑$& errok
   \end{lstlisting}
-  \caption{Erandite andmetüübi konstruktorid.}
+  \caption{Erandite efektid ja nende järjestatus.}
+  \label{fig:exc.exc}
 \end{figure}
+
+
+
+\subsubsection{Järjestatud monoid}
+Järjestatud monoid: järjestatuse transitiivsus, korrutamine, korrutamise assotsiatiivsus, monotoonsus, vasak ühik, parem ühik.
+
+\subsubsection{Gradeeritud monaad}
+T, $\eta$, lift, sub, mlaw1,2,3, 
+\subsubsection{Alamtüübid}
 
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
+Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
+Termid on parametriseeritud kontekstiga $Γ$ ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+Kontekst Ctx on defineeritud kui väärtusttüüpide list.
 \begin{figure}
   \begin{lstlisting}
-  infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
-  infer-vtype Γ TT = just bool
-  infer-vtype Γ FF = just bool
-  infer-vtype Γ ZZ = just nat
-  infer-vtype Γ (SS t) with  infer-vtype Γ t
+Ctx = List VType
+
+mutual
+ data VTerm (&$Γ$& : Ctx) : VType → Set where
+   TT FF : VTerm &$Γ$& bool
+   ZZ : VTerm &$Γ$& nat
+   SS : VTerm &$Γ$& nat → VTerm &$Γ$& nat
+   $⟨$_,_$⟩$ : {&$σ$& &$σ'$& : VType} →
+           VTerm &$Γ$& &$σ$& → VTerm &$Γ$& &$σ'$& → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&)
+   FST : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&) → VTerm &$Γ$& &$σ$&
+   SND : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&) → VTerm &$Γ$& &$σ'$&
+   VAR : {&$σ$& : VType} → &$σ$& &$∈$& &$Γ$& → VTerm &$Γ$& &$σ$&
+   LAM : (&$σ$& : VType) {&$τ$& : CType} →
+         CTerm (&$σ$& &$∷$& &$Γ$&) &$τ$& → VTerm &$Γ$& (&$σ$& &$⟹$& &$τ$&)
+   VCAST : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& &$σ$& → &$σ$& &$≤$&V &$σ'$& → VTerm &$Γ$& &$σ'$&
+
+ data CTerm (&$Γ$& : Ctx) : CType → Set where
+   VAL : {&$σ$& : VType} → VTerm &$Γ$& &$σ$& → CTerm &$Γ$& (ok / &$σ$&)
+   FAIL : (&$σ$& : VType) → CTerm &$Γ$& (err / &$σ$&)
+   TRY_WITH_ : {e e' : E} {&$σ$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
+               CTerm &$Γ$& (e' / &$σ$&) → CTerm &$Γ$& (e &$⊹$& e' / &$σ$&)
+   IF_THEN_ELSE_ : {e e' : E} {&$σ$& : VType} → VTerm &$Γ$& bool →
+     CTerm &$Γ$& (e / &$σ$&) → CTerm &$Γ$& (e' / &$σ$&) → CTerm &$Γ$& (e &$⊔$& e' / &$σ$&)
+   _&\$&_ : {&$σ$& : VType} {&$τ$& : CType} →
+         VTerm &$Γ$& (&$σ$& &$⟹$& &$τ$&) → VTerm &$Γ$& &$σ$& → CTerm &$Γ$& &$τ$&
+   PREC : {e e' : E} {&$σ$& : VType} → VTerm &$Γ$& nat →
+          CTerm &$Γ$& (e / &$σ$&) → CTerm (&$σ$& &$∷$& nat &$∷$& &$Γ$&) (e' / &$σ$&) →
+          e · e' &$⊑$& e → CTerm &$Γ$& (e / &$σ$&)
+   LET_IN_ : {e e' : E} {&$σ$& &$σ'$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
+            CTerm (&$σ$& &$∷$& &$Γ$&) (e' / &$σ'$&) → CTerm &$Γ$& (e · e' / &$σ'$&)
+   CCAST : {e e' : E} {&$σ$& &$σ'$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
+           e / &$σ$& &$≤$&C e' / &$σ'$& → CTerm &$Γ$& (e' / &$σ'$&)
+  \end{lstlisting}
+  \caption{Eranditega keele rafineeritud termid.}
+  \label{fig:exc.refined}
+\end{figure}
+
+
+
+
+\begin{figure}
+  \begin{lstlisting}
+  infer-vtype : (&$Γ$& : Ctx) → vTerm → Maybe VType
+  infer-vtype &$Γ$& TT = just bool
+  infer-vtype &$Γ$& FF = just bool
+  infer-vtype &$Γ$& ZZ = just nat
+  infer-vtype &$Γ$& (SS t) with  infer-vtype &$Γ$& t
   ... | just nat = just nat
   ... | _        = nothing
-  infer-vtype Γ $⟨$ t , t' $⟩$ with infer-vtype Γ t | infer-vtype Γ t'
+  infer-vtype &$Γ$& $⟨$ t , t' $⟩$ with infer-vtype &$Γ$& t | infer-vtype &$Γ$& t'
   ... | just $σ$ | just $σ'$ = just ($σ ∏ σ'$)
   ... | _      | _       = nothing
-  infer-vtype Γ (FST t) with infer-vtype Γ t
-  ... | just (σ ∏ _) = just σ
+  infer-vtype &$Γ$& (FST t) with infer-vtype &$Γ$& t
+  ... | just (&$σ$& ∏ _) = just &$σ$&
   ... | _            = nothing
-  infer-vtype Γ (SND t) with infer-vtype Γ t
-  ... | just (_ ∏ σ') = just σ'
+  infer-vtype &$Γ$& (SND t) with infer-vtype &$Γ$& t
+  ... | just (_ ∏ &$σ'$&) = just &$σ'$&
   ... | _             = nothing
-  infer-vtype Γ (VAR x) with x <? Γ
-  infer-vtype Γ (VAR x) | yes p = just (lkp Γ (from$ℕ≤$ p))
-  infer-vtype Γ (VAR x) | no ¬p = nothing
-  infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
-  ... | just τ = just (σ ⟹ τ)
+  infer-vtype &$Γ$& (VAR x) with x <? &$Γ$&
+  infer-vtype &$Γ$& (VAR x) | yes p = just (lkp &$Γ$& (from$ℕ≤$ p))
+  infer-vtype &$Γ$& (VAR x) | no ¬p = nothing
+  infer-vtype &$Γ$& (LAM &$σ$& t) with infer-ctype (&$σ$& &$∷$& &$Γ$&) t
+  ... | just &$τ$& = just (&$σ$& ⟹ &$τ$&)
   ... | _      = nothing
   \end{lstlisting}
   \caption{Eranditega keele väärtustüüpide tüübituletus.}
@@ -328,42 +393,42 @@ data Exc : Set where
 
 \begin{figure}
   \begin{lstlisting}
-  infer-ctype : (Γ : Ctx) → cTerm → Maybe CType
-  infer-ctype Γ (VAL x) with infer-vtype Γ x
-  ... | just σ = just (ok / σ)
+  infer-ctype : (&$Γ$& : Ctx) → cTerm → Maybe CType
+  infer-ctype &$Γ$& (VAL x) with infer-vtype &$Γ$& x
+  ... | just &$σ$& = just (ok / &$σ$&)
   ... | _      = nothing
-  infer-ctype Γ (FAIL σ) = just (err / σ)
-  infer-ctype Γ (TRY t WITH t') with infer-ctype Γ t | infer-ctype Γ t'
-  ... | just τ | just τ' = τ ⊹C τ'
+  infer-ctype &$Γ$& (FAIL &$σ$&) = just (err / &$σ$&)
+  infer-ctype &$Γ$& (TRY t WITH t') with infer-ctype &$Γ$& t | infer-ctype &$Γ$& t'
+  ... | just &$τ$& | just &$τ'$& = &$τ$& ⊹C &$τ'$&
   ... | _      | _       = nothing
-  infer-ctype Γ (IF x THEN t ELSE t') with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
-  ... | just bool | just τ | just τ' = τ ⊔C τ'
+  infer-ctype &$Γ$& (IF x THEN t ELSE t') with infer-vtype &$Γ$& x | infer-ctype &$Γ$& t | infer-ctype &$Γ$& t'
+  ... | just bool | just &$τ$& | just &$τ'$& = &$τ$& ⊔C &$τ'$&
   ... | _         | _      | _       = nothing
-  infer-ctype Γ (f &\$& t) with infer-vtype Γ f | infer-vtype Γ t
-  infer-ctype Γ (f &\$& t) | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
-  infer-ctype Γ (f &\$& t) | just (σ ⟹ τ) | just σ' | yes _ = just τ
-  infer-ctype Γ (f &\$& t) | just (_ ⟹ _) | just _  | no  _ = nothing
-  infer-ctype Γ (f &\$& t) | _             | _       = nothing
-  infer-ctype Γ (PREC x t t') with infer-vtype Γ x
-  infer-ctype Γ (PREC x t t') | just nat with infer-ctype Γ t
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') | yes _ | yes _ = just (e / σ)
-  infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
-  infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
-  infer-ctype Γ (PREC x t t') | just nat | _ = nothing
-  infer-ctype Γ (PREC x t t') | _ = nothing
-  infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
-  infer-ctype Γ (LET t IN t') | just (e / σ) with infer-ctype (σ ∷ Γ) t'
-  infer-ctype Γ (LET t IN t') | just (e / σ) | just (e' / σ') = just (e · e' / σ')
-  infer-ctype Γ (LET t IN t') | just (_ / _) | _              = nothing
-  infer-ctype Γ (LET t IN t') | _            = nothing
+  infer-ctype &$Γ$& (f &\$& t) with infer-vtype &$Γ$& f | infer-vtype &$Γ$& t
+  infer-ctype &$Γ$& (f &\$& t) | just (&$σ$& ⟹ &$τ$&) | just &$σ'$& with &$σ'$& ≤V? &$σ$&
+  infer-ctype &$Γ$& (f &\$& t) | just (&$σ$& ⟹ &$τ$&) | just &$σ'$& | yes _ = just &$τ$&
+  infer-ctype &$Γ$& (f &\$& t) | just (_ ⟹ _) | just _  | no  _ = nothing
+  infer-ctype &$Γ$& (f &\$& t) | _             | _       = nothing
+  infer-ctype &$Γ$& (PREC x t t') with infer-vtype &$Γ$& x
+  infer-ctype &$Γ$& (PREC x t t') | just nat with infer-ctype &$Γ$& t
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) with infer-ctype (&$σ$& &$∷$& nat &$∷$& &$Γ$&) t'
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) with e · e' ⊑? e | &$σ$& ≡V? &$σ'$&
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) | yes _ | yes _ = just (e / &$σ$&)
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | _ = nothing
+  infer-ctype &$Γ$& (PREC x t t') | just nat | _ = nothing
+  infer-ctype &$Γ$& (PREC x t t') | _ = nothing
+  infer-ctype &$Γ$& (LET t IN t') with infer-ctype &$Γ$& t 
+  infer-ctype &$Γ$& (LET t IN t') | just (e / &$σ$&) with infer-ctype (&$σ$& &$∷$& &$Γ$&) t'
+  infer-ctype &$Γ$& (LET t IN t') | just (e / &$σ$&) | just (e' / &$σ'$&) = just (e · e' / &$σ'$&)
+  infer-ctype &$Γ$& (LET t IN t') | just (_ / _) | _              = nothing
+  infer-ctype &$Γ$& (LET t IN t') | _            = nothing
   \end{lstlisting}
   \caption{Eranditega keele arvutustüüpide tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
 
-aoeu
+
 \subsection{Semantika}
 aoeu
 \subsection{Optimisatsioonid}
