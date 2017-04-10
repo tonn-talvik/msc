@@ -265,3 +265,13 @@ mutual
 --infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) →
 --             infer-ctype Γ (erase-cterm t) ≡ just τ → (t' : infer-ctermType Γ (erase-cterm t)) → t' ≤C t
 --infer-corr = ?
+
+correct-type : (Γ : Ctx) {τ : CType} (t : CTerm Γ τ) → Set
+correct-type Γ {τ} t with infer-ctype Γ (erase-cterm t)
+... | just τ' = τ' ≤C τ
+... | nothing = ⊤
+
+infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) → correct-type Γ t
+infer-corr {Γ} t with infer-ctype Γ (erase-cterm t) | infer-cterm Γ (erase-cterm t)
+infer-corr t | just (e / σ) | t' = {!!}
+infer-corr t | nothing | _ = tt
