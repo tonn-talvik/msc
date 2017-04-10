@@ -184,7 +184,7 @@ ning tuuakse mõned optimeerivate programmiteisenduste näited.
 
 Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
 Lubatud väärtustüübid VType on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
-Arvutustüüpideks on efektiga E annoteeritud väärtustüübid. Efekt E on defineeritud peatükis \ref{ssec:exc.grading}.
+Arvutustüüpideks on efektiga E annoteeritud väärtustüübid. Efekt E on defineeritud alapeatükis \ref{ssec:exc.grading}.
 \begin{figure}
   \begin{lstlisting}
 mutual
@@ -249,7 +249,7 @@ Järgnevalt on selgitatud arvutustermi cTerm konstruktorite (jn \ref{fig:exc.raw
   \item IF_THEN_ELSE_ on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
   \item _\$_ on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
   \item PREC on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
-  \item LET_IN_ lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks.
+  \item LET_IN_ lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
 \end{itemize}
 
 \begin{figure}
@@ -280,9 +280,13 @@ Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{
 
 \subsection{Erandite gradeering} \label{ssec:exc.grading}
 
-Erandite efekti hinnang Exc on toodud joonisel \ref{fig:exc.exc}: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte. Toodud on hinnangute järjestatusseos _$⊑$_, mis moodustab järgneva võre:
+Erandite efekti hinnang Exc on toodud joonisel \ref{fig:exc.exc}: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte.
+
+Efektide korrutamine _·_ (jn \ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele. 
+
+Hinnangu Exc konstruktorid moodustavad järgneva võre:
 \begin{center}
-  \begin{tikzpicture}
+  \begin{tikzpicture}[node distance=1.5cm]
     \node (top) at (0,0) {errok};
     \node [below left  of=top] (left)  {err};
     \node [below right of=top] (right) {ok};
@@ -290,6 +294,7 @@ Erandite efekti hinnang Exc on toodud joonisel \ref{fig:exc.exc}: konstruktor er
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
+Hinnangute järjestusseos _$⊑$_ on toodud joonisel \ref{fig:exc.exc}. See seos on refleksiivne $⊑$-refl. Transitiivsuse $⊑$-trans tõestus seisneb argumentide kuju juhtumi analüüsil. Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 \begin{figure}
   \begin{lstlisting}
 data Exc : Set where
@@ -297,12 +302,24 @@ data Exc : Set where
   ok : Exc
   errok : Exc
   
+_·_ : Exc → Exc → Exc
+ok · e = e
+err · e = err
+errok · err = err
+errok · ok = errok
+errok · errok = errok
+
 data _&$⊑$&_ : Exc → Exc → Set where
   &$⊑$&-refl : {e : Exc} → e &$⊑$& e
   err&$⊑$&errok : err &$⊑$& errok
   ok&$⊑$&errok : ok &$⊑$& errok
+  
+&$⊑$&-trans : {e e' e'' : Exc} → e &$⊑$& e' → e' &$⊑$& e'' → e &$⊑$& e''
+&$⊑$&-trans &$⊑$&-refl q = q
+&$⊑$&-trans err&$⊑$&errok &$⊑$&-refl = err&$⊑$&errok
+&$⊑$&-trans ok&$⊑$&errok &$⊑$&-refl = ok&$⊑$&errok
   \end{lstlisting}
-  \caption{Erandite efektid ja nende järjestatus.}
+  \caption{Erandite efektid, nende korrutamine ja efektide järjestatus.}
   \label{fig:exc.exc}
 \end{figure}
 
@@ -412,7 +429,7 @@ mutual
   infer-ctype &$Γ$& (PREC x t t') with infer-vtype &$Γ$& x
   infer-ctype &$Γ$& (PREC x t t') | just nat with infer-ctype &$Γ$& t
   infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) with infer-ctype (&$σ$& &$∷$& nat &$∷$& &$Γ$&) t'
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) with e · e' ⊑? e | &$σ$& ≡V? &$σ'$&
+  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) with e · e' &$⊑$&? e | &$σ$& ≡V? &$σ'$&
   infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) | yes _ | yes _ = just (e / &$σ$&)
   infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
   infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | _ = nothing
