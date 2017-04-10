@@ -241,14 +241,14 @@ mutual
   \label{fig:exc.raw}
 \end{figure}
 
-Järgnevalt on selgitatud arvutustermi cTerm konstruktorite (vt joonis \ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
+Järgnevalt on selgitatud arvutustermi cTerm konstruktorite (jn \ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
 \begin{itemize}
   \item VAL tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
   \item FAIL tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
   \item TRY_WITH_ on arvutuse erandikäsitleja: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
   \item IF_THEN_ELSE_ on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
   \item _\$_ on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
-  \item PREC on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on funktsioon akumulaatori ja sammuloenduri parameetritega. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
+  \item PREC on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
   \item LET_IN_ lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks.
 \end{itemize}
 
@@ -276,11 +276,11 @@ Joonisel \ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon v
 ning naturaalarvude 3 ja 4 liitmine arvutustermina ADD-3-and-4.
 Lisaks on toodud näide arvutustermist BAD-ONE, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
-Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (vt alapeatükk \ref{ssec:exc.inference}).
+Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{ssec:exc.inference}).
 
 \subsection{Erandite gradeering} \label{ssec:exc.grading}
 
-Joonisel \ref{fig:exc.exc} on toodud erandite efekti hinnang Exc: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte. Toodud on hinnangute järjestatusseos _$⊑$_, mis moodustab järgneva võre:
+Erandite efekti hinnang Exc on toodud joonisel \ref{fig:exc.exc}: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte. Toodud on hinnangute järjestatusseos _$⊑$_, mis moodustab järgneva võre:
 \begin{center}
   \begin{tikzpicture}
     \node (top) at (0,0) {errok};
