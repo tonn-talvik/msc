@@ -328,8 +328,8 @@ data _&$⊑$&_ : Exc → Exc → Set where
   \label{fig:exc.exc}
 \end{figure}
 
-Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust (jn \ref{fig:exc.ops}).
-Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid.
+Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
+Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ops}).
 \begin{figure}
   \begin{lstlisting}
 _&$⊔$&_ : Exc → Exc → Exc
@@ -362,7 +362,7 @@ T, $\eta$, lift, sub, mlaw1,2,3,
 
 Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
 Termid on parametriseeritud kontekstiga $Γ$ ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
-Kontekst Ctx on defineeritud kui väärtusttüüpide list.
+Kontekst Ctx on defineeritud kui väärtusttüüpide list. Muutujad viitavad De Bruijn'i indeksiga selle listi elemendile.
 \begin{figure}
   \begin{lstlisting}
 Ctx = List VType
