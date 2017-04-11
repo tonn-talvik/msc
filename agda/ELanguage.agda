@@ -284,25 +284,18 @@ mutual -- value and computation terms
 ---------------------------------------------------------------
 
 mutual
-  wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
-  wkT Γ σ zero = σ ∷ Γ
-  wkT [] σ (suc x) =  σ ∷ []
-  wkT (σ' ∷ Γ) σ (suc x) = σ' ∷ wkT Γ σ x 
+  dropT : (Γ : Ctx) → {σ : VType} → (x : σ ∈ Γ) → Ctx
+  dropT .(x' ∷ xs) (here' {x'} {xs} x) = xs
+  dropT .(x' ∷ xs) (there {x'} {xs} x) = x' ∷ dropT xs x 
 
-  wkvar : {Γ : Ctx} → {σ : VType} → (x : Fin (suc (length Γ))) → {τ : VType}
-     → τ ∈ Γ → τ ∈ wkT Γ σ x
-  wkvar zero y = there y
-  wkvar (suc x) (here' refl) = here' refl
-  wkvar (suc x) (there y) = there (wkvar x y) 
-  
+  wkvar : {Γ : Ctx} → {σ : VType} → (x : σ ∈ Γ)  → {τ : VType}
+     → τ ∈ dropT Γ x → τ ∈ Γ
+  wkvar (here' refl) y = there y
+  wkvar (there x) (here' refl) = here' refl
+  wkvar (there x) (there y) = there (wkvar x y)
 
-{-
-  wkT .(τ ∷ Γ) σ (just (here' {τ} {Γ} x)) = τ ∷ σ ∷ Γ
-  wkT .(τ ∷ Γ) σ (just (there {τ} {Γ} x)) = τ ∷ wkT Γ σ (just x)
-  wkT Γ σ nothing = σ ∷ Γ
--}
 
-  wkV : {Γ : Ctx} {σ τ : VType} → (x : Fin (suc (length Γ))) → VTerm' Γ τ → VTerm' (wkT Γ σ x) τ
+  wkV : {Γ : Ctx} {σ τ : VType} → (x : σ ∈ Γ) → VTerm' (dropT Γ x) τ → VTerm' Γ τ
   wkV x TT = TT
   wkV x FF = FF
   wkV x ZZ = ZZ
@@ -311,17 +304,17 @@ mutual
   wkV x (FST t) = FST (wkV x t)
   wkV x (SND t) = SND (wkV x t)
   wkV x (VAR x') = VAR (wkvar x x')
-  wkV x (LAM σ t) = LAM σ (wkC (suc x) t)
+  wkV x (LAM σ t) = LAM σ (wkC (there x) t)
   wkV x (VCAST t p) = VCAST (wkV x t) p
 
   
-  wkC : {Γ : Ctx} {σ : VType} {τ : CType}  (x : Fin (suc (length Γ))) → CTerm' Γ τ → CTerm' (wkT Γ σ x) τ
+  wkC : {Γ : Ctx} {σ : VType} {τ : CType}  (x : σ ∈ Γ) → CTerm' (dropT Γ x) τ → CTerm' Γ τ
   wkC x (VAL y) = VAL (wkV x y) 
   wkC x (FAIL σ₁) = FAIL σ₁
   wkC x (TRY t WITH u) = TRY (wkC x t) WITH (wkC x u)
   wkC x (IF b THEN t ELSE u) = IF (wkV x b) THEN (wkC x t) ELSE (wkC x u)
   wkC x (t $ u) = wkV x t $ wkV x u
-  wkC x (LET t IN u) = LET (wkC x t) IN (wkC (suc x) u)
+  wkC x (LET t IN u) = LET (wkC x t) IN (wkC (there x) u)
   wkC x (CCAST t p) = CCAST (wkC x t) p 
 
 {-

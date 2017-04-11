@@ -118,44 +118,44 @@ mutual
 --xxx = ⟦_⟧c ((VAR here) $ ZZ ) (suc , tt)
 
 
-wk : {Γ : Ctx} → ⟦ Γ ⟧x → {σ : VType} →  ⟪ σ ⟫v → (x : Fin (suc (length Γ))) → 
-     ⟦ wkT Γ σ x  ⟧x 
-wk ρ v zero =  v , ρ
-wk {[]} tt v (suc x) = v , tt
-wk {_ ∷ _} (w , ρ) v (suc x) = w , wk ρ v x
+dropt : {Γ : Ctx} → ⟦ Γ ⟧x  → {σ : VType}  → (x : σ ∈ Γ) → 
+     ⟦ dropT Γ x  ⟧x 
+dropt (_ , ρ) (here' refl) = ρ
+dropt (v , ρ) (there x) = v , dropt ρ x
 
 lemmaVar : {Γ : Ctx} → (ρ : ⟦ Γ ⟧x) → {σ : VType} 
-  →  (v : ⟪ σ ⟫v) → (x : Fin (suc (length Γ))) 
-  → {τ : VType} → (y : τ ∈  Γ) → proj (wkvar x y) (wk ρ v x) ≡ proj y ρ
-lemmaVar ρ v zero y = refl
-lemmaVar ρ v (suc x) (here' refl) = refl
-lemmaVar {_ ∷ Γ} (_ , ρ) v (suc x) (there y) = lemmaVar ρ v x y
+  → (x : σ ∈ Γ) 
+  → {τ : VType} → (y : τ ∈ dropT Γ x) → proj (wkvar x y) ρ ≡ proj y (dropt ρ x)
+lemmaVar ρ (here' refl) y = refl
+lemmaVar ρ (there x) (here' refl) = refl
+lemmaVar {_ ∷ Γ} (_ , ρ) (there x) (there y) = lemmaVar ρ x y
 
 
 mutual 
  lemmaV : {Γ : Ctx} → (ρ : ⟦ Γ ⟧x) → {σ : VType} 
-  →  (v : ⟪ σ ⟫v) → (x : Fin (suc (length Γ))) 
-  → {τ : VType} → (t : VTerm' Γ τ) → ⟦ wkV x t ⟧v (wk ρ v x) ≡ ⟦ t ⟧v ρ
- lemmaV ρ v x TT = refl
- lemmaV ρ v x FF = refl
- lemmaV ρ v x ZZ = refl
- lemmaV ρ v x (SS t) = cong suc (lemmaV ρ v x t)
- lemmaV ρ v x ⟨ t , u ⟩ = {!!}
- lemmaV ρ v x (FST t) =  cong proj₁ (lemmaV ρ v x t)
- lemmaV ρ v x (SND t) = cong proj₂ (lemmaV ρ v x t)
- lemmaV ρ v x (VAR y) = lemmaVar ρ v x y
- lemmaV ρ v x (LAM σ t) =  funext (λ z → ⟦ wkC (suc x) t ⟧c (z , wk ρ v x)) (λ z → ⟦ t ⟧c (z , ρ)) (λ z → lemmaC (z , ρ) v (suc x) t) 
- lemmaV ρ v x (VCAST t p) = {!!}
+  → (x : σ ∈ Γ) 
+  → {τ : VType} → (t : VTerm' (dropT Γ x) τ) → ⟦ wkV x t ⟧v ρ ≡ ⟦ t ⟧v (dropt ρ x)
+ lemmaV ρ x TT = refl
+ lemmaV ρ x FF = refl
+ lemmaV ρ x ZZ = refl
+ lemmaV ρ x (SS t) = cong suc (lemmaV ρ x t)
+ lemmaV ρ x ⟨ t , u ⟩ = {!!}
+ lemmaV ρ x (FST t) =  cong proj₁ (lemmaV ρ x t)
+ lemmaV ρ x (SND t) = cong proj₂ (lemmaV ρ x t)
+ lemmaV ρ x (VAR y) = lemmaVar ρ x y
+ lemmaV ρ x (LAM σ t) =  funext (λ z → ⟦ wkC (there x) t ⟧c (z , ρ)) (λ z → ⟦ t ⟧c (z , dropt ρ x))  (λ z → lemmaC (z , ρ) (there x) t) 
+ lemmaV ρ x (VCAST t p) = {!!}
   
  lemmaC : {Γ : Ctx} → (ρ : ⟦ Γ ⟧x) → {σ : VType} 
-  →  (v : ⟪ σ ⟫v) → (x : Fin (suc (length Γ))) 
-  → {τ : CType} → (t : CTerm' Γ τ) → ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
- lemmaC ρ v x t = {!!}
+  → (x : σ ∈ Γ) 
+  → {τ : CType} → (t : CTerm' (dropT Γ x) τ) → ⟦ wkC x t ⟧c ρ ≡ ⟦ t ⟧c (dropt ρ x)
+ lemmaC ρ  x t = {!!}
+
 
 dead-comp' : {Γ : Ctx} {σ τ : VType} {ε : Exc}
              (m : CTerm' Γ (ok / σ)) (n : CTerm' Γ (ε / τ ) ) →
              -- show that n does not depend on m
              (ρ : ⟦ Γ ⟧x) → 
-             ⟦ LET m IN (wkC zero n) ⟧c ρ ≡ ⟦ n ⟧c ρ --λ ρ → ⟦ n ⟧c (⟦ m ⟧c ρ , ρ)
-dead-comp' m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n 
+             ⟦ LET m IN (wkC here n) ⟧c ρ ≡ ⟦ n ⟧c ρ --λ ρ → ⟦ n ⟧c (⟦ m ⟧c ρ , ρ)
+dead-comp' m n ρ = lemmaC ((⟦ m ⟧c ρ , ρ)) here n  
 
