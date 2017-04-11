@@ -1,10 +1,52 @@
 \documentclass[a4paper,12pt]{article}
 \usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm,showframe]{geometry}
-\usepackage{mathptmx}% http://ctan.org/pkg/mathptmx
-
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage{unicode-math}
+\usepackage{newtxtext,newtxmath}
+%\usepackage{txfonts}
+%\usepackage{mathptmx}
+
+%\usepackage{textcomp}
+%\usepackage{amsmath,amssymb}
+%\usepackage{stix}
+%\usepackage{baisik}
+\usepackage{fdsymbol}
+\usepackage{stmaryrd}
+\usepackage{underscore}
+
+\usepackage{newunicodechar}
+\newunicodechar{Γ}{$\Gamma$}
+\newunicodechar{ε}{$\epsilon$}
+\newunicodechar{λ}{$\lambda$}
+\newunicodechar{ρ}{$\rho$}
+\newunicodechar{σ}{$\sigma$}
+\newunicodechar{τ}{$\tau$}
+\newunicodechar{∷}{$\Colon$} % requires fdsymbol
+%\newunicodechar{∷}{$::$}
+\newunicodechar{∏}{$\prod$}
+\newunicodechar{→}{$\rightarrow$}
+\newunicodechar{⇒}{$\Rightarrow$}
+\newunicodechar{⟹}{$\Longrightarrow$}
+%\newunicodechar{⊹}{$\hermitmatrix$} % requires stix
+\newunicodechar{⊹}{$\hermitmatrix$}
+%\newunicodechar{⊹}{$+$}
+\newunicodechar{⟦}{$\llbracket$}
+\newunicodechar{⟧}{$\rrbracket$}
+\newunicodechar{⟪}{$\langle\!\langle$}
+\newunicodechar{⟫}{$\rangle\!\rangle$}
+\newunicodechar{⟨}{$\langle$}
+\newunicodechar{⟩}{$\rangle$}
+\newunicodechar{·}{$\cdot$}
+\newunicodechar{⊔}{$\sqcup$}
+\newunicodechar{⊓}{$\sqcap$}
+\newunicodechar{∈}{$\in$}
+\newunicodechar{¬}{$\neg$}
+\newunicodechar{≡}{$\equiv$}
+\newunicodechar{≢}{$\neq$}
+\newunicodechar{≤}{$\leq$}
+\newunicodechar{≰}{$\nleq$}
+\newunicodechar{⊑}{$\sqsubseteq$}
+\newunicodechar{ℕ}{$\mathbb{N}$}
 
 \usepackage[estonian]{babel}
 %\usepackage[none]{hyphenat}
@@ -21,10 +63,11 @@
   \renewcommand*\listfigurename{\vskip 60pt\centering Jooniste loetelu}
 }
 
-\usepackage{biblatex}
-\bibliography{thesis}
+%\usepackage{biblatex}
+%\bibliography{thesis}
 
 \usepackage{hyperref}
+
 
 \usepackage[figure,table]{totalcount}
 
@@ -48,38 +91,25 @@
 \titlespacing*{\subsection}{0pt}{24pt}{12pt}
 % III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
-\usepackage{underscore}
-\usepackage{listings}
-\lstdefinelanguage{agda}{
-  morekeywords={abstract,constructor,data,field,
-    forall,hiding,import,in,infix,infixl,infixr,let,
-    module,mutual,open,postulate,primitive,Prop,
-    private,public,quoteGoal,quoteTerm,quote,record,
-    renaming,rewrite,Set,syntax,unquote,using,where,with},
-  keywordstyle=\bfseries,
-  mathescape=true,
-  basicstyle=\fontsize{11}{11}\selectfont\sffamily,
-  %comment=[l]{--},
-  morecomment=[s]{\{-}{-\}},
-  escapechar=\&
-}
-\lstset{language=agda}
+
 
 \usepackage{float}
 \floatstyle{boxed} 
 \restylefloat{figure}
 
-\usepackage{caption}
-\captionsetup[figure]{name=Joonis}
-
 \usepackage{tikz}
 
+%\renewcommand{\labelitemi}{$\smblksquare$}
 \renewcommand{\labelitemi}{$\smblksquare$}
 
 \usepackage{setspace}
+
 \begin{document}
 \onehalfspacing
 
+\begin{verbatim}
+λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
+\end{verbatim}
 % ------------------------------------------------------------
   \begin{center}
     \textsc{tallinna tehnikaülikool}\\
@@ -188,17 +218,17 @@ Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{f
 Lubatud väärtustüübid VType on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
 Arvutustüüpideks on efektiga E annoteeritud väärtustüübid. Efekt E on defineeritud alapeatükis \ref{ssec:exc.grading}.
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
 mutual
   data VType : Set where
     nat : VType
     bool : VType
-    _$∏$_ : VType →  VType → VType
-    _$⟹$_ : VType →&\ &CType →&\ &VType
+    _∏_ : VType → VType → VType
+    _⟹_ : VType → CType → VType
 
   data CType : Set where
     _/_ : E → VType → CType
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Eranditega keele tüübid.}
   \label{fig:exc.types}
 \end{figure}
@@ -211,22 +241,22 @@ Järgnevalt on selgitatud väärtustermi vTerm konstruktorite tähendust.
 \begin{itemize}
   \item TT ja FF koostavad vastavalt tõeväärtused tõene ja väär.
   \item ZZ koostab naturaalarvu 0 ja konstruktor SS oma argumendist järgneva naturaalarvu.
-  \item $⟨$_,_$⟩$ koostab oma argumentide paari e. korrutise.
+  \item ⟨_,_⟩ koostab oma argumentide paari e. korrutise.
   \item FST ja SND koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
   \item VAR koostab De Bruijn'i indeksiga määratud muutuja.
   \item LAM on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm.
 \end{itemize}
 
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
 mutual
   data vTerm : Set where
     TT FF : vTerm
     ZZ : vTerm
     SS : vTerm → vTerm
-    $⟨$_,_$⟩$ : vTerm →  vTerm → vTerm
+    ⟨_,_⟩ : vTerm → vTerm → vTerm
     FST SND : vTerm → vTerm
-    VAR : $ℕ$ →  vTerm
+    VAR : ℕ → vTerm
     LAM : VType → cTerm → vTerm
 
   data cTerm : Set where
@@ -234,11 +264,11 @@ mutual
     FAIL : VType → cTerm
     TRY_WITH_ : cTerm → cTerm → cTerm
     IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
-    _&\$&_ : vTerm → vTerm → cTerm
+    _$_ : vTerm → vTerm → cTerm
     PREC : vTerm → cTerm → cTerm → cTerm
     LET_IN_ : cTerm → cTerm → cTerm
 
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Eranditega keele väärtus- ja arvutustermid.}
   \label{fig:exc.raw}
 \end{figure}
@@ -255,7 +285,7 @@ Järgnevalt on selgitatud arvutustermi cTerm konstruktorite (jn \ref{fig:exc.raw
 \end{itemize}
 
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
 ADD : vTerm
 ADD = LAM nat
           (VAL (LAM nat
@@ -264,12 +294,12 @@ ADD = LAM nat
                           (VAL (SS (VAR 0))))))
 
 ADD-3-and-4 : cTerm
-ADD-3-and-4 = LET ADD &\$& (SS (SS (SS ZZ)))
-              IN VAR 0 &\$& (SS (SS (SS (SS ZZ))))
+ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
+              IN VAR 0 $ (SS (SS (SS (SS ZZ))))
 
 BAD-ONE : cTerm
-BAD-ONE = ZZ &\$& TT
-  \end{lstlisting}
+BAD-ONE = ZZ $ TT
+  \end{verbatim}
   \caption{Näidisavaldised eranditega keeles.}
   \label{fig:exc.raw.ex1}
 \end{figure}
@@ -299,9 +329,9 @@ Hinnangu Exc konstruktorid moodustavad järgneva võre:
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
-Hinnangute järjestusseos _$⊑$_ on toodud joonisel \ref{fig:exc.exc}. See seos on refleksiivne $⊑$-refl. Transitiivsuse $⊑$-trans tõestus seisneb argumentide kuju juhtumi analüüsil. Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
+Hinnangute järjestusseos _⊑_ on toodud joonisel \ref{fig:exc.exc}. See seos on refleksiivne ⊑-refl. Transitiivsuse ⊑-trans tõestus seisneb argumentide kuju juhtumi analüüsil. Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
 data Exc : Set where
   err : Exc
   ok : Exc
@@ -314,16 +344,16 @@ errok · err = err
 errok · ok = errok
 errok · errok = errok
 
-data _&$⊑$&_ : Exc → Exc → Set where
-  &$⊑$&-refl : {e : Exc} → e &$⊑$& e
-  err&$⊑$&errok : err &$⊑$& errok
-  ok&$⊑$&errok : ok &$⊑$& errok
+data _⊑_ : Exc → Exc → Set where
+  ⊑-refl : {e : Exc} → e ⊑ e
+  err⊑errok : err ⊑ errok
+  ok⊑errok : ok ⊑ errok
   
-&$⊑$&-trans : {e e' e'' : Exc} → e &$⊑$& e' → e' &$⊑$& e'' → e &$⊑$& e''
-&$⊑$&-trans &$⊑$&-refl q = q
-&$⊑$&-trans err&$⊑$&errok &$⊑$&-refl = err&$⊑$&errok
-&$⊑$&-trans ok&$⊑$&errok &$⊑$&-refl = ok&$⊑$&errok
-  \end{lstlisting}
+⊑-trans : {e e' e'' : Exc} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
+⊑-trans ⊑-refl q = q
+⊑-trans err⊑errok ⊑-refl = err⊑errok
+⊑-trans ok⊑errok ⊑-refl = ok⊑errok
+  \end{verbatim}
   \caption{Erandite efektid, nende korrutamine ja efektide järjestatus.}
   \label{fig:exc.exc}
 \end{figure}
@@ -331,23 +361,23 @@ data _&$⊑$&_ : Exc → Exc → Set where
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ops}).
 \begin{figure}
-  \begin{lstlisting}
-_&$⊔$&_ : Exc → Exc → Exc
-_&$⊓$&_ : Exc → Exc → Maybe Exc
-&$⊔$&-sym : (e e' : Exc) → e &$⊔$& e' &$≡$& e' &$⊔$& e
-&$⊓$&-sym : (e e' : Exc) → e &$⊓$& e' &$≡$& e' &$⊓$& e
+  \begin{verbatim}
+_⊔_ : Exc → Exc → Exc
+_⊓_ : Exc → Exc → Maybe Exc
+⊔-sym : (e e' : Exc) → e ⊔ e' ≡ e' ⊔ e
+⊓-sym : (e e' : Exc) → e ⊓ e' ≡ e' ⊓ e
 
-_&$⊹$&_ : Exc → Exc → Exc
-err &$⊹$& e' = e'
-ok &$⊹$& _ = ok
-errok &$⊹$& ok = ok
-errok &$⊹$& _ = errok
+_⊹_ : Exc → Exc → Exc
+err ⊹ e' = e'
+ok ⊹ _ = ok
+errok ⊹ ok = ok
+errok ⊹ _ = errok
     
 lub : (e e' : Exc) → e ⊑ (e ⊔ e')
-glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' &$≡$& just e'' → e'' ⊑ e
+glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
 lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
     
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Operatsioonid erandite efektidega.}
   \label{fig:exc.ops}
 \end{figure}
@@ -361,43 +391,43 @@ T, $\eta$, lift, sub, mlaw1,2,3,
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
 Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
-Termid on parametriseeritud kontekstiga $Γ$ ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+Termid on parametriseeritud kontekstiga Γ ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
 Kontekst Ctx on defineeritud kui väärtusttüüpide list. Muutujad viitavad De Bruijn'i indeksiga selle listi elemendile.
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
 Ctx = List VType
 
 mutual
- data VTerm (&$Γ$& : Ctx) : VType → Set where
-   TT FF : VTerm &$Γ$& bool
-   ZZ : VTerm &$Γ$& nat
-   SS : VTerm &$Γ$& nat → VTerm &$Γ$& nat
-   $⟨$_,_$⟩$ : {&$σ$& &$σ'$& : VType} →
-           VTerm &$Γ$& &$σ$& → VTerm &$Γ$& &$σ'$& → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&)
-   FST : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&) → VTerm &$Γ$& &$σ$&
-   SND : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& (&$σ$& &$∏$& &$σ'$&) → VTerm &$Γ$& &$σ'$&
-   VAR : {&$σ$& : VType} → &$σ$& &$∈$& &$Γ$& → VTerm &$Γ$& &$σ$&
-   LAM : (&$σ$& : VType) {&$τ$& : CType} →
-         CTerm (&$σ$& &$∷$& &$Γ$&) &$τ$& → VTerm &$Γ$& (&$σ$& &$⟹$& &$τ$&)
-   VCAST : {&$σ$& &$σ'$& : VType} → VTerm &$Γ$& &$σ$& → &$σ$& &$≤$&V &$σ'$& → VTerm &$Γ$& &$σ'$&
+ data VTerm (Γ : Ctx) : VType → Set where
+   TT FF : VTerm Γ bool
+   ZZ : VTerm Γ nat
+   SS : VTerm Γ nat → VTerm Γ nat
+   ⟨_,_⟩ : {σ σ' : VType} →
+           VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ∏ σ')
+   FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
+   SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
+   VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
+   LAM : (σ : VType) {τ : CType} →
+         CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⟹ τ)
+   VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
- data CTerm (&$Γ$& : Ctx) : CType → Set where
-   VAL : {&$σ$& : VType} → VTerm &$Γ$& &$σ$& → CTerm &$Γ$& (ok / &$σ$&)
-   FAIL : (&$σ$& : VType) → CTerm &$Γ$& (err / &$σ$&)
-   TRY_WITH_ : {e e' : E} {&$σ$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
-               CTerm &$Γ$& (e' / &$σ$&) → CTerm &$Γ$& (e &$⊹$& e' / &$σ$&)
-   IF_THEN_ELSE_ : {e e' : E} {&$σ$& : VType} → VTerm &$Γ$& bool →
-     CTerm &$Γ$& (e / &$σ$&) → CTerm &$Γ$& (e' / &$σ$&) → CTerm &$Γ$& (e &$⊔$& e' / &$σ$&)
-   _&\$&_ : {&$σ$& : VType} {&$τ$& : CType} →
-         VTerm &$Γ$& (&$σ$& &$⟹$& &$τ$&) → VTerm &$Γ$& &$σ$& → CTerm &$Γ$& &$τ$&
-   PREC : {e e' : E} {&$σ$& : VType} → VTerm &$Γ$& nat →
-          CTerm &$Γ$& (e / &$σ$&) → CTerm (&$σ$& &$∷$& nat &$∷$& &$Γ$&) (e' / &$σ$&) →
-          e · e' &$⊑$& e → CTerm &$Γ$& (e / &$σ$&)
-   LET_IN_ : {e e' : E} {&$σ$& &$σ'$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
-            CTerm (&$σ$& &$∷$& &$Γ$&) (e' / &$σ'$&) → CTerm &$Γ$& (e · e' / &$σ'$&)
-   CCAST : {e e' : E} {&$σ$& &$σ'$& : VType} → CTerm &$Γ$& (e / &$σ$&) →
-           e / &$σ$& &$≤$&C e' / &$σ'$& → CTerm &$Γ$& (e' / &$σ'$&)
-  \end{lstlisting}
+ data CTerm (Γ : Ctx) : CType → Set where
+   VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (ok / σ)
+   FAIL : (σ : VType) → CTerm Γ (err / σ)
+   TRY_WITH_ : {e e' : E} {σ : VType} → CTerm Γ (e / σ) →
+               CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
+   IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
+     CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+   _$_ : {σ : VType} {τ : CType} →
+         VTerm Γ (σ ⟹ τ) → VTerm Γ σ → CTerm Γ τ
+   PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
+          CTerm Γ (e / σ) → CTerm (σ ∷ nat ∷ Γ) (e' / σ) →
+          e · e' ⊑ e → CTerm Γ (e / σ)
+   LET_IN_ : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+            CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
+   CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+           e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
+  \end{verbatim}
   \caption{Eranditega keele rafineeritud termid.}
   \label{fig:exc.refined}
 \end{figure}
@@ -406,67 +436,67 @@ mutual
 
 
 \begin{figure}
-  \begin{lstlisting}
-  infer-vtype : (&$Γ$& : Ctx) → vTerm → Maybe VType
-  infer-vtype &$Γ$& TT = just bool
-  infer-vtype &$Γ$& FF = just bool
-  infer-vtype &$Γ$& ZZ = just nat
-  infer-vtype &$Γ$& (SS t) with  infer-vtype &$Γ$& t
+  \begin{verbatim}
+  infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
+  infer-vtype Γ TT = just bool
+  infer-vtype Γ FF = just bool
+  infer-vtype Γ ZZ = just nat
+  infer-vtype Γ (SS t) with  infer-vtype Γ t
   ... | just nat = just nat
   ... | _        = nothing
-  infer-vtype &$Γ$& $⟨$ t , t' $⟩$ with infer-vtype &$Γ$& t | infer-vtype &$Γ$& t'
-  ... | just $σ$ | just $σ'$ = just ($σ ∏ σ'$)
+  infer-vtype Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vtype Γ t'
+  ... | just σ | just σ' = just (σ ∏ σ')
   ... | _      | _       = nothing
-  infer-vtype &$Γ$& (FST t) with infer-vtype &$Γ$& t
-  ... | just (&$σ$& ∏ _) = just &$σ$&
+  infer-vtype Γ (FST t) with infer-vtype Γ t
+  ... | just (σ ∏ _) = just σ
   ... | _            = nothing
-  infer-vtype &$Γ$& (SND t) with infer-vtype &$Γ$& t
-  ... | just (_ ∏ &$σ'$&) = just &$σ'$&
+  infer-vtype Γ (SND t) with infer-vtype Γ t
+  ... | just (_ ∏ σ') = just σ'
   ... | _             = nothing
-  infer-vtype &$Γ$& (VAR x) with x <? &$Γ$&
-  infer-vtype &$Γ$& (VAR x) | yes p = just (lkp &$Γ$& (from$ℕ≤$ p))
-  infer-vtype &$Γ$& (VAR x) | no ¬p = nothing
-  infer-vtype &$Γ$& (LAM &$σ$& t) with infer-ctype (&$σ$& &$∷$& &$Γ$&) t
-  ... | just &$τ$& = just (&$σ$& ⟹ &$τ$&)
+  infer-vtype Γ (VAR x) with x <? Γ
+  infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
+  infer-vtype Γ (VAR x) | no ¬p = nothing
+  infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
+  ... | just τ = just (σ ⟹ τ)
   ... | _      = nothing
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Eranditega keele väärtustüüpide tüübituletus.}
   \label{fig:exc.infer-vtype}
 \end{figure}
 
 \begin{figure}
-  \begin{lstlisting}
-  infer-ctype : (&$Γ$& : Ctx) → cTerm → Maybe CType
-  infer-ctype &$Γ$& (VAL x) with infer-vtype &$Γ$& x
-  ... | just &$σ$& = just (ok / &$σ$&)
-  ... | _      = nothing
-  infer-ctype &$Γ$& (FAIL &$σ$&) = just (err / &$σ$&)
-  infer-ctype &$Γ$& (TRY t WITH t') with infer-ctype &$Γ$& t | infer-ctype &$Γ$& t'
-  ... | just &$τ$& | just &$τ'$& = &$τ$& ⊹C &$τ'$&
-  ... | _      | _       = nothing
-  infer-ctype &$Γ$& (IF x THEN t ELSE t') with infer-vtype &$Γ$& x | infer-ctype &$Γ$& t | infer-ctype &$Γ$& t'
-  ... | just bool | just &$τ$& | just &$τ'$& = &$τ$& ⊔C &$τ'$&
-  ... | _         | _      | _       = nothing
-  infer-ctype &$Γ$& (f &\$& t) with infer-vtype &$Γ$& f | infer-vtype &$Γ$& t
-  infer-ctype &$Γ$& (f &\$& t) | just (&$σ$& ⟹ &$τ$&) | just &$σ'$& with &$σ'$& ≤V? &$σ$&
-  infer-ctype &$Γ$& (f &\$& t) | just (&$σ$& ⟹ &$τ$&) | just &$σ'$& | yes _ = just &$τ$&
-  infer-ctype &$Γ$& (f &\$& t) | just (_ ⟹ _) | just _  | no  _ = nothing
-  infer-ctype &$Γ$& (f &\$& t) | _             | _       = nothing
-  infer-ctype &$Γ$& (PREC x t t') with infer-vtype &$Γ$& x
-  infer-ctype &$Γ$& (PREC x t t') | just nat with infer-ctype &$Γ$& t
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) with infer-ctype (&$σ$& &$∷$& nat &$∷$& &$Γ$&) t'
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) with e · e' &$⊑$&? e | &$σ$& ≡V? &$σ'$&
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (e / &$σ$&) | just (e' / &$σ'$&) | yes _ | yes _ = just (e / &$σ$&)
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
-  infer-ctype &$Γ$& (PREC x t t') | just nat | just (_ / _) | _ = nothing
-  infer-ctype &$Γ$& (PREC x t t') | just nat | _ = nothing
-  infer-ctype &$Γ$& (PREC x t t') | _ = nothing
-  infer-ctype &$Γ$& (LET t IN t') with infer-ctype &$Γ$& t 
-  infer-ctype &$Γ$& (LET t IN t') | just (e / &$σ$&) with infer-ctype (&$σ$& &$∷$& &$Γ$&) t'
-  infer-ctype &$Γ$& (LET t IN t') | just (e / &$σ$&) | just (e' / &$σ'$&) = just (e · e' / &$σ'$&)
-  infer-ctype &$Γ$& (LET t IN t') | just (_ / _) | _              = nothing
-  infer-ctype &$Γ$& (LET t IN t') | _            = nothing
-  \end{lstlisting}
+  \begin{verbatim}
+infer-ctype : (Γ : Ctx) → cTerm → Maybe CType
+infer-ctype Γ (VAL x) with infer-vtype Γ x
+... | just σ = just (ok / σ)
+... | _      = nothing
+infer-ctype Γ (FAIL σ) = just (err / σ)
+infer-ctype Γ (TRY t WITH t') with infer-ctype Γ t | infer-ctype Γ t'
+... | just τ | just τ' = τ ⊹C τ'
+... | _      | _       = nothing
+infer-ctype Γ (IF x THEN t ELSE t') with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
+... | just bool | just τ | just τ' = τ ⊔C τ'
+... | _         | _      | _       = nothing
+infer-ctype Γ (f $ t) with infer-vtype Γ f | infer-vtype Γ t
+infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
+infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' | yes _ = just τ
+infer-ctype Γ (f $ t) | just (_ ⟹ _) | just _  | no  _ = nothing
+infer-ctype Γ (f $ t) | _             | _       = nothing
+infer-ctype Γ (PREC x t t') with infer-vtype Γ x
+infer-ctype Γ (PREC x t t') | just nat with infer-ctype Γ t
+infer-ctype Γ (PREC x t t') | just nat | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
+infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') | yes _ | yes _ = just (e / σ)
+infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
+infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
+infer-ctype Γ (PREC x t t') | just nat | _ = nothing
+infer-ctype Γ (PREC x t t') | _ = nothing
+infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
+infer-ctype Γ (LET t IN t') | just (e / σ) with infer-ctype (σ ∷ Γ) t'
+infer-ctype Γ (LET t IN t') | just (e / σ) | just (e' / σ') = just (e · e' / σ')
+infer-ctype Γ (LET t IN t') | just (_ / _) | _              = nothing
+infer-ctype Γ (LET t IN t') | _            = nothing
+  \end{verbatim}
   \caption{Eranditega keele arvutustüüpide tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
@@ -481,23 +511,22 @@ aeoust haoseu th
 
 \section{Mitte-deterministlik keel}
 aseo huasousato usaoheu s
-_f_ : a → b\[
-∀X [ ∅ ∉ X ⇒ ∃f:X ⟶  ⋃ X\ ∀A ∈ X (f(A) ∈ A )λ ∀ ∃ ⟦ ⟪ · ⊔ ⊓ Γ ρ ε  ⊑   ¬ ≡ ≢ ≤ ≰ ∏ ⇒  ℕ ]\]
+
 \begin{figure}
-  \begin{lstlisting}
+  \begin{verbatim}
   private
-  data _$⊑$_ : Exc →  Exc → Set where
-    $⊑$-refl : {e : Exc} →  e $⊑$ e
-    err$⊑$errok : err $⊑$ errok
-    ok$⊑$errok : ok ⊑ errok
-$λ ∀ ∃ ⟦ ⟧ ⟪ ⟫ · ⊔ ⊓ Γ ρ ε   ¬ ≡ ≢ ≤ ≰ ∏ ⇒ \_  ℕ $
+  data _⊑_ : Exc →  Exc → Set where
+    ⊑-refl : {e : Exc} →  e ⊑ e
+    err⊑errok : err ⊑ errok
+    ok⊑errok : ok ⊑ errok
+
   {-
   data Exc : Set where
     err : Exc
     ok : Exc -- kommentaar 
     errok : Exc
   -}
-  \end{lstlisting}
+  \end{verbatim}
   \caption{Erandite andmetüübi konstruktorid.}
 \end{figure}
 
@@ -520,6 +549,8 @@ küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 
 \renewcommand{\baselinestretch}{1.15}
 \fontsize{11}{11}\selectfont
-\printbibliography[title={\vskip 60pt\centering Kasutatud kirjandus}]
+%\printbibliography[title={\vskip 60pt\centering Kasutatud kirjandus}]
 
+\bibliographystyle{unsrt}
+\bibliography{thesis}
 \end{document}
