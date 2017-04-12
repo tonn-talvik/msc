@@ -45,24 +45,29 @@ mutual -- subtyping of refined types
   data _≤V_ : VType → VType → Set where
     st-bn : bool ≤V nat
     st-refl : {σ : VType} → σ ≤V σ
-    st-prod : {σ σ' τ τ' : VType} → σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+    st-prod : {σ σ' τ τ' : VType} →
+              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
     st-func : {σ σ' : VType} {τ τ' : CType} →
               σ' ≤V σ → τ ≤C τ' →
               σ ⇒ τ ≤V σ' ⇒ τ'
 
   data _≤C_ : CType → CType → Set where
-    st-comp : {e e' : E} {σ σ' : VType} → e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
+    st-comp : {e e' : E} {σ σ' : VType} →
+              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
 
 
 mutual -- subtype transitivity
   st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
   st-trans st-refl q = q
   st-trans p st-refl = p
-  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q) (st-trans p' q')
-  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p) (sct-trans p' q')
+  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
+                                                   (st-trans p' q')
+  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
+                                                   (sct-trans p' q')
 
   sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
-  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p') (st-trans q q')
+  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
+                                                    (st-trans q q')
 
 
 -------------------------------------------------------------

@@ -22,7 +22,7 @@
 \newunicodechar{∏}{$\prod$}
 %\newunicodechar{→}{$\rightarrow$} % not needed
 \newunicodechar{⇒}{$\Rightarrow$}
-%\newunicodechar{⟹}{$\Longrightarrow$} % unused
+\newunicodechar{⟹}{$\Longrightarrow$} % unused
 %\newunicodechar{⊹}{$\hermitmatrix$} % requires stix
 %\newunicodechar{⊹}{$+$}
 \newunicodechar{⊹}{$\Diamond$}
@@ -308,7 +308,10 @@ Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{
 
 \subsection{Erandite gradeering} \label{ssec:exc.grading}
 
-Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}: konstruktor {\tt err} vastab arvutuse ebaõnnestumisele, konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutusele, mille kohta pole teada, kas see õnnestub või mitte.
+Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}:
+konstruktor {\tt err} vastab arvutuse ebaõnnestumisele,
+konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutusele,
+mille kohta pole teada, kas see õnnestub või mitte.
 
 \begin{figure}
   \begin{verbatim}
@@ -360,7 +363,8 @@ Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
 Hinnangute osaline järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.ord}.
 See seos on refleksiivne {\tt ⊑-refl}.
 Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analüüsil.
-Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
+Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas,
+kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ord}).
@@ -428,9 +432,44 @@ record OrderedMonoid : Set where
 
 
 \subsubsection{Alamtüübid}
+Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn \ref{fig:exc.subtypes}).
+Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
+Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
+Kaks väärtustüüpide paari on alamtüübid {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
+Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused on alamtüübid,
+ja funktsioonide argumendid on kontravariantsed.
+\begin{figure}
+  \begin{verbatim}
+mutual
+  data _≤V_ : VType → VType → Set where
+    st-bn : bool ≤V nat
+    st-refl : {σ : VType} → σ ≤V σ
+    st-prod : {σ σ' τ τ' : VType} →
+              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+    st-func : {σ σ' : VType} {τ τ' : CType} →
+              σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
+
+  data _≤C_ : CType → CType → Set where
+    st-comp : {e e' : E} {σ σ' : VType} →
+              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
 
 
+mutual
+  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
+  st-trans st-refl q = q
+  st-trans p st-refl = p
+  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
+                                                   (st-trans p' q')
+  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
+                                                   (sct-trans p' q')
 
+  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
+  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
+                                                    (st-trans q q')\end{verbatim}
+  \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
+  \label{fig:exc.subtypes}
+\end{figure}
+  
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
 Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
@@ -556,25 +595,6 @@ aeoust haoseu th
 
 \section{Mitte-deterministlik keel}
 aseo huasousato usaoheu s
-
-\begin{figure}
-  \begin{verbatim}
-  private
-  data _⊑_ : Exc →  Exc → Set where
-    ⊑-refl : {e : Exc} →  e ⊑ e
-    err⊑errok : err ⊑ errok
-    ok⊑errok : ok ⊑ errok
-
-  {-
-  data Exc : Set where
-    err : Exc
-    ok : Exc -- kommentaar 
-    errok : Exc
-  -}
-  \end{verbatim}
-  \caption{Erandite andmetüübi konstruktorid.}
-\end{figure}
-
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
 \clearpage
