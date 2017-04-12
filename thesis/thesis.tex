@@ -357,7 +357,7 @@ Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
-Hinnangute järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.ord}.
+Hinnangute osaline järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.ord}.
 See seos on refleksiivne {\tt ⊑-refl}.
 Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analüüsil.
 Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
@@ -390,10 +390,43 @@ lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \label{fig:exc.ord}
 \end{figure}
 \subsubsection{Järjestatud monoid}
-Järjestatud monoid: järjestatuse transitiivsus, korrutamine, korrutamise assotsiatiivsus, monotoonsus, vasak ühik, parem ühik.
+Hulk {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
+st {\tt i} on ühik korrutamise suhtes nii vasakult {\tt lu} kui ka paremalt {\tt ru},
+ning korrutamine on assotsiatiivne {\tt ass}, nimetatakse monoidiks.
+Kui sellel hulgal on osaline järjestatus {\tt _⊑_},
+mis on refleksiivne {\tt ⊑-refl} ja transitiivne {\tt ⊑-trans},
+ning kehtib korrutamise monotoonsus {\tt mon},
+siis on tegemist järjestatud monoidiga.
+Joonisel \ref{fig:exc.ord} on toodud järjestatud monoidi kirje tüüp Agdas.
+
+Saab näidata, et erandite hinnag {\tt Exc},
+korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
+ja osaline järjestatus {\tt _⊑_} moodustavad erandite järjestatud monoidi.
+
+\begin{figure}
+  \begin{verbatim}
+record OrderedMonoid : Set where
+  field
+    E : Set
+    _·_ : E → E → E    
+    i : E
+
+    lu : {e : E } → i · e ≡ e
+    ru : {e : E } → e ≡ e · i 
+    ass : {e e' e'' : E} → (e · e') · e'' ≡ e · (e' · e'')
+    
+    _⊑_ : E → E → Set    
+    ⊑-refl : {e : E} → e ⊑ e
+    ⊑-trans : {e e' e'' : E} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
+
+    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''\end{verbatim}
+  \caption{Järjestatud monoid.}
+  \label{fig:exc.ord}
+\end{figure}
 
 \subsubsection{Gradeeritud monaad}
-T, $\eta$, lift, sub, mlaw1,2,3, 
+
+
 \subsubsection{Alamtüübid}
 
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}

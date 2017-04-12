@@ -11,20 +11,19 @@ record OrderedMonoid : Set where
   infix 80 _⊑_ -- \leq \sqsubseteq ⊑ 
   field
     E : Set
-    
-    _⊑_ : E → E → Set
-    
-    ⊑-refl : {e : E} → e ⊑ e
-    ⊑-trans : {e e' e'' : E} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
-
+    _·_ : E → E → E    
     i : E
-    _·_ : E → E → E
-
-    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
 
     lu : {e : E } → i · e ≡ e
     ru : {e : E } → e ≡ e · i 
     ass : {e e' e'' : E} → (e · e') · e'' ≡ e · (e' · e'')
+    
+    _⊑_ : E → E → Set    
+    ⊑-refl : {e : E} → e ⊑ e
+    ⊑-trans : {e e' e'' : E} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
+
+    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
+
 
 
 subeq : {E : Set} → {T : E → Set → Set} → {e e' : E} → {X : Set} → e ≡ e' → T e X → T e' X

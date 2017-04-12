@@ -73,16 +73,19 @@ private
 
 
 ExcEffOM : OrderedMonoid
-ExcEffOM = record { E = Exc 
-                  ; _⊑_ = _⊑_ 
-                  ; ⊑-refl = ⊑-refl
-                  ; ⊑-trans = ⊑-trans
-                  ; i = ok
+ExcEffOM = record { E = Exc
                   ; _·_ = _·_
-                  ; mon = mon
+                  ; i = ok
+                  
                   ; lu = refl
                   ; ru = ru 
                   ; ass = λ {m} {n} {o} → ass {m} {n} {o}
+                  
+                  ; _⊑_ = _⊑_ 
+                  ; ⊑-refl = ⊑-refl
+                  ; ⊑-trans = ⊑-trans
+                  
+                  ; mon = mon
                   }
 
 private
