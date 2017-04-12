@@ -76,10 +76,10 @@ mutual -- refined type inference
   infer-ctype Γ (PREC x t t')
       with infer-vtype Γ x
   ... | just nat with infer-ctype Γ t
-  ...            | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
-  ...                           | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
-  ...                                            | yes _ | yes _ = just (e / σ)
-  ...                                            | _     | _     = nothing
+  ...        | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+  ...                       | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
+  ...                                        | yes _ | yes _ = just (e / σ)
+  ...                                        | _     | _     = nothing
   infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
   infer-ctype Γ (PREC x t t') | just nat | _ = nothing
   infer-ctype Γ (PREC x t t') | _ = nothing

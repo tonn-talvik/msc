@@ -197,7 +197,7 @@ rääkida Agdast ja tõestustest
 % Reproducibility
 Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
 Lähtekoodi kompileerimiseks on kasutatud Agda versiooni 2.5.1.1 koos standardteegi versiooniga 0.12.
-Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS jt varamutest.
+Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teistest varamutest.
 
 
 \clearpage
@@ -216,7 +216,7 @@ ning tuuakse mõned optimeerivate programmiteisenduste näited.
 
 Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
-Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis \ref{ssec:exc.grading}.
+Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis \ref{sssec:exc.exc}.
 \begin{figure}
   \begin{verbatim}
 mutual
@@ -306,7 +306,14 @@ Lisaks on toodud näide arvutustermist {\tt BAD-ONE}, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
 Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{ssec:exc.inference}).
 
-\subsection{Erandite gradeering} \label{ssec:exc.grading}
+\subsection{Erandite gradeering}\label{ssec:exc.grading}
+
+Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestatus.
+Sellega võimaldatakse alamtüüpide koostamine.
+Ühtlasi näidatakse, et selline hindamine rahuldab järjestatud monoidi ja gradeeritud monaadi omadusi,
+millele tuginevad semantika (alaptk. \ref{ssec:exc.semantics}) ja optimisatsioonid (alaptk. \ref{ssec:exc.optimizations}). 
+
+\subsubsection{Erandite efekti hinnang}\label{sssec:exc.exc}
 
 Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}:
 konstruktor {\tt err} vastab arvutuse ebaõnnestumisele,
@@ -366,9 +373,6 @@ Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analü�
 Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas,
 kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 
-Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
-Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ord}).
-Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 \begin{figure}
   \begin{verbatim}
 data _⊑_ : Exc → Exc → Set where
@@ -393,6 +397,52 @@ lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \caption{Erandite efektide järjestatus.}
   \label{fig:exc.ord}
 \end{figure}
+Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
+Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ord}).
+Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
+
+\subsubsection{Alamtüübid}
+Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn \ref{fig:exc.subtypes}).
+Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
+Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
+Üks väärtustüübi paar on teise alamtüüp {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
+Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused on alamtüübid,
+ja funktsioonide argumendid on kontravariantsed.
+Arvutustüüp on teise arvutustüübi alamtüüp {\tt st-comp}, kui nende efektid ja väärtustüübid on järjestatud.
+\begin{figure}
+  \begin{verbatim}
+mutual
+  data _≤V_ : VType → VType → Set where
+    st-bn : bool ≤V nat
+    st-refl : {σ : VType} → σ ≤V σ
+    st-prod : {σ σ' τ τ' : VType} →
+              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+    st-func : {σ σ' : VType} {τ τ' : CType} →
+              σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
+
+  data _≤C_ : CType → CType → Set where
+    st-comp : {e e' : E} {σ σ' : VType} →
+              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
+
+mutual
+  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
+  st-trans st-refl q = q
+  st-trans p st-refl = p
+  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
+                                                   (st-trans p' q')
+  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
+                                                   (sct-trans p' q')
+
+  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
+  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
+                                                    (st-trans q q')\end{verbatim}
+  \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
+  \label{fig:exc.subtypes}
+\end{figure}
+
+Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel \ref{fig:exc.subtypes}.
+FIXME: explain
+
 \subsubsection{Järjestatud monoid}
 Hulk {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
 st {\tt i} on ühik korrutamise suhtes nii vasakult {\tt lu} kui ka paremalt {\tt ru},
@@ -401,11 +451,7 @@ Kui sellel hulgal on osaline järjestatus {\tt _⊑_},
 mis on refleksiivne {\tt ⊑-refl} ja transitiivne {\tt ⊑-trans},
 ning kehtib korrutamise monotoonsus {\tt mon},
 siis on tegemist järjestatud monoidiga.
-Joonisel \ref{fig:exc.ord} on toodud järjestatud monoidi kirje tüüp Agdas.
-
-Saab näidata, et erandite hinnag {\tt Exc},
-korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
-ja osaline järjestatus {\tt _⊑_} moodustavad erandite järjestatud monoidi.
+Joonisel \ref{fig:ordered-monoid} on toodud järjestatud monoidi kirje tüüp Agdas.
 
 \begin{figure}
   \begin{verbatim}
@@ -425,50 +471,22 @@ record OrderedMonoid : Set where
 
     mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''\end{verbatim}
   \caption{Järjestatud monoid.}
-  \label{fig:exc.ord}
+  \label{fig:ordered-monoid}
 \end{figure}
+
+Saab näidata, et erandite hinnag {\tt Exc},
+korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
+ja osaline järjestatus {\tt _⊑_} moodustavad erandite järjestatud monoidi.
+Vasakühiku tõestus tuleneb vahetult korrutamise definitsioonist.
+Paremühiku tõestamisel tuleb teha juhtumi analüüs varjatud argumendi konstruktori kuju peal
+ja seejärel lähtuda korrutamise definitsioonist.
+Assotsiatiivsus tõestatakse sarnaselt kasutades juhtumite analüüsi ja korrutamise definitsiooni.
+FIXME: explain mon
+
 
 \subsubsection{Gradeeritud monaad}
 
 
-\subsubsection{Alamtüübid}
-Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn \ref{fig:exc.subtypes}).
-Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
-Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
-Kaks väärtustüüpide paari on alamtüübid {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
-Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused on alamtüübid,
-ja funktsioonide argumendid on kontravariantsed.
-\begin{figure}
-  \begin{verbatim}
-mutual
-  data _≤V_ : VType → VType → Set where
-    st-bn : bool ≤V nat
-    st-refl : {σ : VType} → σ ≤V σ
-    st-prod : {σ σ' τ τ' : VType} →
-              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
-    st-func : {σ σ' : VType} {τ τ' : CType} →
-              σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
-
-  data _≤C_ : CType → CType → Set where
-    st-comp : {e e' : E} {σ σ' : VType} →
-              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
-
-
-mutual
-  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
-  st-trans st-refl q = q
-  st-trans p st-refl = p
-  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
-                                                   (st-trans p' q')
-  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
-                                                   (sct-trans p' q')
-
-  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
-  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
-                                                    (st-trans q q')\end{verbatim}
-  \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
-  \label{fig:exc.subtypes}
-\end{figure}
   
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
@@ -569,10 +587,10 @@ infer-ctype Γ (f $ t) | _ | _ = nothing
 infer-ctype Γ (PREC x t t')
     with infer-vtype Γ x
 ... | just nat with infer-ctype Γ t
-...            | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
-...                           | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
-...                                            | yes _ | yes _ = just (e / σ)
-...                                            | _     | _     = nothing
+...        | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+...                       | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
+...                                        | yes _ | yes _ = just (e / σ)
+...                                        | _     | _     = nothing
 infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
 infer-ctype Γ (PREC x t t') | just nat | _ = nothing
 infer-ctype Γ (PREC x t t') | _ = nothing
@@ -586,9 +604,9 @@ infer-ctype Γ (LET t IN t') | _            = nothing\end{verbatim}
 \end{figure}
 
 
-\subsection{Semantika}
+\subsection{Semantika}\label{ssec:exc.semantics}
 aoeu
-\subsection{Optimisatsioonid}
+\subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 aeoust haoseu th
 
 \clearpage
