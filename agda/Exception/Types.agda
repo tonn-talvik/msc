@@ -16,7 +16,7 @@ open Grading.GradedMonad ExcEffGM
 
 
 infix  80 _/_
-infixr 70 _⟹_
+infixr 70 _⇒_
 infix  60 _∏_
 
 
@@ -25,7 +25,7 @@ mutual -- value and computation types
     nat : VType
     bool : VType
     _∏_ : VType → VType → VType
-    _⟹_ : VType → CType → VType
+    _⇒_ : VType → CType → VType
 
   data CType : Set where
     _/_ : E → VType → CType
@@ -48,7 +48,7 @@ mutual -- subtyping of refined types
     st-prod : {σ σ' τ τ' : VType} → σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
     st-func : {σ σ' : VType} {τ τ' : CType} →
               σ' ≤V σ → τ ≤C τ' →
-              σ ⟹ τ ≤V σ' ⟹ τ'
+              σ ⇒ τ ≤V σ' ⇒ τ'
 
   data _≤C_ : CType → CType → Set where
     st-comp : {e e' : E} {σ σ' : VType} → e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
@@ -73,10 +73,10 @@ fst-≢ ¬p refl = ¬p refl
 snd-≢  : {σ σ' τ τ' : VType} → ¬ τ ≡ τ' → ¬ σ ∏ τ ≡ σ' ∏ τ'
 snd-≢ ¬q refl = ¬q refl
 
-arg-≢ : {σ σ' : VType} {τ τ' : CType} → ¬ σ ≡ σ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+arg-≢ : {σ σ' : VType} {τ τ' : CType} → ¬ σ ≡ σ' → ¬ σ ⇒ τ ≡ σ' ⇒ τ'
 arg-≢ ¬p refl = ¬p refl
 
-cmp-≢  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≡ τ' → ¬ σ ⟹ τ ≡ σ' ⟹ τ'
+cmp-≢  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≡ τ' → ¬ σ ⇒ τ ≡ σ' ⇒ τ'
 cmp-≢ ¬p refl = ¬p refl
 
 eff-≢  : {e e' : E} {σ σ' : VType} → ¬ e ≡ e' → ¬ e / σ ≡ e' / σ'
@@ -91,23 +91,23 @@ mutual -- equality deciders
   nat ≡V? nat = yes refl
   nat ≡V? bool = no (λ ())
   nat ≡V? (_ ∏ _) = no (λ ())  
-  nat ≡V? (_ ⟹ _) = no (λ ())    
+  nat ≡V? (_ ⇒ _) = no (λ ())    
   bool ≡V? nat = no (λ ())
   bool ≡V? bool = yes refl
   bool ≡V? (_ ∏ _) = no (λ ())
-  bool ≡V? (_ ⟹ _) = no (λ ())
+  bool ≡V? (_ ⇒ _) = no (λ ())
   (_ ∏ _) ≡V? nat = no (λ ())
   (_ ∏ _) ≡V? bool = no (λ ())
   (σ ∏ σ') ≡V? (τ ∏ τ') with σ ≡V? τ | σ' ≡V? τ'
   (σ ∏ σ') ≡V? (.σ ∏ .σ') | yes refl | yes refl = yes refl
   ... | no ¬p | _     = no (fst-≢ ¬p)
   ... | _     | no ¬q = no (snd-≢ ¬q)
-  (_ ∏ _) ≡V? (_ ⟹ _) = no (λ ())
-  (_ ⟹ _) ≡V? nat = no (λ ())
-  (_ ⟹ _) ≡V? bool = no (λ ())
-  (_ ⟹ _) ≡V? (_ ∏ _) = no (λ ())
-  (σ ⟹ τ) ≡V? (σ' ⟹ τ') with σ ≡V? σ' | τ ≡C? τ'
-  (σ ⟹ τ) ≡V? (.σ ⟹ .τ) | yes refl | yes refl = yes refl
+  (_ ∏ _) ≡V? (_ ⇒ _) = no (λ ())
+  (_ ⇒ _) ≡V? nat = no (λ ())
+  (_ ⇒ _) ≡V? bool = no (λ ())
+  (_ ⇒ _) ≡V? (_ ∏ _) = no (λ ())
+  (σ ⇒ τ) ≡V? (σ' ⇒ τ') with σ ≡V? σ' | τ ≡C? τ'
+  (σ ⇒ τ) ≡V? (.σ ⇒ .τ) | yes refl | yes refl = yes refl
   ... | no ¬p | _     = no (arg-≢ ¬p)
   ... | _     | no ¬q = no (cmp-≢ ¬q)
   
@@ -127,11 +127,11 @@ snd-≰V : {σ σ' τ τ' : VType} → ¬ τ ≤V τ' → ¬ σ ∏ τ ≤V σ' 
 snd-≰V {σ} {.σ} ¬q st-refl = ¬q st-refl
 snd-≰V ¬q (st-prod _ q) =  ¬q q
 
-arg-≰V : {σ σ' : VType} {τ τ' : CType} → ¬ σ' ≤V σ → ¬ σ ⟹ τ ≤V σ' ⟹ τ'
+arg-≰V : {σ σ' : VType} {τ τ' : CType} → ¬ σ' ≤V σ → ¬ σ ⇒ τ ≤V σ' ⇒ τ'
 arg-≰V ¬p st-refl = ¬p st-refl
 arg-≰V ¬p (st-func q q') = ¬p q
 
-cmp-≰V  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≤C τ' → ¬ σ ⟹ τ ≤V σ' ⟹ τ'
+cmp-≰V  : {σ σ' : VType} {τ τ' : CType} → ¬ τ ≤C τ' → ¬ σ ⇒ τ ≤V σ' ⇒ τ'
 cmp-≰V {τ = _ / _} ¬p st-refl = ¬p (st-comp ⊑-refl st-refl)
 cmp-≰V ¬p (st-func q q') = ¬p q'
 
@@ -146,22 +146,22 @@ mutual -- inequality deciders
   nat ≤V? nat = yes st-refl
   nat ≤V? bool = no ( λ ())
   nat ≤V? (_ ∏ _) = no (λ ())
-  nat ≤V? (_ ⟹ _) = no (λ ())
+  nat ≤V? (_ ⇒ _) = no (λ ())
   bool ≤V? nat = yes st-bn
   bool ≤V? bool = yes st-refl
   bool ≤V? _ ∏ _ = no (λ ())
-  bool ≤V? _ ⟹ _ = no (λ ())
+  bool ≤V? _ ⇒ _ = no (λ ())
   _ ∏ _ ≤V? nat = no (λ ())
   _ ∏ _ ≤V? bool = no (λ ())
   σ ∏ σ' ≤V? τ ∏ τ' with σ ≤V? τ | σ' ≤V? τ'
   ... | yes p | yes q = yes (st-prod p q)
   ... | no ¬p | _     = no (fst-≰V ¬p)
   ... | _     | no ¬q = no (snd-≰V ¬q)
-  _ ∏ _ ≤V? _ ⟹ _ = no (λ ())
-  (_ ⟹ _) ≤V? nat = no (λ ())
-  (_ ⟹ _) ≤V? bool = no (λ ())
-  (_ ⟹ _) ≤V? (σ' ∏ σ'') = no (λ ())
-  (σ ⟹ τ) ≤V? (σ' ⟹ τ') with σ' ≤V? σ | τ ≤C? τ'
+  _ ∏ _ ≤V? _ ⇒ _ = no (λ ())
+  (_ ⇒ _) ≤V? nat = no (λ ())
+  (_ ⇒ _) ≤V? bool = no (λ ())
+  (_ ⇒ _) ≤V? (σ' ∏ σ'') = no (λ ())
+  (σ ⇒ τ) ≤V? (σ' ⇒ τ') with σ' ≤V? σ | τ ≤C? τ'
   ... | yes p | yes q = yes (st-func p q)
   ... | no ¬p | _     = no (arg-≰V ¬p)
   ... | _     | no ¬q = no (cmp-≰V ¬q)
@@ -186,10 +186,10 @@ mutual -- greatest lower bound and least upper bound of VType, CType
   ... | just l | just r = just (l ∏ r)
   ... | _      | _      = nothing
   (σ ∏ τ) ⊓V _ = nothing
-  (σ ⟹ τ) ⊓V (σ' ⟹ τ') with σ ⊔V σ' | τ ⊓C τ'
-  ... | just v | just c = just (v ⟹ c)
+  (σ ⇒ τ) ⊓V (σ' ⇒ τ') with σ ⊔V σ' | τ ⊓C τ'
+  ... | just v | just c = just (v ⇒ c)
   ... | _      | _      = nothing
-  (σ ⟹ τ) ⊓V _ = nothing
+  (σ ⇒ τ) ⊓V _ = nothing
   
   _⊓C_ : CType → CType → Maybe CType
   (e / σ) ⊓C (e' / σ') with e ⊓ e' | σ ⊓V σ'
@@ -207,10 +207,10 @@ mutual -- greatest lower bound and least upper bound of VType, CType
   ... | just l | just r = just (l ∏ r)
   ... | _      | _      = nothing
   (σ ∏ σ') ⊔V _         = nothing
-  (σ ⟹ τ) ⊔V (σ' ⟹ τ') with σ ⊓V σ' | τ ⊔C τ'
-  ... | just v | just c = just (v ⟹ c)
+  (σ ⇒ τ) ⊔V (σ' ⇒ τ') with σ ⊓V σ' | τ ⊔C τ'
+  ... | just v | just c = just (v ⇒ c)
   ... | _      | _      = nothing
-  (σ ⟹ τ) ⊔V _ = nothing
+  (σ ⇒ τ) ⊔V _ = nothing
 
   _⊔C_ : CType → CType → Maybe CType
   (e / σ) ⊔C (e' / σ') with σ ⊔V σ'
@@ -221,20 +221,20 @@ mutual
   ⊔V-sym nat nat = refl
   ⊔V-sym nat bool = refl
   ⊔V-sym nat (_ ∏ _) = refl
-  ⊔V-sym nat (_ ⟹ _) = refl
+  ⊔V-sym nat (_ ⇒ _) = refl
   ⊔V-sym bool nat = refl
   ⊔V-sym bool bool = refl
   ⊔V-sym bool (_ ∏ _) = refl
-  ⊔V-sym bool (_ ⟹ _) = refl
+  ⊔V-sym bool (_ ⇒ _) = refl
   ⊔V-sym (_ ∏ _) nat = refl
   ⊔V-sym (_ ∏ _) bool = refl
   ⊔V-sym (σ ∏ τ) (σ' ∏ τ') with σ ⊔V σ' | τ ⊔V τ' | ⊔V-sym σ σ' | ⊔V-sym τ τ'
   ... | _ | _ | refl | refl = refl
-  ⊔V-sym (_ ∏ _) (_ ⟹ _) = refl
-  ⊔V-sym (_ ⟹ _) nat = refl
-  ⊔V-sym (_ ⟹ _) bool = refl
-  ⊔V-sym (_ ⟹ _) (_ ∏ _) = refl
-  ⊔V-sym (σ ⟹ τ) (σ' ⟹ τ') with σ ⊓V σ' | τ ⊔C τ' | ⊓V-sym σ σ' | ⊔C-sym τ τ'
+  ⊔V-sym (_ ∏ _) (_ ⇒ _) = refl
+  ⊔V-sym (_ ⇒ _) nat = refl
+  ⊔V-sym (_ ⇒ _) bool = refl
+  ⊔V-sym (_ ⇒ _) (_ ∏ _) = refl
+  ⊔V-sym (σ ⇒ τ) (σ' ⇒ τ') with σ ⊓V σ' | τ ⊔C τ' | ⊓V-sym σ σ' | ⊔C-sym τ τ'
   ... | _ | _ | refl | refl = refl
 
   ⊔C-sym : (τ τ' : CType) → τ ⊔C τ' ≡ τ' ⊔C τ
@@ -247,20 +247,20 @@ mutual
   ⊓V-sym nat nat = refl
   ⊓V-sym nat bool = refl
   ⊓V-sym nat (_ ∏ _) = refl
-  ⊓V-sym nat (_ ⟹ _) = refl
+  ⊓V-sym nat (_ ⇒ _) = refl
   ⊓V-sym bool nat = refl
   ⊓V-sym bool bool = refl
   ⊓V-sym bool (_ ∏ _) = refl
-  ⊓V-sym bool (_ ⟹ _) = refl
+  ⊓V-sym bool (_ ⇒ _) = refl
   ⊓V-sym (_ ∏ _) nat = refl
   ⊓V-sym (_ ∏ _) bool = refl
   ⊓V-sym (σ ∏ τ) (σ' ∏ τ') with σ ⊓V σ' | τ ⊓V τ' | ⊓V-sym σ σ' | ⊓V-sym τ τ'
   ... | _ | _ | refl | refl = refl
-  ⊓V-sym (_ ∏ _) (_ ⟹ _) = refl
-  ⊓V-sym (_ ⟹ _) nat = refl
-  ⊓V-sym (_ ⟹ _) bool = refl
-  ⊓V-sym (_ ⟹ _) (_ ∏ _) = refl
-  ⊓V-sym (σ ⟹ τ) (σ' ⟹ τ') with σ ⊔V σ' | τ ⊓C τ' | ⊔V-sym σ σ' | ⊓C-sym τ τ'
+  ⊓V-sym (_ ∏ _) (_ ⇒ _) = refl
+  ⊓V-sym (_ ⇒ _) nat = refl
+  ⊓V-sym (_ ⇒ _) bool = refl
+  ⊓V-sym (_ ⇒ _) (_ ∏ _) = refl
+  ⊓V-sym (σ ⇒ τ) (σ' ⇒ τ') with σ ⊔V σ' | τ ⊓C τ' | ⊔V-sym σ σ' | ⊓C-sym τ τ'
   ... | _ | _ | refl | refl = refl
 
   ⊓C-sym : (τ τ' : CType) → τ ⊓C τ' ≡ τ' ⊓C τ
@@ -277,25 +277,25 @@ mutual -- construct inequality proof from given lower and upper bound
   lbV nat nat refl = st-refl
   lbV nat bool refl = st-bn
   lbV nat (_ ∏ _) ()
-  lbV nat (_ ⟹ _) ()
+  lbV nat (_ ⇒ _) ()
   lbV bool nat refl = st-refl
   lbV bool bool refl = st-refl
   lbV bool (_ ∏ _) ()
-  lbV bool (_ ⟹ _) ()
+  lbV bool (_ ⇒ _) ()
   lbV (_ ∏ _) nat ()
   lbV (_ ∏ _) bool ()
   lbV (σ ∏ σ') (τ ∏ τ') p with σ ⊓V τ | inspect (_⊓V_ σ) τ | σ' ⊓V τ' | inspect (_⊓V_ σ') τ'
   lbV (σ ∏ σ') (τ ∏ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-prod (lbV σ τ q) (lbV σ' τ' q')
   lbV (σ ∏ σ') (τ ∏ τ') () | just _  | _ | nothing | _
   lbV (σ ∏ σ') (τ ∏ τ') () | nothing | _ | _       | _
-  lbV (_ ∏ _) (_ ⟹ _) ()
-  lbV (_ ⟹ _) nat ()
-  lbV (_ ⟹ _) bool ()
-  lbV (_ ⟹ _) (σ' ∏ σ'') ()
-  lbV (σ ⟹ τ) (σ' ⟹ τ') p with σ ⊔V σ' | inspect (_⊔V_ σ) σ' | τ ⊓C τ' | inspect (_⊓C_ τ) τ'
-  lbV (σ ⟹ τ) (σ' ⟹ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-func (ubV σ σ' q) (lbC τ τ' q')
-  lbV (σ ⟹ τ) (σ' ⟹ τ') () | just _  | _ | nothing | _
-  lbV (σ ⟹ τ) (σ' ⟹ τ') () | nothing | _ | _       | _
+  lbV (_ ∏ _) (_ ⇒ _) ()
+  lbV (_ ⇒ _) nat ()
+  lbV (_ ⇒ _) bool ()
+  lbV (_ ⇒ _) (σ' ∏ σ'') ()
+  lbV (σ ⇒ τ) (σ' ⇒ τ') p with σ ⊔V σ' | inspect (_⊔V_ σ) σ' | τ ⊓C τ' | inspect (_⊓C_ τ) τ'
+  lbV (σ ⇒ τ) (σ' ⇒ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-func (ubV σ σ' q) (lbC τ τ' q')
+  lbV (σ ⇒ τ) (σ' ⇒ τ') () | just _  | _ | nothing | _
+  lbV (σ ⇒ τ) (σ' ⇒ τ') () | nothing | _ | _       | _
 
   lbC : (τ τ' : CType) → {τ'' : CType} → τ ⊓C τ' ≡ just τ'' → τ'' ≤C τ
   lbC (e / σ) (e' / σ') p with e ⊓ e' | inspect (_⊓_ e) e' | σ ⊓V σ' | inspect (_⊓V_ σ) σ'
@@ -307,25 +307,25 @@ mutual -- construct inequality proof from given lower and upper bound
   ubV nat nat refl = st-refl
   ubV nat bool refl = st-refl 
   ubV nat (_ ∏ _) ()
-  ubV nat (_ ⟹ _) ()
+  ubV nat (_ ⇒ _) ()
   ubV bool nat refl = st-bn
   ubV bool bool refl = st-refl
   ubV bool (_ ∏ _) ()
-  ubV bool (_ ⟹ _) ()
+  ubV bool (_ ⇒ _) ()
   ubV (_ ∏ _) nat ()
   ubV (_ ∏ _) bool ()
   ubV (σ ∏ σ') (τ ∏ τ') p with σ ⊔V τ | inspect (_⊔V_ σ) τ | σ' ⊔V τ' | inspect (_⊔V_ σ') τ'
   ubV (σ ∏ σ') (τ ∏ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-prod (ubV σ τ q) (ubV σ' τ' q')
   ubV (σ ∏ σ') (τ ∏ τ') () | just _  | _ | nothing | _
   ubV (σ ∏ σ') (τ ∏ τ') () | nothing | _ | _       | _
-  ubV (_ ∏ _) (_ ⟹ _) ()
-  ubV (_ ⟹ _) nat ()
-  ubV (_ ⟹ _) bool ()
-  ubV (_ ⟹ _) (_ ∏ _) ()
-  ubV (σ ⟹ τ) (σ' ⟹ τ') p with σ ⊓V σ' | inspect (_⊓V_ σ) σ' | τ ⊔C τ' | inspect (_⊔C_ τ) τ'
-  ubV (σ ⟹ τ) (σ' ⟹ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-func (lbV σ σ' q) (ubC τ τ' q')
-  ubV (σ ⟹ τ) (σ' ⟹ τ') () | just _  | _ | nothing | _
-  ubV (σ ⟹ τ) (σ' ⟹ τ') () | nothing | _ | _       | _
+  ubV (_ ∏ _) (_ ⇒ _) ()
+  ubV (_ ⇒ _) nat ()
+  ubV (_ ⇒ _) bool ()
+  ubV (_ ⇒ _) (_ ∏ _) ()
+  ubV (σ ⇒ τ) (σ' ⇒ τ') p with σ ⊓V σ' | inspect (_⊓V_ σ) σ' | τ ⊔C τ' | inspect (_⊔C_ τ) τ'
+  ubV (σ ⇒ τ) (σ' ⇒ τ') refl | just _ | [ q ] | just _ | [ q' ] = st-func (lbV σ σ' q) (ubC τ τ' q')
+  ubV (σ ⇒ τ) (σ' ⇒ τ') () | just _  | _ | nothing | _
+  ubV (σ ⇒ τ) (σ' ⇒ τ') () | nothing | _ | _       | _
 
   ubC : (τ τ' : CType) → {τ'' : CType} → τ ⊔C τ' ≡ just τ'' → τ ≤C τ''
   ubC (e / σ) (e' / σ') p with σ ⊔V σ' | inspect (_⊔V_ σ) σ'

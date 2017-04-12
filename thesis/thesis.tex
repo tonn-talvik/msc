@@ -22,7 +22,7 @@
 \newunicodechar{∏}{$\prod$}
 %\newunicodechar{→}{$\rightarrow$} % not needed
 \newunicodechar{⇒}{$\Rightarrow$}
-\newunicodechar{⟹}{$\Longrightarrow$}
+%\newunicodechar{⟹}{$\Longrightarrow$} % unused
 %\newunicodechar{⊹}{$\hermitmatrix$} % requires stix
 %\newunicodechar{⊹}{$+$}
 \newunicodechar{⊹}{$\Diamond$}
@@ -224,7 +224,7 @@ mutual
     nat : VType
     bool : VType
     _∏_ : VType → VType → VType
-    _⟹_ : VType → CType → VType
+    _⇒_ : VType → CType → VType
 
   data CType : Set where
     _/_ : E → VType → CType\end{verbatim}
@@ -429,6 +429,8 @@ record OrderedMonoid : Set where
 
 \subsubsection{Alamtüübid}
 
+
+
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
 Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
@@ -451,7 +453,7 @@ mutual
    SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
    VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
    LAM : (σ : VType) {τ : CType} →
-         CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⟹ τ)
+         CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
    VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'
 
  data CTerm (Γ : Ctx) : CType → Set where
@@ -462,7 +464,7 @@ mutual
    IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
      CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
    _$_ : {σ : VType} {τ : CType} →
-         VTerm Γ (σ ⟹ τ) → VTerm Γ σ → CTerm Γ τ
+         VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
    PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
           CTerm Γ (e / σ) → CTerm (σ ∷ nat ∷ Γ) (e' / σ) →
           e · e' ⊑ e → CTerm Γ (e / σ)
@@ -500,7 +502,7 @@ infer-vtype Γ (VAR x) with x <? Γ
 infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
 infer-vtype Γ (VAR x) | no ¬p = nothing
 infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
-... | just τ = just (σ ⟹ τ)
+... | just τ = just (σ ⇒ τ)
 ... | _      = nothing\end{verbatim}
   \caption{Eranditega keele väärtustüüpide tüübituletus.}
   \label{fig:exc.infer-vtype}
@@ -521,7 +523,7 @@ infer-ctype Γ (IF x THEN t ELSE t')
 ... | just bool | just τ | just τ' = τ ⊔C τ'
 ... | _         | _      | _       = nothing
 infer-ctype Γ (f $ t) with infer-vtype Γ f | infer-vtype Γ t
-... | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
+... | just (σ ⇒ τ) | just σ' with σ' ≤V? σ
 ...                           | yes _ = just τ
 ...                           | no  _ = nothing
 infer-ctype Γ (f $ t) | _ | _ = nothing

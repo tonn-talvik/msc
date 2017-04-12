@@ -6,7 +6,7 @@ open import Data.Maybe
 open import Data.Nat hiding (_⊔_)
 open import Data.Product
 open import Data.Unit
-open import Relation.Binary.Core
+open import Relation.Binary.PropositionalEquality
 
 open import Finiteness
 open import Grading
@@ -26,7 +26,7 @@ mutual
   ⟪ nat ⟫v = ℕ
   ⟪ bool ⟫v = Bool
   ⟪ t ∏ u ⟫v = ⟪ t ⟫v × ⟪ u ⟫v
-  ⟪ t ⟹ c ⟫v = ⟪ t ⟫v → ⟪ c ⟫c
+  ⟪ t ⇒ c ⟫v = ⟪ t ⟫v → ⟪ c ⟫c
 
   ⟪_⟫c : CType → Set
   ⟪ ε / t ⟫c = T ε ⟪ t ⟫v
