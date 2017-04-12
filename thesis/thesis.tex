@@ -214,9 +214,9 @@ ning tuuakse mõned optimeerivate programmiteisenduste näited.
 
 \subsection{Eranditega keel}\label{ssec:exc.raw}
 
-Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
+Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{fig:exc.types}.
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
-Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis \ref{sssec:exc.exc}.
+Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
 \begin{figure}
   \begin{verbatim}
 mutual
@@ -233,17 +233,17 @@ mutual
 \end{figure}
 
 
-Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel \ref{fig:exc.raw}.
+Vastastikku defineeritud väärtus- ja arvutusliikmed on toodud joonisel~\ref{fig:exc.raw}.
 % pragmatics
-Termide konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standard funktsioonidega.
-Järgnevalt on selgitatud väärtustermi vTerm konstruktorite tähendust.
+Liikmete konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standard funktsioonidega.
+Järgnevalt on selgitatud väärtusliikme {\tt vTerm} konstruktorite tähendust.
 \begin{itemize}
-  \item {\tt TT} ja {\tt FF} koostavad vastavalt tõeväärtused tõene ja väär.
-  \item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
-  \item {\tt ⟨_,_⟩} koostab oma argumentide paari e. korrutise.
-  \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
-  \item {\tt VAR} koostab De~Bruijn'i indeksiga määratud muutuja.
-  \item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm.
+\item {\tt TT} ja {\tt FF} koostavad vastavalt tõeväärtused tõene ja väär.
+\item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
+\item {\tt ⟨_,_⟩} koostab oma argumentide paari e. korrutise.
+\item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
+\item {\tt VAR} koostab De~Bruijn'i indeksiga määratud muutuja.
+\item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusliige.
 \end{itemize}
 
 \begin{figure}
@@ -266,19 +266,19 @@ mutual
     _$_ : vTerm → vTerm → cTerm
     PREC : vTerm → cTerm → cTerm → cTerm
     LET_IN_ : cTerm → cTerm → cTerm\end{verbatim}
-  \caption{Eranditega keele väärtus- ja arvutustermid.}
+  \caption{Eranditega keele väärtus- ja arvutusliikmed.}
   \label{fig:exc.raw}
 \end{figure}
 
-Järgnevalt on selgitatud arvutustermi {\tt cTerm} konstruktorite (jn \ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
+Järgnevalt on selgitatud arvutusliikme {\tt cTerm} konstruktorite (jn~\ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
 \begin{itemize}
-  \item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
-  \item {\tt FAIL} tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
-  \item {\tt TRY_WITH_} on erandikäsitlejaga arvutus: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
-  \item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
-  \item {\tt _\$_} on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
-  \item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
-  \item {\tt LET_IN_} lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
+\item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtusliikmega antud konstruktori argument.
+\item {\tt FAIL} tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
+\item {\tt TRY_WITH_} on erandikäsitlejaga arvutus: kogu arvutuse tulemuseks on esimese argumendiga antud liikme arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud liikme arvutus.
+\item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtusliikme tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutusliikmega antud arvutus.
+\item {\tt _\$_} on esimese väärtusliikmega antud funktsiooni rakendamine teise väärtusliikmega antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
+\item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtusliikme argumendiga. Esimene arvutusliige vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
+\item {\tt LET_IN_} lisab esimese arvutusliikmega antud väärtuse teise arvutusliikme kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
 \end{itemize}
 
 \begin{figure}
@@ -300,22 +300,22 @@ BAD-ONE = ZZ $ TT\end{verbatim}
   \label{fig:exc.raw.ex1}
 \end{figure}
 
-Joonisel \ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtustermina {\tt ADD}
-ning naturaalarvude 3 ja 4 liitmine arvutustermina {\tt ADD-3-and-4}.
-Lisaks on toodud näide arvutustermist {\tt BAD-ONE}, mida annab konstrueerida,
+Joonisel~\ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtusliikmena {\tt ADD}
+ning naturaalarvude 3 ja 4 liitmine arvutusliikmena {\tt ADD-3-and-4}.
+Lisaks on toodud näide arvutusliikmest {\tt BAD-ONE}, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
-Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{ssec:exc.inference}).
+Sellised halvasti tüübitud liikmed tuvastatakse tüübituletusega (alaptk~\ref{ssec:exc.inference}).
 
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
 Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestatus.
 Sellega võimaldatakse alamtüüpide koostamine.
 Ühtlasi näidatakse, et selline hindamine rahuldab järjestatud monoidi ja gradeeritud monaadi omadusi,
-millele tuginevad semantika (alaptk. \ref{ssec:exc.semantics}) ja optimisatsioonid (alaptk. \ref{ssec:exc.optimizations}). 
+millele tuginevad semantika (alaptk~\ref{ssec:exc.semantics}) ja optimisatsioonid (alaptk~\ref{ssec:exc.optimizations}). 
 
 \subsubsection{Erandite efekti hinnang}\label{sssec:exc.exc}
 
-Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}:
+Erandite efekti hinnang {\tt Exc} on toodud joonisel~\ref{fig:exc.exc}:
 konstruktor {\tt err} vastab arvutuse ebaõnnestumisele,
 konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutusele,
 mille kohta pole teada, kas see õnnestub või mitte.
@@ -343,19 +343,19 @@ errok ⊹ _ = errok\end{verbatim}
   \label{fig:exc.exc}
 \end{figure}
 
-Efektide korrutamine {\tt _·_} (jn \ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele.
+Efektide korrutamine {\tt _·_} (jn~\ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele.
 Kui esimene osaarvutus õnnestub, siis kogu arvutuse efekt on määratud teise osaarvutuse efektiga.
 Kui üks osaarvutustest ebaõnnestub, siis ebaõnnestub kogu arvutus.
 Ülejäänud juhtudel puudub teadmine arvutuse õnnestumisest või ebaõnnestumisest.
-Efektide korrutamine leiab aset {\tt LET_IN_} arvutuses (alaptk. \ref{ssec:exc.raw}).
+Efektide korrutamine leiab aset {\tt LET_IN_} arvutuses (alaptk~\ref{ssec:exc.raw}).
 
 Erandikäsitleja võib parandada kogu arvutuse hinnangut.
-Põhiarvutuse ja erandikäsitleja efeki kombineerimine {\tt _⊹_} on defineeritud joonisel \ref{fig:exc.exc}.
+Põhiarvutuse ja erandikäsitleja efeki kombineerimine {\tt _⊹_} on defineeritud joonisel~\ref{fig:exc.exc}.
 Kui põhiarvutus ebaõnnestub, siis on kogu arvutuse efekt määratud erandikäsitleja efektiga.
 Põhiarvutuse õnnestumisel on kogu arvutus õnnestunud ja erandikäsitlejat ei arvutata.
 Kui põhiarvutuse õnnestumine pole teada, aga erandikäsitleja kindlasti õnnestub, siis õnnestub ka kogu arvutus.
 Ülejäänud juhtudel pole teada, kas kogu arvutus tervikuna õnnestub või mitte.
-Efekti hinnangu parandus leiab aset {\tt TRY_WITH_} arvutuses (alaptk. \ref{ssec:exc.raw}).
+Efekti hinnangu parandus leiab aset {\tt TRY_WITH_} arvutuses (alaptk~\ref{ssec:exc.raw}).
 
 Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
 \begin{center}
@@ -367,7 +367,7 @@ Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
-Hinnangute osaline järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.ord}.
+Hinnangute osaline järjestusseos {\tt _⊑_} on toodud joonisel~\ref{fig:exc.ord}.
 See seos on refleksiivne {\tt ⊑-refl}.
 Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analüüsil.
 Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas,
@@ -398,11 +398,11 @@ lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \label{fig:exc.ord}
 \end{figure}
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
-Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ord}).
+Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn~\ref{fig:exc.ord}).
 Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 
 \subsubsection{Alamtüübid}
-Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn \ref{fig:exc.subtypes}).
+Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn~\ref{fig:exc.subtypes}).
 Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
 Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
 Üks väärtustüübi paar on teise alamtüüp {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
@@ -440,7 +440,7 @@ mutual
   \label{fig:exc.subtypes}
 \end{figure}
 
-Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel \ref{fig:exc.subtypes}.
+Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel~\ref{fig:exc.subtypes}.
 FIXME: explain
 
 \subsubsection{Järjestatud monoid}
@@ -451,7 +451,7 @@ Kui sellel hulgal on osaline järjestatus {\tt _⊑_},
 mis on refleksiivne {\tt ⊑-refl} ja transitiivne {\tt ⊑-trans},
 ning kehtib korrutamise monotoonsus {\tt mon},
 siis on tegemist järjestatud monoidiga.
-Joonisel \ref{fig:ordered-monoid} on toodud järjestatud monoidi kirje tüüp Agdas.
+Joonisel~\ref{fig:ordered-monoid} on toodud järjestatud monoidi kirje tüüp Agdas.
 
 \begin{figure}
   \begin{verbatim}
@@ -490,10 +490,23 @@ FIXME: explain mon
   
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
-Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
-Termid on parametriseeritud kontekstiga {\tt Γ} ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutusliikmed.
 Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
-Muutujad viitavad De~Bruijn'i indeksiga selle listi elemendile.
+Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud liikmetega, on rafineeritud liikmed parametriseeritud kontekstiga {\tt Γ} ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+\begin{itemize}
+\item Konstruktorid {\tt TT} ja {\tt FF} koostavad tõeväärtustüüpi liikme.
+\item Konstruktor {\tt ZZ} koostab naturaalarvu tüüpi liikme. Konstruktor {\tt SS} koostab antud naturaalarvu tüüpi liikme järglase, mis on samuti naturaalarvu tüüpi.
+\item {\tt ⟨_,_⟩} koostab kahest antud väärtusliikmest paari, mille tüüp on liikmete tüüpide korrutis.
+\item {\tt FST} ja {\tt SND} projekteerivad paari tüüpi liikmest vastavalt esimese või teise korrutatava tüüpi liikme.
+\item {\tt VAR} võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtusliikme, mille tüüp on kõnealuse elemendi tüüp.
+\item {\tt LAM} võtab väärtustüübi ja arvutusliikme, mille kontekst on parameetriga antud kontekstist täpselt väärtustüübi argumendi võrra suurem, ning annab funktsiooniruumile vastava väärtusliikme.
+\item {\tt VCAST} on 
+\end{itemize}
+
+\begin{itemize}
+\item {\tt VAL} 
+\end{itemize}
+
 
 \begin{figure}
   \begin{verbatim}
@@ -530,7 +543,7 @@ mutual
    CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
            e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
   \end{verbatim}
-  \caption{Eranditega keele rafineeritud termid.}
+  \caption{Eranditega keele rafineeritud liikmed.}
   \label{fig:exc.refined}
 \end{figure}
 
