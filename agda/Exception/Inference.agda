@@ -64,27 +64,29 @@ mutual -- refined type inference
   infer-ctype Γ (TRY t WITH t') with infer-ctype Γ t | infer-ctype Γ t'
   ... | just τ | just τ' = τ ⊹C τ'
   ... | _      | _       = nothing
-  infer-ctype Γ (IF x THEN t ELSE t') with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
+  infer-ctype Γ (IF x THEN t ELSE t')
+      with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
   ... | just bool | just τ | just τ' = τ ⊔C τ'
   ... | _         | _      | _       = nothing
   infer-ctype Γ (f $ t) with infer-vtype Γ f | infer-vtype Γ t
-  infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
-  infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' | yes _ = just τ
-  infer-ctype Γ (f $ t) | just (_ ⟹ _) | just _  | no  _ = nothing
-  infer-ctype Γ (f $ t) | _             | _       = nothing
-  infer-ctype Γ (PREC x t t') with infer-vtype Γ x
-  infer-ctype Γ (PREC x t t') | just nat with infer-ctype Γ t
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
-  infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') | yes _ | yes _ = just (e / σ)
-  infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
+  ... | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
+  ...                           | yes _ = just τ
+  ...                           | no  _ = nothing
+  infer-ctype Γ (f $ t) | _ | _ = nothing
+  infer-ctype Γ (PREC x t t')
+      with infer-vtype Γ x
+  ... | just nat with infer-ctype Γ t
+  ...            | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+  ...                           | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
+  ...                                            | yes _ | yes _ = just (e / σ)
+  ...                                            | _     | _     = nothing
   infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
   infer-ctype Γ (PREC x t t') | just nat | _ = nothing
   infer-ctype Γ (PREC x t t') | _ = nothing
   infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
-  infer-ctype Γ (LET t IN t') | just (e / σ) with infer-ctype (σ ∷ Γ) t'
-  infer-ctype Γ (LET t IN t') | just (e / σ) | just (e' / σ') = just (e · e' / σ')
-  infer-ctype Γ (LET t IN t') | just (_ / _) | _              = nothing
+  ... | just (e / σ) with infer-ctype (σ ∷ Γ) t'
+  ...                | just (e' / σ') = just (e · e' / σ')
+  ...                | _              = nothing
   infer-ctype Γ (LET t IN t') | _            = nothing
 
 
@@ -119,7 +121,8 @@ mutual -- refined term inference
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⟹ _) | _ = tt
   ... | nothing | _ = tt
-  infer-vterm Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vterm Γ t | infer-vtype Γ t' | infer-vterm Γ t'
+  infer-vterm Γ ⟨ t , t' ⟩
+      with infer-vtype Γ t | infer-vterm Γ t | infer-vtype Γ t' | infer-vterm Γ t'
   ... | just _  | u | just _  | u' = ⟨ u , u' ⟩
   ... | just _  | _ | nothing | _  = tt
   ... | nothing | _ | _       | _  = tt
@@ -145,65 +148,73 @@ mutual -- refined term inference
 
   infer-cterm : (Γ : Ctx) (t : cTerm) → infer-ctermType Γ t
   infer-cterm Γ (VAL t) with infer-vtype Γ t | infer-vterm Γ t
-  ... | just _ | u = VAL u
   ... | nothing | u = tt
-  
+  ... | just _ | u = VAL u
+
   infer-cterm Γ (FAIL σ) with infer-ctype Γ (FAIL σ)
   ... | _ = FAIL σ
   
-  infer-cterm Γ (TRY t WITH t') with infer-ctype Γ t | infer-cterm Γ t | infer-ctype Γ t' | infer-cterm Γ t'
-  infer-cterm Γ (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  infer-cterm Γ (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' | just x | [ p ] =
-    TRY  CCAST u (⊔V-subtype p)
-    WITH CCAST u' (⊔V-subtype-sym {σ} p)
-  infer-cterm Γ (TRY t WITH t') | just (e / σ) | u | just (e' / σ') | u' | nothing | _ = tt
-  infer-cterm Γ (TRY t WITH t') | just (_ / _) | _ | nothing | _ = tt
-  infer-cterm Γ (TRY t WITH t') | nothing | _ | _ | _ = tt
+  infer-cterm Γ (TRY t WITH t')
+      with infer-ctype Γ t | infer-cterm Γ t | infer-ctype Γ t' | infer-cterm Γ t'
+  ... | nothing      | _ | _              | _ = tt
+  ... | just _       | _ | nothing        | _ = tt
+  ... | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+  ...                                          | nothing | _ = tt
+  ...                                          | just _ | [ p ] =
+      TRY  CCAST u (⊔V-subtype p)
+      WITH CCAST u' (⊔V-subtype-sym {σ} p)
 
-  infer-cterm Γ (IF x THEN t ELSE t') with infer-vtype Γ x | infer-vterm Γ x
-  infer-cterm Γ (IF x THEN t ELSE t') | just nat | _ = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' with infer-ctype Γ t | infer-cterm Γ t
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | just τ | u with infer-ctype Γ t' | infer-cterm Γ t'
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | just ⊔σ | [ p ] =
-    IF x' THEN CCAST u (⊔V-subtype p)
-          ELSE CCAST u' (⊔V-subtype-sym {σ} p)
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | just (e / σ) | u | just (e' / σ') | u' | nothing | _ = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | just _ | u | nothing | u' = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | just bool | x' | nothing | u = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | just (_ ∏ _) | _ = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | just (_ ⟹ _) | _ = tt
-  infer-cterm Γ (IF x THEN t ELSE t') | nothing | _ = tt
+  infer-cterm Γ (IF x THEN t ELSE t')
+      with infer-vtype Γ x | infer-vterm Γ x
+  ... | nothing | _ = tt
+  ... | just nat | _ = tt
+  ... | just (_ ∏ _) | _ = tt
+  ... | just (_ ⟹ _) | _ = tt
+  ... | just bool | x' with infer-ctype Γ t | infer-cterm Γ t
+  ...                  | nothing | u = tt
+  ...                  | just (e  / σ) | u with infer-ctype Γ t' | infer-cterm Γ t'
+  ...                                      | nothing | u' = tt
+  ...                                      | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+  ...                                                            | nothing | _     = tt
+  ...                                                            | just ⊔σ | [ p ] =
+      IF x' THEN CCAST u (⊔V-subtype p)
+            ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 
-  infer-cterm Γ (f $ x) with infer-vtype Γ f | infer-vterm Γ f | infer-vtype Γ x | infer-vterm Γ x
-  infer-cterm Γ (f $ x) | just nat | _ | _ | _ = tt
-  infer-cterm Γ (f $ x) | just bool | _ | _ | _ = tt
-  infer-cterm Γ (f $ x) | just (_ ∏ _) | _ | _ | _ = tt
-  infer-cterm Γ (f $ x) | just (σ ⟹ τ) | f' | just σ' | x' with σ' ≤V? σ
-  infer-cterm Γ (f $ x) | just (σ ⟹ τ) | f' | just σ' | x' | yes p = f' $ VCAST x' p
-  infer-cterm Γ (f $ x) | just (σ ⟹ τ) | f' | just σ' | x' | no ¬p = tt
-  infer-cterm Γ (f $ x) | just (_ ⟹ _) | _ | nothing | _ = tt  
-  infer-cterm Γ (f $ x) | nothing | _ | _ | _ = tt
+  infer-cterm Γ (f $ x)
+      with infer-vtype Γ f | infer-vterm Γ f | infer-vtype Γ x | infer-vterm Γ x
+  ... | nothing   | _ | _ | _ = tt
+  ... | just nat  | _ | _ | _ = tt
+  ... | just bool | _ | _ | _ = tt
+  ... | just (_ ∏ _) | _ | _ | _ = tt
+  ... | just (_ ⟹ _) | _ | nothing | _ = tt  
+  ... | just (σ ⟹ τ) | f' | just σ' | x' with σ' ≤V? σ
+  ...                                     | no _  = tt
+  ...                                     | yes p = f' $ VCAST x' p
+
+
 
   infer-cterm Γ (PREC x t t')  with infer-vtype Γ x | infer-vterm Γ x
-  infer-cterm Γ (PREC x t t') | just nat | x' with infer-ctype Γ t | infer-cterm Γ t 
-  infer-cterm Γ (PREC x t t') | just nat | x' | just (e / σ)  | u with infer-ctype (σ ∷ nat ∷ Γ) t' | infer-cterm (σ ∷ nat ∷ Γ) t'
-  infer-cterm Γ (PREC x t t') | just nat | x' | just (e / σ) | u | just (e' / σ') | u' with e · e' ⊑? e | σ ≡V? σ'
-  infer-cterm Γ (PREC x t t') | just nat | x' | just (e / σ) | u | just (e' / .σ) | u' | yes p | yes refl = PREC x' u u' p
-  infer-cterm Γ (PREC x t t') | just nat | _  | just (_ / _) | _ | just (_  / _ ) | _  | yes _ | no _     = tt
-  infer-cterm Γ (PREC x t t') | just nat | _  | just (_ / _) | _ | just (_  / _ ) | _  | no  _ | _        = tt
-  infer-cterm Γ (PREC x t t') | just nat | _  | just (_ / _) | _ | nothing | _ = tt
-  infer-cterm Γ (PREC x t t') | just nat | _  | nothing | _ = tt
-  infer-cterm Γ (PREC x t t') | just bool | _ = tt
-  infer-cterm Γ (PREC x t t') | just (_ ∏ _) | _ = tt
-  infer-cterm Γ (PREC x t t') | just (_ ⟹ _) | _ = tt
-  infer-cterm Γ (PREC x t t') | nothing | _  = tt
+  ... | nothing | _  = tt
+  ... | just bool | _ = tt
+  ... | just (_ ∏ _) | _ = tt
+  ... | just (_ ⟹ _) | _ = tt
+  ... | just nat | x' with infer-ctype Γ t | infer-cterm Γ t 
+  ...                 | nothing | _ = tt
+  ...                 | just (e / σ) | u with infer-ctype (σ ∷ nat ∷ Γ) t' | infer-cterm (σ ∷ nat ∷ Γ) t'
+  ...                                    | nothing | _ = tt
+  ...                                    | just (e' / σ') | u' with e · e' ⊑? e | σ ≡V? σ'
+  ...                                                          | no  _ | _        = tt
+  ...                                                          | yes _ | no _     = tt
+  infer-cterm Γ (PREC x t t')
+      | just nat | x' | just (e / σ) | u | just (e' / .σ) | u' | yes p | yes refl = PREC x' u u' p
 
   infer-cterm Γ (LET t IN t') with infer-ctype Γ t | infer-cterm Γ t 
-  infer-cterm Γ (LET t IN t') | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' | infer-cterm (σ ∷ Γ) t'
-  infer-cterm Γ (LET t IN t') | just (e / σ) | u | just (e' / σ') | u' = LET u IN u'
-  infer-cterm Γ (LET t IN t') | just (_ / _) | _ | nothing | _ = tt
-  infer-cterm Γ (LET t IN t') | nothing | _  = tt
+  ... | nothing | _  = tt
+  ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' | infer-cterm (σ ∷ Γ) t'
+  ...                    | nothing        | _  = tt
+  ...                    | just (e' / σ') | u' = LET u IN u'
+
+
 
 
 -----------------------------------------------------------
