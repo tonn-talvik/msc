@@ -308,3 +308,5 @@ glb ok errok refl = ⊑-refl
 glb errok err refl = err⊑errok
 glb errok ok refl = ok⊑errok
 glb errok errok refl = ⊑-refl
+
+⟫ ⟪

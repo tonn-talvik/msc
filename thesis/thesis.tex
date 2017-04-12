@@ -2,17 +2,13 @@
 \usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm,showframe]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
-\usepackage{newtxtext,newtxmath}
-%\usepackage{txfonts}
-%\usepackage{mathptmx}
+\usepackage{newtxtext} 
 
-%\usepackage{textcomp}
-%\usepackage{amsmath,amssymb}
-%\usepackage{stix}
-%\usepackage{baisik}
+\usepackage{textcomp}
 \usepackage{fdsymbol}
 \usepackage{stmaryrd}
 \usepackage{underscore}
+
 
 \usepackage{newunicodechar}
 \newunicodechar{Γ}{$\Gamma$}
@@ -24,23 +20,23 @@
 \newunicodechar{∷}{$\Colon$} % requires fdsymbol
 %\newunicodechar{∷}{$::$}
 \newunicodechar{∏}{$\prod$}
-\newunicodechar{→}{$\rightarrow$}
+%\newunicodechar{→}{$\rightarrow$} % not needed
 \newunicodechar{⇒}{$\Rightarrow$}
 \newunicodechar{⟹}{$\Longrightarrow$}
 %\newunicodechar{⊹}{$\hermitmatrix$} % requires stix
-\newunicodechar{⊹}{$\hermitmatrix$}
 %\newunicodechar{⊹}{$+$}
+\newunicodechar{⊹}{$\Diamond$}
 \newunicodechar{⟦}{$\llbracket$}
 \newunicodechar{⟧}{$\rrbracket$}
 \newunicodechar{⟪}{$\langle\!\langle$}
 \newunicodechar{⟫}{$\rangle\!\rangle$}
 \newunicodechar{⟨}{$\langle$}
 \newunicodechar{⟩}{$\rangle$}
-\newunicodechar{·}{$\cdot$}
+%\newunicodechar{·}{$\cdot$} % not needed
 \newunicodechar{⊔}{$\sqcup$}
 \newunicodechar{⊓}{$\sqcap$}
 \newunicodechar{∈}{$\in$}
-\newunicodechar{¬}{$\neg$}
+%\newunicodechar{¬}{$\neg$} % not needed
 \newunicodechar{≡}{$\equiv$}
 \newunicodechar{≢}{$\neq$}
 \newunicodechar{≤}{$\leq$}
@@ -48,11 +44,11 @@
 \newunicodechar{⊑}{$\sqsubseteq$}
 \newunicodechar{ℕ}{$\mathbb{N}$}
 
+%\renewcommand{\ttdefault}{\sfdefault}
+%\usepackage{inconsolata}
+
 \usepackage[estonian]{babel}
 %\usepackage[none]{hyphenat}
-
-%\setmathfont[Scale=0.85]{Lucida Bright Math OT}
-%\setmathfont{TeX Gyre Pagella Math}
 
 
 \usepackage{fancyhdr}
@@ -91,7 +87,12 @@
 \titlespacing*{\subsection}{0pt}{24pt}{12pt}
 % III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
-
+\makeatletter
+\patchcmd{\@verbatim}
+  {\verbatim@font}
+  {\verbatim@font\small}
+  {}{}
+\makeatother
 
 \usepackage{float}
 \floatstyle{boxed} 
@@ -99,7 +100,6 @@
 
 \usepackage{tikz}
 
-%\renewcommand{\labelitemi}{$\smblksquare$}
 \renewcommand{\labelitemi}{$\smblksquare$}
 
 \usepackage{setspace}
@@ -215,8 +215,8 @@ ning tuuakse mõned optimeerivate programmiteisenduste näited.
 \subsection{Eranditega keel}
 
 Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
-Lubatud väärtustüübid VType on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
-Arvutustüüpideks on efektiga E annoteeritud väärtustüübid. Efekt E on defineeritud alapeatükis \ref{ssec:exc.grading}.
+Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
+Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis \ref{ssec:exc.grading}.
 \begin{figure}
   \begin{verbatim}
 mutual
@@ -239,12 +239,12 @@ Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel \ref{fig
 Termide konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standard funktsioonidega.
 Järgnevalt on selgitatud väärtustermi vTerm konstruktorite tähendust.
 \begin{itemize}
-  \item TT ja FF koostavad vastavalt tõeväärtused tõene ja väär.
-  \item ZZ koostab naturaalarvu 0 ja konstruktor SS oma argumendist järgneva naturaalarvu.
-  \item ⟨_,_⟩ koostab oma argumentide paari e. korrutise.
-  \item FST ja SND koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
-  \item VAR koostab De Bruijn'i indeksiga määratud muutuja.
-  \item LAM on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm.
+  \item {\tt TT} ja {\tt FF} koostavad vastavalt tõeväärtused tõene ja väär.
+  \item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
+  \item {\tt ⟨_,_⟩} koostab oma argumentide paari e. korrutise.
+  \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
+  \item {\tt VAR} koostab De~Bruijn'i indeksiga määratud muutuja.
+  \item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm.
 \end{itemize}
 
 \begin{figure}
@@ -273,15 +273,15 @@ mutual
   \label{fig:exc.raw}
 \end{figure}
 
-Järgnevalt on selgitatud arvutustermi cTerm konstruktorite (jn \ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
+Järgnevalt on selgitatud arvutustermi {\tt cTerm} konstruktorite (jn \ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
 \begin{itemize}
-  \item VAL tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
-  \item FAIL tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
-  \item TRY_WITH_ on arvutuse erandikäsitleja: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
-  \item IF_THEN_ELSE_ on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
-  \item _\$_ on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
-  \item PREC on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
-  \item LET_IN_ lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
+  \item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
+  \item {\tt FAIL} tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
+  \item {\tt TRY_WITH_} on arvutuse erandikäsitleja: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
+  \item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
+  \item {\tt _\$_} on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
+  \item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
+  \item {\tt LET_IN_} lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
 \end{itemize}
 
 \begin{figure}
@@ -304,22 +304,22 @@ BAD-ONE = ZZ $ TT
   \label{fig:exc.raw.ex1}
 \end{figure}
 
-Joonisel \ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtustermina ADD
-ning naturaalarvude 3 ja 4 liitmine arvutustermina ADD-3-and-4.
-Lisaks on toodud näide arvutustermist BAD-ONE, mida annab konstrueerida,
+Joonisel \ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtustermina {\tt ADD}
+ning naturaalarvude 3 ja 4 liitmine arvutustermina {\tt ADD-3-and-4}.
+Lisaks on toodud näide arvutustermist {\tt BAD-ONE}, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
 Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{ssec:exc.inference}).
 
 \subsection{Erandite gradeering} \label{ssec:exc.grading}
 
-Erandite efekti hinnang Exc on toodud joonisel \ref{fig:exc.exc}: konstruktor err vastab arvutuse ebaõnnestumisele, konstruktor ok arvutuse õnnestumisele ja konstruktor errok arvutusele, mille kohta pole teada, kas see õnnestub või mitte.
+Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}: konstruktor {\tt err} vastab arvutuse ebaõnnestumisele, konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutusele, mille kohta pole teada, kas see õnnestub või mitte.
 
-Efektide korrutamine _·_ (jn \ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele.
+Efektide korrutamine {\tt _·_} (jn \ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele.
 Kui esimene osaarvutus õnnestub, siis kogu arvutuse efekt on määratud teise osaarvutuse efektiga.
 Kui üks osaarvutustest ebaõnnestub, siis ebaõnnestub kogu arvutus.
 Ülejäänud juhtudel puudub teadmine arvutuse õnnestumisest või ebaõnnestumisest.
 
-Hinnangu Exc konstruktorid moodustavad järgneva võre:
+Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
 \begin{center}
   \begin{tikzpicture}[node distance=1.5cm]
     \node (top) at (0,0) {errok};
@@ -329,7 +329,10 @@ Hinnangu Exc konstruktorid moodustavad järgneva võre:
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
-Hinnangute järjestusseos _⊑_ on toodud joonisel \ref{fig:exc.exc}. See seos on refleksiivne ⊑-refl. Transitiivsuse ⊑-trans tõestus seisneb argumentide kuju juhtumi analüüsil. Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
+Hinnangute järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.exc}.
+See seos on refleksiivne {\tt ⊑-refl}.
+Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analüüsil.
+Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 \begin{figure}
   \begin{verbatim}
 data Exc : Set where
@@ -360,6 +363,7 @@ data _⊑_ : Exc → Exc → Set where
 
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ops}).
+Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 \begin{figure}
   \begin{verbatim}
 _⊔_ : Exc → Exc → Exc
@@ -391,8 +395,10 @@ T, $\eta$, lift, sub, mlaw1,2,3,
 \subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
 
 Joonisel \ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
-Termid on parametriseeritud kontekstiga Γ ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
-Kontekst Ctx on defineeritud kui väärtusttüüpide list. Muutujad viitavad De Bruijn'i indeksiga selle listi elemendile.
+Termid on parametriseeritud kontekstiga {\tt Γ} ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
+Muutujad viitavad De~Bruijn'i indeksiga selle listi elemendile.
+
 \begin{figure}
   \begin{verbatim}
 Ctx = List VType
@@ -437,28 +443,28 @@ mutual
 
 \begin{figure}
   \begin{verbatim}
-  infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
-  infer-vtype Γ TT = just bool
-  infer-vtype Γ FF = just bool
-  infer-vtype Γ ZZ = just nat
-  infer-vtype Γ (SS t) with  infer-vtype Γ t
-  ... | just nat = just nat
-  ... | _        = nothing
-  infer-vtype Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vtype Γ t'
-  ... | just σ | just σ' = just (σ ∏ σ')
-  ... | _      | _       = nothing
-  infer-vtype Γ (FST t) with infer-vtype Γ t
-  ... | just (σ ∏ _) = just σ
-  ... | _            = nothing
-  infer-vtype Γ (SND t) with infer-vtype Γ t
-  ... | just (_ ∏ σ') = just σ'
-  ... | _             = nothing
-  infer-vtype Γ (VAR x) with x <? Γ
-  infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
-  infer-vtype Γ (VAR x) | no ¬p = nothing
-  infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
-  ... | just τ = just (σ ⟹ τ)
-  ... | _      = nothing
+infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
+infer-vtype Γ TT = just bool
+infer-vtype Γ FF = just bool
+infer-vtype Γ ZZ = just nat
+infer-vtype Γ (SS t) with  infer-vtype Γ t
+... | just nat = just nat
+... | _        = nothing
+infer-vtype Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vtype Γ t'
+... | just σ | just σ' = just (σ ∏ σ')
+... | _      | _       = nothing
+infer-vtype Γ (FST t) with infer-vtype Γ t
+... | just (σ ∏ _) = just σ
+... | _            = nothing
+infer-vtype Γ (SND t) with infer-vtype Γ t
+... | just (_ ∏ σ') = just σ'
+... | _             = nothing
+infer-vtype Γ (VAR x) with x <? Γ
+infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
+infer-vtype Γ (VAR x) | no ¬p = nothing
+infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
+... | just τ = just (σ ⟹ τ)
+... | _      = nothing
   \end{verbatim}
   \caption{Eranditega keele väärtustüüpide tüübituletus.}
   \label{fig:exc.infer-vtype}
@@ -537,7 +543,7 @@ This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 \section{Võimalikud edasiarendused}
 
 - muteeritava oleku laiendused\\
-- mittedeterminismi teine gradeering nd0,1,01,1+,N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
+- mittedeterminismi teine gradeering nd0, 1, 01, 1+, N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
 
 \clearpage
 
@@ -548,7 +554,7 @@ küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 \clearpage
 
 \renewcommand{\baselinestretch}{1.15}
-\fontsize{11}{11}\selectfont
+\small
 %\printbibliography[title={\vskip 60pt\centering Kasutatud kirjandus}]
 
 \bibliographystyle{unsrt}
