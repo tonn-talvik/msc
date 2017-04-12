@@ -212,7 +212,7 @@ määratakse hästi tüübitud avaldiste semantika
 ning tuuakse mõned optimeerivate programmiteisenduste näited.
 Ühtlasi näidatakse analüüsi ja teisenduste korrektsust.
 
-\subsection{Eranditega keel}
+\subsection{Eranditega keel}\label{ssec:exc.raw}
 
 Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel \ref{fig:exc.types}.
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
@@ -227,8 +227,7 @@ mutual
     _⟹_ : VType → CType → VType
 
   data CType : Set where
-    _/_ : E → VType → CType
-  \end{verbatim}
+    _/_ : E → VType → CType\end{verbatim}
   \caption{Eranditega keele tüübid.}
   \label{fig:exc.types}
 \end{figure}
@@ -266,9 +265,7 @@ mutual
     IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
     _$_ : vTerm → vTerm → cTerm
     PREC : vTerm → cTerm → cTerm → cTerm
-    LET_IN_ : cTerm → cTerm → cTerm
-
-  \end{verbatim}
+    LET_IN_ : cTerm → cTerm → cTerm\end{verbatim}
   \caption{Eranditega keele väärtus- ja arvutustermid.}
   \label{fig:exc.raw}
 \end{figure}
@@ -277,7 +274,7 @@ Järgnevalt on selgitatud arvutustermi {\tt cTerm} konstruktorite (jn \ref{fig:e
 \begin{itemize}
   \item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
   \item {\tt FAIL} tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
-  \item {\tt TRY_WITH_} on arvutuse erandikäsitleja: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
+  \item {\tt TRY_WITH_} on erandikäsitlejaga arvutus: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
   \item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
   \item {\tt _\$_} on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
   \item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
@@ -298,8 +295,7 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
               IN VAR 0 $ (SS (SS (SS (SS ZZ))))
 
 BAD-ONE : cTerm
-BAD-ONE = ZZ $ TT
-  \end{verbatim}
+BAD-ONE = ZZ $ TT\end{verbatim}
   \caption{Näidisavaldised eranditega keeles.}
   \label{fig:exc.raw.ex1}
 \end{figure}
@@ -314,10 +310,42 @@ Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk \ref{
 
 Erandite efekti hinnang {\tt Exc} on toodud joonisel \ref{fig:exc.exc}: konstruktor {\tt err} vastab arvutuse ebaõnnestumisele, konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutusele, mille kohta pole teada, kas see õnnestub või mitte.
 
+\begin{figure}
+  \begin{verbatim}
+data Exc : Set where
+  err : Exc
+  ok : Exc
+  errok : Exc
+
+_·_ : Exc → Exc → Exc
+ok · e = e
+err · e = err
+errok · err = err
+errok · ok = errok
+errok · errok = errok
+
+_⊹_ : Exc → Exc → Exc
+err ⊹ e' = e'
+ok ⊹ _ = ok
+errok ⊹ ok = ok
+errok ⊹ _ = errok\end{verbatim}
+  \caption{Erandite efektid ja operatsioonid nendel.}
+  \label{fig:exc.exc}
+\end{figure}
+
 Efektide korrutamine {\tt _·_} (jn \ref{fig:exc.exc}) vastab arvutuste järjestikule sooritamisele.
 Kui esimene osaarvutus õnnestub, siis kogu arvutuse efekt on määratud teise osaarvutuse efektiga.
 Kui üks osaarvutustest ebaõnnestub, siis ebaõnnestub kogu arvutus.
 Ülejäänud juhtudel puudub teadmine arvutuse õnnestumisest või ebaõnnestumisest.
+Efektide korrutamine leiab aset {\tt LET_IN_} arvutuses (alaptk. \ref{ssec:exc.raw}).
+
+Erandikäsitleja võib parandada kogu arvutuse hinnangut.
+Põhiarvutuse ja erandikäsitleja efeki kombineerimine {\tt _⊹_} on defineeritud joonisel \ref{fig:exc.exc}.
+Kui põhiarvutus ebaõnnestub, siis on kogu arvutuse efekt määratud erandikäsitleja efektiga.
+Põhiarvutuse õnnestumisel on kogu arvutus õnnestunud ja erandikäsitlejat ei arvutata.
+Kui põhiarvutuse õnnestumine pole teada, aga erandikäsitleja kindlasti õnnestub, siis õnnestub ka kogu arvutus.
+Ülejäänud juhtudel pole teada, kas kogu arvutus tervikuna õnnestub või mitte.
+Efekti hinnangu parandus leiab aset {\tt TRY_WITH_} arvutuses (alaptk. \ref{ssec:exc.raw}).
 
 Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
 \begin{center}
@@ -329,24 +357,16 @@ Hinnangu {\tt Exc} konstruktorid moodustavad järgneva võre:
     \draw (top) -- (right);
   \end{tikzpicture}
 \end{center}
-Hinnangute järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.exc}.
+Hinnangute järjestusseos {\tt _⊑_} on toodud joonisel \ref{fig:exc.ord}.
 See seos on refleksiivne {\tt ⊑-refl}.
 Transitiivsuse {\tt ⊑-trans} tõestus seisneb argumentide kuju juhtumi analüüsil.
 Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid see pole otstarbekas, kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
+
+Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
+Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ord}).
+Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 \begin{figure}
   \begin{verbatim}
-data Exc : Set where
-  err : Exc
-  ok : Exc
-  errok : Exc
-  
-_·_ : Exc → Exc → Exc
-ok · e = e
-err · e = err
-errok · err = err
-errok · ok = errok
-errok · errok = errok
-
 data _⊑_ : Exc → Exc → Set where
   ⊑-refl : {e : Exc} → e ⊑ e
   err⊑errok : err ⊑ errok
@@ -356,34 +376,18 @@ data _⊑_ : Exc → Exc → Set where
 ⊑-trans ⊑-refl q = q
 ⊑-trans err⊑errok ⊑-refl = err⊑errok
 ⊑-trans ok⊑errok ⊑-refl = ok⊑errok
-  \end{verbatim}
-  \caption{Erandite efektid, nende korrutamine ja efektide järjestatus.}
-  \label{fig:exc.exc}
-\end{figure}
 
-Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
-Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn \ref{fig:exc.ops}).
-Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
-\begin{figure}
-  \begin{verbatim}
 _⊔_ : Exc → Exc → Exc
 _⊓_ : Exc → Exc → Maybe Exc
 ⊔-sym : (e e' : Exc) → e ⊔ e' ≡ e' ⊔ e
 ⊓-sym : (e e' : Exc) → e ⊓ e' ≡ e' ⊓ e
 
-_⊹_ : Exc → Exc → Exc
-err ⊹ e' = e'
-ok ⊹ _ = ok
-errok ⊹ ok = ok
-errok ⊹ _ = errok
-    
 lub : (e e' : Exc) → e ⊑ (e ⊔ e')
 glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
 lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
-    
   \end{verbatim}
-  \caption{Operatsioonid erandite efektidega.}
-  \label{fig:exc.ops}
+  \caption{Erandite efektide järjestatus.}
+  \label{fig:exc.ord}
 \end{figure}
 \subsubsection{Järjestatud monoid}
 Järjestatud monoid: järjestatuse transitiivsus, korrutamine, korrutamise assotsiatiivsus, monotoonsus, vasak ühik, parem ühik.
@@ -464,8 +468,7 @@ infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
 infer-vtype Γ (VAR x) | no ¬p = nothing
 infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
 ... | just τ = just (σ ⟹ τ)
-... | _      = nothing
-  \end{verbatim}
+... | _      = nothing\end{verbatim}
   \caption{Eranditega keele väärtustüüpide tüübituletus.}
   \label{fig:exc.infer-vtype}
 \end{figure}
@@ -480,29 +483,30 @@ infer-ctype Γ (FAIL σ) = just (err / σ)
 infer-ctype Γ (TRY t WITH t') with infer-ctype Γ t | infer-ctype Γ t'
 ... | just τ | just τ' = τ ⊹C τ'
 ... | _      | _       = nothing
-infer-ctype Γ (IF x THEN t ELSE t') with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
+infer-ctype Γ (IF x THEN t ELSE t')
+    with infer-vtype Γ x | infer-ctype Γ t | infer-ctype Γ t'
 ... | just bool | just τ | just τ' = τ ⊔C τ'
 ... | _         | _      | _       = nothing
 infer-ctype Γ (f $ t) with infer-vtype Γ f | infer-vtype Γ t
-infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
-infer-ctype Γ (f $ t) | just (σ ⟹ τ) | just σ' | yes _ = just τ
-infer-ctype Γ (f $ t) | just (_ ⟹ _) | just _  | no  _ = nothing
-infer-ctype Γ (f $ t) | _             | _       = nothing
-infer-ctype Γ (PREC x t t') with infer-vtype Γ x
-infer-ctype Γ (PREC x t t') | just nat with infer-ctype Γ t
-infer-ctype Γ (PREC x t t') | just nat | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
-infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
-infer-ctype Γ (PREC x t t') | just nat | just (e / σ) | just (e' / σ') | yes _ | yes _ = just (e / σ)
-infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | just (_  / _ ) | _     | _      = nothing
+... | just (σ ⟹ τ) | just σ' with σ' ≤V? σ
+...                           | yes _ = just τ
+...                           | no  _ = nothing
+infer-ctype Γ (f $ t) | _ | _ = nothing
+infer-ctype Γ (PREC x t t')
+    with infer-vtype Γ x
+... | just nat with infer-ctype Γ t
+...            | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+...                           | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
+...                                            | yes _ | yes _ = just (e / σ)
+...                                            | _     | _     = nothing
 infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
 infer-ctype Γ (PREC x t t') | just nat | _ = nothing
 infer-ctype Γ (PREC x t t') | _ = nothing
 infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
-infer-ctype Γ (LET t IN t') | just (e / σ) with infer-ctype (σ ∷ Γ) t'
-infer-ctype Γ (LET t IN t') | just (e / σ) | just (e' / σ') = just (e · e' / σ')
-infer-ctype Γ (LET t IN t') | just (_ / _) | _              = nothing
-infer-ctype Γ (LET t IN t') | _            = nothing
-  \end{verbatim}
+... | just (e / σ) with infer-ctype (σ ∷ Γ) t'
+...                | just (e' / σ') = just (e · e' / σ')
+...                | _              = nothing
+infer-ctype Γ (LET t IN t') | _            = nothing\end{verbatim}
   \caption{Eranditega keele arvutustüüpide tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
