@@ -1,7 +1,7 @@
 module Optimization where
 
 open import Data.Bool hiding (T)
-open import Data.Fin hiding (lift)
+open import Data.Fin
 open import Data.List
 open import Data.Maybe
 open import Data.Nat
@@ -154,7 +154,7 @@ mutual
                                  (λ acc → ⟦ t' ⟧c (acc , i , ρ))
                                  (λ acc → lemmaC (acc , i , ρ) v (suc (suc x)) t')))
   lemmaC ρ v x (LET_IN_ {e} {e'} t t') rewrite lemmaC ρ v x t  =
-    cong (λ f → lift {e} {e'} f (⟦ t ⟧c ρ))
+    cong (λ f → bind {e} {e'} f (⟦ t ⟧c ρ))
          (funext (λ w → ⟦ wkC (suc x) t' ⟧c (w , wk ρ v x))
                  (λ w → ⟦ t' ⟧c (w , ρ))
                  (λ w → lemmaC (w , ρ) v (suc x) t'))
@@ -272,9 +272,9 @@ dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n
 {-
 need to compare:
 
-lift {errok} {errok · e'}  (λ x → lift {errok} {e'} (λ y → ⟦ n ⟧c (y , x , ρ)) (⟦ m ⟧c ρ)) ((⟦ m ⟧c ρ)
+bind {errok} {errok · e'}  (λ x → bind {errok} {e'} (λ y → ⟦ n ⟧c (y , x , ρ)) (⟦ m ⟧c ρ)) ((⟦ m ⟧c ρ)
 
-lift {errok} {e'} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
+bind {errok} {e'} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
 -}
 
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
@@ -282,10 +282,10 @@ errok-seq e = sym (ass {errok} {errok} {e})
 
 
 dup-comp : {e : Exc} {X Y : Set} → (m : T errok X) → (n : X → X → T e Y) → 
-           sub-eq (errok-seq e) (lift {errok} {errok · e}
-                                      (λ x → lift {errok} {e} (λ y → n y x) m)
+           sub-eq (errok-seq e) (bind {errok} {errok · e}
+                                      (λ x → bind {errok} {e} (λ y → n y x) m)
                                       m)
-           ≡ lift {errok} {e} (λ x → n x x) m
+           ≡ bind {errok} {e} (λ x → n x x) m
 dup-comp {err} m n = refl
 dup-comp {ok} (just x) n =  refl
 dup-comp {ok} nothing n = refl
@@ -304,12 +304,12 @@ dup-comp' = ?
 dup-comp2 : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X Y : VType}
             (m : CTerm Γ (errok / X)) (n : CTerm (X ∷ X ∷ Γ) (e / Y)) → 
             sub-eq (errok-seq e)
-                   (lift {errok} {errok · e}
-                         (λ x → lift {errok} {e}
+                   (bind {errok} {errok · e}
+                         (λ x → bind {errok} {e}
                                       (λ y → ⟦ n ⟧c (y , x , ρ))
                                       (⟦ m ⟧c ρ))
                          (⟦ m ⟧c ρ))
-            ≡ lift {errok} {e} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
+            ≡ bind {errok} {e} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
 dup-comp2 {err} m n = refl
 --dup-comp2 {ok} m n = {!!} -- Auto ↝ "An internal error has occurred. Please report this as a bug. ..."
 dup-comp2 {ok} {ρ = ρ} m n with ⟦ m ⟧c ρ

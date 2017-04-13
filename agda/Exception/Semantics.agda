@@ -59,7 +59,7 @@ proj (there x) ρ = proj x (proj₂ ρ)
 
 primrecT : {e e' : E} {X : Set} → ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
 primrecT zero z s p = z
-primrecT {e} {e'} (suc n) z s p = sub p (lift {e} {e'} (s n) (primrecT n z s p)) 
+primrecT {e} {e'} (suc n) z s p = sub p (bind {e} {e'} (s n) (primrecT n z s p)) 
 
 
 sfail : {X : Set} → T err X
@@ -99,7 +99,7 @@ mutual
                                   (⟦ t ⟧c ρ)
                                   ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
   ⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = lift {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
+  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
   ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
 
 

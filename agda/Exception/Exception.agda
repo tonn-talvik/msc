@@ -1,6 +1,7 @@
 module Exception where
 
 open import Data.Maybe
+open import Data.Maybe.Base
 open import Data.Unit
 open import Function
 open import Relation.Binary.Core using (_≡_ ; refl)
@@ -95,20 +96,17 @@ private
   T ok X = X
   T errok X = Maybe X
 
-
   η : {X : Set} → X → T ok X
   η x = x
 
-
-  lift : {e e' : Exc} {X Y : Set} →
+  bind : {e e' : Exc} {X Y : Set} →
          (X → T e' Y) → T e X → T (e · e') Y
-  lift {err} f x = tt
-  lift {ok} f x = f x
-  lift {errok} {err} f _ = tt
-  lift {errok} {ok} f (just x) = just (f x)
-  lift {errok} {errok} f (just x) = f x
-  lift {errok} {ok} f nothing = nothing
-  lift {errok} {errok} f nothing = nothing
+  bind {err} f x = tt
+  bind {ok} f x = f x
+  bind {errok} {err} f x = tt
+  bind {errok} {ok} f x = map f x
+  bind {errok} {errok} f (just x) = f x
+  bind {errok} {errok} f nothing = nothing
 
 
   sub : {e e' : Exc} {X : Set} → e ⊑ e' → T e X → T e' X
@@ -124,7 +122,7 @@ private
   sub-mon : {e e' e'' e''' : Exc} {X Y : Set} →
             (p : e ⊑ e'') → (q : e' ⊑ e''') →
             (f : X → T e' Y) → (c : T e X) → 
-            sub (mon p q) (lift {e} {e'} f c) ≡ lift {e''} {e'''} (sub q ∘ f) (sub p c)
+            sub (mon p q) (bind {e} {e'} f c) ≡ bind {e''} {e'''} (sub q ∘ f) (sub p c)
   sub-mon {e'' = err} ⊑-refl q f c = refl
   sub-mon {e'' = ok} ⊑-refl q f c = refl
   sub-mon {e'' = errok} {err} p q f c = refl
@@ -151,7 +149,7 @@ private
 
 
   mlaw1 : {e : Exc} → {X Y : Set} → (f : X → T e Y) → (x : X) →
-          lift {ok} {e} f (η x) ≡ f x
+          bind {ok} {e} f (η x) ≡ f x
   mlaw1 f x = refl
 
 
@@ -160,7 +158,7 @@ private
 
 
   mlaw2 :  {e : Exc} → {X : Set} → (c : T e X) →
-           sub-eq {e} ru c ≡ lift {e} η c
+           sub-eq {e} ru c ≡ bind {e} η c
   mlaw2 {err} c = refl
   mlaw2 {ok} c = refl
   mlaw2 {errok} (just x) = refl
@@ -171,8 +169,8 @@ private
           (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
           sub-eq {(e · e') · e''} {e · (e' · e'')}
                  (ass {e} {e'} {e''})
-                 (lift {e · e'} {e''} g (lift {e} {e'} f c))
-          ≡ lift {e} {e' · e''} (lift {e'} {e''} g ∘ f) c
+                 (bind {e · e'} {e''} g (bind {e} {e'} f c))
+          ≡ bind {e} {e' · e''} (bind {e'} {e''} g ∘ f) c
   mlaw3 {err} f g c = refl
   mlaw3 {ok} f g c = refl
   mlaw3 {errok} {err} f g c = refl
@@ -192,7 +190,7 @@ ExcEffGM : GradedMonad
 ExcEffGM = record { OM = ExcEffOM
                   ; T = T
                   ; η = η
-                  ; lift = λ {e} {e'} → lift {e} {e'}
+                  ; bind = λ {e} {e'} → bind {e} {e'}
                   ; sub = sub
                   ; sub-mon = sub-mon
                   ; sub-refl = λ {e} → sub-refl {e}
