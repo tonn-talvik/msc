@@ -43,6 +43,9 @@
 \newunicodechar{≰}{$\nleq$}
 \newunicodechar{⊑}{$\sqsubseteq$}
 \newunicodechar{ℕ}{$\mathbb{N}$}
+\newunicodechar{∘}{$\circ$}
+\newunicodechar{₁}{\textsubscript{1}}
+\newunicodechar{η}{$\eta$}
 
 %\renewcommand{\ttdefault}{\sfdefault}
 %\usepackage{inconsolata}
@@ -102,13 +105,16 @@
 
 \renewcommand{\labelitemi}{$\smblksquare$}
 
+\usepackage{xcolor}
+\usepackage[colorinlistoftodos]{todonotes}
+
 \usepackage{setspace}
 
 \begin{document}
 \onehalfspacing
 
 \begin{verbatim}
-λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
+λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ ∘ ₁
 \end{verbatim}
 % ------------------------------------------------------------
   \begin{center}
@@ -119,7 +125,7 @@
     
     Tõnn Talvik 132619IAPM
     \vskip 3em 
-    \LARGE\textsc{efekti analüüside ja nendel põhinevate programmiteisenduste sertifitseerimine}\\
+    \LARGE\textsc{efektianalüüsidel põhinevate programmiteisenduste sertifitseerimine}\\
     \normalsize\vskip 4em 
     Magistritöö\\
     \vskip 4em    
@@ -154,7 +160,8 @@ Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv tö
 \clearpage
 
 \section*{\vskip 60pt\centering Abstract\\
-Certification of effect analysis and program transformations based on the analysis}
+Certification of effect-analysis based program~transformations}
+
 [text]
 The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, \totalfigures\ figures, [tables] tables.
 \clearpage
@@ -207,7 +214,7 @@ Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teiste
 Selles peatükis vaadeldakse keele laiendust eranditega. 
 Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
 Järgnevates alapeatükkides defineeritakse selline keel Agdas,
-viiakse läbi tüübituletus koos efekti analüüsiga,
+viiakse läbi tüübituletus koos efektianalüüsiga,
 määratakse hästi tüübitud avaldiste semantika
 ning tuuakse mõned optimeerivate programmiteisenduste näited.
 Ühtlasi näidatakse analüüsi ja teisenduste korrektsust.
@@ -441,9 +448,10 @@ mutual
 \end{figure}
 
 Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel~\ref{fig:exc.subtypes}.
-FIXME: explain
+\todo{explain}
 
 \subsubsection{Järjestatud monoid}
+\todo{osaline järjestatus või eeljärjestatus?}
 Hulk {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
 st {\tt i} on ühik korrutamise suhtes nii vasakult {\tt lu} kui ka paremalt {\tt ru},
 ning korrutamine on assotsiatiivne {\tt ass}, nimetatakse monoidiks.
@@ -481,14 +489,66 @@ Vasakühiku tõestus tuleneb vahetult korrutamise definitsioonist.
 Paremühiku tõestamisel tuleb teha juhtumi analüüs varjatud argumendi konstruktori kuju peal
 ja seejärel lähtuda korrutamise definitsioonist.
 Assotsiatiivsus tõestatakse sarnaselt kasutades juhtumite analüüsi ja korrutamise definitsiooni.
-FIXME: explain mon
+\todo{explain mon}
 
 
 \subsubsection{Gradeeritud monaad}
 
+Efektiga {\tt E} parametriseeritud tüübikonstruktor {\tt T} koos tagastamisega {\tt η} ja sidumisega {\tt bind}  moodustab monaadi.
+Neelduvus {\tt sub} on refleksiivne {\tt sub-refl}, transitiivne {\tt sub-trans} ja  sidumise suhtes monotoonne {\tt sub-mon}.
+Täidetud on monaadi seadused {\tt mlaw1}, {\tt mlaw2} ja {\tt mlaw3}.
 
-  
-\subsection{Tüübituletus ja efekti analüüs} \label{ssec:exc.inference}
+Joonisel~\ref{fig:graded-monad} on toodud gradeeritud monaadi kirje tüüp Agdas.
+
+\begin{figure}
+  \begin{verbatim}
+subeq : {E : Set} → {T : E → Set → Set} → {e e' : E} → {X : Set} →
+        e ≡ e' → T e X → T e' X
+subeq refl p = p
+
+
+record GradedMonad : Set where
+  field
+    OM : OrderedMonoid
+  open OrderedMonoid OM
+  field
+
+    T : E → Set → Set
+    η : {X : Set} → X → T i X
+    bind : {e e' : E} {X Y : Set} → (X → T e' Y) → (T e X → T (e · e') Y)
+
+    sub : {e e' : E} {X : Set} → e ⊑ e' → T e X → T e' X
+
+    sub-mon : {e e' e'' e''' : E} {X Y : Set} →
+              (p : e ⊑ e'') → (q : e' ⊑ e''') → 
+              (f : X → T e' Y) → (c : T e X) → 
+              sub (mon p q) (bind f c) ≡ bind (sub q ∘ f) (sub p c) 
+
+  sub-eq : {e e' : E} {X : Set} → e ≡ e' → T e X → T e' X
+  sub-eq = subeq {E} {T}
+ 
+  field
+    sub-refl : {e : E} {X : Set} → (c : T e X) → sub ⊑-refl c ≡ c
+    sub-trans : {e e' e'' : E} {X : Set} →
+                (p : e ⊑ e') → (q : e' ⊑ e'') → (c : T e X) → 
+                sub q (sub p c) ≡ sub (⊑-trans p q) c   
+
+    mlaw1 : {e : E} → {X Y : Set} → (f : X → T e Y) → (x : X) →
+            sub-eq lu (bind f (η x)) ≡ f x
+    mlaw2 : {e : E} → {X : Set} → (c : T e X) →
+            sub-eq ru c ≡ bind η c
+    mlaw3 : {e e' e'' : E} → {X Y Z : Set} →
+            (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
+            sub-eq ass (bind g (bind f c)) ≡ bind (bind g ∘ f) c 
+
+  T₁ : {e : E} {X Y : Set} → (X → Y) → T e X → T e Y
+  T₁ f = sub-eq (sym ru) ∘ bind (η ∘ f)\end{verbatim}
+  \caption{Gradeeritud monaad.}
+  \label{fig:graded-monad}
+\end{figure}
+
+Saab näidata, et erandite järjestatud monoidil saab põhineda gradeeritud monaad.
+\subsection{Tüübituletus ja efektianalüüs} \label{ssec:exc.inference}
 
 Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutusliikmed.
 Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
@@ -498,13 +558,21 @@ Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud liikmetega, on rafineeritud liikme
 \item Konstruktor {\tt ZZ} koostab naturaalarvu tüüpi liikme. Konstruktor {\tt SS} koostab antud naturaalarvu tüüpi liikme järglase, mis on samuti naturaalarvu tüüpi.
 \item {\tt ⟨_,_⟩} koostab kahest antud väärtusliikmest paari, mille tüüp on liikmete tüüpide korrutis.
 \item {\tt FST} ja {\tt SND} projekteerivad paari tüüpi liikmest vastavalt esimese või teise korrutatava tüüpi liikme.
-\item {\tt VAR} võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtusliikme, mille tüüp on kõnealuse elemendi tüüp.
+\item {\tt VAR} võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtusliikme, mille tüüp on kõnealuse elemendiga määratud tüüp.
 \item {\tt LAM} võtab väärtustüübi ja arvutusliikme, mille kontekst on parameetriga antud kontekstist täpselt väärtustüübi argumendi võrra suurem, ning annab funktsiooniruumile vastava väärtusliikme.
-\item {\tt VCAST} on 
+\item {\tt VCAST} suurendab ettantud väärtusliikme tüüpi vastavalt alamtüübi tõestusele. See võimaldab erinevate alamtüüpidega väärtusliikmeid ühtlustada, mis on vajalik rafineeritud arvutusliikmete koostamisel.
 \end{itemize}
 
+Rafineeritud arvutusliikmed (jn \ref{fig:exc.refined}) määravad täpselt efektide kombineerimise.
 \begin{itemize}
-\item {\tt VAL} 
+\item {\tt VAL} koostab antud väärtusliikmest õnnestunud arvutuse.
+\item {\tt FAIL} koostab väärtustüübist ebaõnnestunud arvutuse.
+\item {\tt TRY_WITH_} parandab põhiarvutusliikme efekti erandikäsitleja arvutusliikme efektiga. Kitsendusena peavad arvutusliikmed omama sama väärtustüüpi.
+\item {\tt IF_THEN_ELSE_} eeldab tõeväärtustüüpi tingimust. Kogu arvutusliikme efekt on määratud harude, millede väärtustüübid peavad ühtima, efektide ülemise rajaga.
+\item {\tt _\$_} rakendab esimesega väärtusliikmega antud funktsiooni teise väärtusliikmega argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Kogu arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
+\item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtusliiget. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutusliikme konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamisel püsipunkt.
+\item {\tt LET_IN_} lisab esimese arvutusliikme väärtustüübi teise arvutusliikme konteksti. Kogu arvutuse efektis on arvutusliikmete korrutis ning väärtustüüp on määratud teise arvutusliikme tüübiga.
+\item {\tt CCAST} suurendab etteantud arvutusliikme tüüpi vastavalt alamtüübi tõestusele.
 \end{itemize}
 
 
@@ -532,14 +600,14 @@ mutual
    TRY_WITH_ : {e e' : E} {σ : VType} → CTerm Γ (e / σ) →
                CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
    IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
-     CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+                CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
    _$_ : {σ : VType} {τ : CType} →
          VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
    PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
           CTerm Γ (e / σ) → CTerm (σ ∷ nat ∷ Γ) (e' / σ) →
           e · e' ⊑ e → CTerm Γ (e / σ)
    LET_IN_ : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
-            CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
+             CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
    CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
            e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
   \end{verbatim}
