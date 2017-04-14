@@ -33,7 +33,7 @@ suc n <? (x ∷ Γ) | no ¬p = no (lemma-<? Γ x n ¬p)
 -- effect inference
 
 mutual -- refined type inference
-  infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
+  infer-vtype : Ctx → vTerm → Maybe VType
   infer-vtype Γ TT = just bool
   infer-vtype Γ FF = just bool
   infer-vtype Γ ZZ = just nat
@@ -50,13 +50,13 @@ mutual -- refined type inference
   ... | just (_ ∏ σ') = just σ'
   ... | _             = nothing
   infer-vtype Γ (VAR x) with x <? Γ
-  infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
-  infer-vtype Γ (VAR x) | no ¬p = nothing
+  ... | yes p = just (lkp Γ (fromℕ≤ p))
+  ... | no ¬p = nothing
   infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
   ... | just τ = just (σ ⇒ τ)
   ... | _      = nothing
 
-  infer-ctype : (Γ : Ctx) → cTerm → Maybe CType
+  infer-ctype : Ctx → cTerm → Maybe CType
   infer-ctype Γ (VAL x) with infer-vtype Γ x
   ... | just σ = just (ok / σ)
   ... | _      = nothing
@@ -76,28 +76,28 @@ mutual -- refined type inference
   infer-ctype Γ (PREC x t t')
       with infer-vtype Γ x
   ... | just nat with infer-ctype Γ t
+  ...        | nothing = nothing
   ...        | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+  ...                       | nothing = nothing
   ...                       | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
   ...                                        | yes _ | yes _ = just (e / σ)
   ...                                        | _     | _     = nothing
-  infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
-  infer-ctype Γ (PREC x t t') | just nat | _ = nothing
   infer-ctype Γ (PREC x t t') | _ = nothing
   infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
+  ... | nothing = nothing
   ... | just (e / σ) with infer-ctype (σ ∷ Γ) t'
+  ...                | nothing        = nothing
   ...                | just (e' / σ') = just (e · e' / σ')
-  ...                | _              = nothing
-  infer-ctype Γ (LET t IN t') | _            = nothing
 
 
 ------------------------------------------------------------------------
 
-infer-vtermType : (Γ : Ctx) (t : vTerm) → Set
+infer-vtermType : Ctx → vTerm → Set
 infer-vtermType Γ t with infer-vtype Γ t 
 ... | nothing = ⊤
 ... | just τ = VTerm Γ τ
 
-infer-ctermType : (Γ : Ctx) (t : cTerm) → Set
+infer-ctermType : Ctx → cTerm → Set
 infer-ctermType Γ t with infer-ctype Γ t 
 ... | nothing = ⊤
 ... | just τ = CTerm Γ τ
@@ -122,7 +122,8 @@ mutual -- refined term inference
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
   infer-vterm Γ ⟨ t , t' ⟩
-      with infer-vtype Γ t | infer-vterm Γ t | infer-vtype Γ t' | infer-vterm Γ t'
+      with infer-vtype Γ t | infer-vterm Γ t |
+           infer-vtype Γ t' | infer-vterm Γ t'
   ... | just _  | u | just _  | u' = ⟨ u , u' ⟩
   ... | just _  | _ | nothing | _  = tt
   ... | nothing | _ | _       | _  = tt
@@ -141,7 +142,8 @@ mutual -- refined term inference
   infer-vterm Γ (VAR x) with x <? Γ
   ... | yes p = VAR (trace Γ (fromℕ≤ p))
   ... | no _  = tt
-  infer-vterm Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
+  infer-vterm Γ (LAM σ t)
+      with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
   ... | just _ | u = LAM σ u
   ... | nothing | u = tt
 
@@ -155,12 +157,14 @@ mutual -- refined term inference
   ... | _ = FAIL σ
   
   infer-cterm Γ (TRY t WITH t')
-      with infer-ctype Γ t | infer-cterm Γ t | infer-ctype Γ t' | infer-cterm Γ t'
+      with infer-ctype Γ t | infer-cterm Γ t |
+           infer-ctype Γ t' | infer-cterm Γ t'
   ... | nothing      | _ | _              | _ = tt
   ... | just _       | _ | nothing        | _ = tt
-  ... | just (e / σ) | u | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  ...                                          | nothing | _ = tt
-  ...                                          | just _ | [ p ] =
+  ... | just (e / σ) | u | just (e' / σ') | u'
+           with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+  ...      | nothing | _ = tt
+  ...      | just _ | [ p ] =
       TRY  CCAST u (⊔V-subtype p)
       WITH CCAST u' (⊔V-subtype-sym {σ} p)
 
@@ -170,18 +174,22 @@ mutual -- refined term inference
   ... | just nat | _ = tt
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
-  ... | just bool | x' with infer-ctype Γ t | infer-cterm Γ t
-  ...                  | nothing | u = tt
-  ...                  | just (e  / σ) | u with infer-ctype Γ t' | infer-cterm Γ t'
-  ...                                      | nothing | u' = tt
-  ...                                      | just (e' / σ') | u' with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
-  ...                                                            | nothing | _     = tt
-  ...                                                            | just ⊔σ | [ p ] =
+  ... | just bool | x'
+           with infer-ctype Γ t | infer-cterm Γ t
+  ...      | nothing | u = tt
+  ...      | just (e  / σ) | u
+                with infer-ctype Γ t' | infer-cterm Γ t'
+  ...           | nothing | u' = tt
+  ...           | just (e' / σ') | u'
+                     with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+  ...                | nothing | _     = tt
+  ...                | just ⊔σ | [ p ] =
       IF x' THEN CCAST u (⊔V-subtype p)
             ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 
   infer-cterm Γ (f $ x)
-      with infer-vtype Γ f | infer-vterm Γ f | infer-vtype Γ x | infer-vterm Γ x
+      with infer-vtype Γ f | infer-vterm Γ f |
+           infer-vtype Γ x | infer-vterm Γ x
   ... | nothing   | _ | _ | _ = tt
   ... | just nat  | _ | _ | _ = tt
   ... | just bool | _ | _ | _ = tt
@@ -190,8 +198,6 @@ mutual -- refined term inference
   ... | just (σ ⇒ τ) | f' | just σ' | x' with σ' ≤V? σ
   ...                                     | no _  = tt
   ...                                     | yes p = f' $ VCAST x' p
-
-
 
   infer-cterm Γ (PREC x t t')  with infer-vtype Γ x | infer-vterm Γ x
   ... | nothing | _  = tt

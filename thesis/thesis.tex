@@ -46,6 +46,7 @@
 \newunicodechar{∘}{$\circ$}
 \newunicodechar{₁}{\textsubscript{1}}
 \newunicodechar{η}{$\eta$}
+\newunicodechar{⊤}{$\top$}
 
 %\renewcommand{\ttdefault}{\sfdefault}
 %\usepackage{inconsolata}
@@ -114,7 +115,8 @@
 \onehalfspacing
 
 \begin{verbatim}
-λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ ∘ ₁
+λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
+∘ ₁ ⊤
 \end{verbatim}
 % ------------------------------------------------------------
   \begin{center}
@@ -405,50 +407,8 @@ lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \label{fig:exc.ord}
 \end{figure}
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
-Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid ja mitte definitsioonid (jn~\ref{fig:exc.ord}).
+Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid, aga mitte definitsioonid (jn~\ref{fig:exc.ord}).
 Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
-
-\subsubsection{Alamtüübid}
-Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn~\ref{fig:exc.subtypes}).
-Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
-Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
-Üks väärtustüübi paar on teise alamtüüp {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
-Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused on alamtüübid,
-ja funktsioonide argumendid on kontravariantsed.
-Arvutustüüp on teise arvutustüübi alamtüüp {\tt st-comp}, kui nende efektid ja väärtustüübid on järjestatud.
-\begin{figure}
-  \begin{verbatim}
-mutual
-  data _≤V_ : VType → VType → Set where
-    st-bn : bool ≤V nat
-    st-refl : {σ : VType} → σ ≤V σ
-    st-prod : {σ σ' τ τ' : VType} →
-              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
-    st-func : {σ σ' : VType} {τ τ' : CType} →
-              σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
-
-  data _≤C_ : CType → CType → Set where
-    st-comp : {e e' : E} {σ σ' : VType} →
-              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
-
-mutual
-  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
-  st-trans st-refl q = q
-  st-trans p st-refl = p
-  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
-                                                   (st-trans p' q')
-  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
-                                                   (sct-trans p' q')
-
-  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
-  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
-                                                    (st-trans q q')\end{verbatim}
-  \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
-  \label{fig:exc.subtypes}
-\end{figure}
-
-Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel~\ref{fig:exc.subtypes}.
-\todo{explain}
 
 \subsubsection{Järjestatud monoid}
 \todo{osaline järjestatus või eeljärjestatus?}
@@ -548,7 +508,52 @@ record GradedMonad : Set where
 \end{figure}
 
 Saab näidata, et erandite järjestatud monoidil saab põhineda gradeeritud monaad.
-\subsection{Tüübituletus ja efektianalüüs} \label{ssec:exc.inference}
+
+\subsection{Tüübi- ja efektituletus} \label{ssec:exc.inference}
+
+\subsubsection{Alamtüübid}
+Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn~\ref{fig:exc.subtypes}).
+Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
+Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
+Üks väärtustüübi paar on teise alamtüüp {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
+Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused on alamtüübid,
+ja funktsioonide argumendid on kontravariantsed.
+Arvutustüüp on teise arvutustüübi alamtüüp {\tt st-comp}, kui nende efektid ja väärtustüübid on järjestatud.
+\begin{figure}
+  \begin{verbatim}
+mutual
+  data _≤V_ : VType → VType → Set where
+    st-bn : bool ≤V nat
+    st-refl : {σ : VType} → σ ≤V σ
+    st-prod : {σ σ' τ τ' : VType} →
+              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+    st-func : {σ σ' : VType} {τ τ' : CType} →
+              σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
+
+  data _≤C_ : CType → CType → Set where
+    st-comp : {e e' : E} {σ σ' : VType} →
+              e ⊑ e' → σ ≤V σ' → e / σ ≤C e' / σ'
+
+mutual
+  st-trans : {σ σ' σ'' : VType} → σ ≤V σ' → σ' ≤V σ'' → σ ≤V σ''
+  st-trans st-refl q = q
+  st-trans p st-refl = p
+  st-trans (st-prod p p') (st-prod q q') = st-prod (st-trans p q)
+                                                   (st-trans p' q')
+  st-trans (st-func p p') (st-func q q') = st-func (st-trans q p)
+                                                   (sct-trans p' q')
+
+  sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
+  sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
+                                                    (st-trans q q')\end{verbatim}
+  \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
+  \label{fig:exc.subtypes}
+\end{figure}
+
+Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel~\ref{fig:exc.subtypes}.
+\todo{explain}
+
+\subsubsection{Keele rafineerimine}
 
 Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutusliikmed.
 Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
@@ -562,19 +567,6 @@ Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud liikmetega, on rafineeritud liikme
 \item {\tt LAM} võtab väärtustüübi ja arvutusliikme, mille kontekst on parameetriga antud kontekstist täpselt väärtustüübi argumendi võrra suurem, ning annab funktsiooniruumile vastava väärtusliikme.
 \item {\tt VCAST} suurendab ettantud väärtusliikme tüüpi vastavalt alamtüübi tõestusele. See võimaldab erinevate alamtüüpidega väärtusliikmeid ühtlustada, mis on vajalik rafineeritud arvutusliikmete koostamisel.
 \end{itemize}
-
-Rafineeritud arvutusliikmed (jn \ref{fig:exc.refined}) määravad täpselt efektide kombineerimise.
-\begin{itemize}
-\item {\tt VAL} koostab antud väärtusliikmest õnnestunud arvutuse.
-\item {\tt FAIL} koostab väärtustüübist ebaõnnestunud arvutuse.
-\item {\tt TRY_WITH_} parandab põhiarvutusliikme efekti erandikäsitleja arvutusliikme efektiga. Kitsendusena peavad arvutusliikmed omama sama väärtustüüpi.
-\item {\tt IF_THEN_ELSE_} eeldab tõeväärtustüüpi tingimust. Kogu arvutusliikme efekt on määratud harude, millede väärtustüübid peavad ühtima, efektide ülemise rajaga.
-\item {\tt _\$_} rakendab esimesega väärtusliikmega antud funktsiooni teise väärtusliikmega argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Kogu arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
-\item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtusliiget. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutusliikme konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamisel püsipunkt.
-\item {\tt LET_IN_} lisab esimese arvutusliikme väärtustüübi teise arvutusliikme konteksti. Kogu arvutuse efektis on arvutusliikmete korrutis ning väärtustüüp on määratud teise arvutusliikme tüübiga.
-\item {\tt CCAST} suurendab etteantud arvutusliikme tüüpi vastavalt alamtüübi tõestusele.
-\end{itemize}
-
 
 \begin{figure}
   \begin{verbatim}
@@ -615,12 +607,36 @@ mutual
   \label{fig:exc.refined}
 \end{figure}
 
+Rafineeritud arvutusliikmed (jn \ref{fig:exc.refined}) määravad täpselt osaarvutuste efektide kombineerimise.
+\begin{itemize}
+\item {\tt VAL} koostab antud väärtusliikmest õnnestunud arvutuse.
+\item {\tt FAIL} koostab väärtustüübist ebaõnnestunud arvutuse.
+\item {\tt TRY_WITH_} parandab põhiarvutusliikme efekti erandikäsitleja arvutusliikme efektiga. Kitsendusena peavad arvutusliikmed omama sama väärtustüüpi.
+\item {\tt IF_THEN_ELSE_} eeldab tõeväärtustüüpi tingimust. Kogu arvutusliikme efekt on määratud harude, millede väärtustüübid peavad ühtima, efektide ülemise rajaga.
+\item {\tt _\$_} rakendab esimesega väärtusliikmega antud funktsiooni teise väärtusliikmega argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Kogu arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
+\item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtusliiget. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutusliikme konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamisel püsipunkt.
+\item {\tt LET_IN_} lisab esimese arvutusliikme väärtustüübi teise arvutusliikme konteksti. Kogu arvutuse efektis on arvutusliikmete korrutis ning väärtustüüp on määratud teise arvutusliikme tüübiga.
+\item {\tt CCAST} suurendab etteantud arvutusliikme tüüpi vastavalt alamtüübi tõestusele.
+\end{itemize}
 
 
+\subsubsection{Liikmete tüübituletus}
+
+Etteantud kontekstis saab väärtusliikmele tuletada vastava väärtustüübi (jn \ref{fig:exc.infer-vtype}).
+Kuna vaste võib puududa, siis on {\tt infer-vtype} tulemus mähitud {\tt Maybe} monaadi.
+Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
+\begin{itemize}
+\item {\tt TT} ja {\tt FF} annavad kindlasti tõeväärtustüübi.
+\item {\tt ZZ} on kindlasti naturaalarvu tüüpi. {\tt SS t} korral tuleb täiendavalt kontrollida, kas alamliige {\tt t} on samas kontekstis naturaalarvu tüüpi. Vastasel korral on liige halvasti koostatud ja selle tüüp puudub.
+\item Paari {\tt ⟨ t , t' ⟩} tüüp on määratud, kui alamliikmete {\tt t} ja {\tt t'} tüübid on samas kontekstis määratud. Paari tüübiks on alamliikmete tüüpide korrutis. Ülejäänud juhtudel pole paari tüüp määratud.
+\item {\tt FST t} ja {\tt SND t} on määratud, kui alamliige {\tt t} on paar, st antud kontekstis on ta korrutise tüüpi. Projektsiooni tüübiks on vastavalt esimene või teine korrutatav.
+\item {\tt VAR x} korral tuleb kontrollida, et naturaalarv {\tt x} on väiksem kui kontekst {\tt Γ} pikkus. Selleks on kasutatud lahendajat {\tt _<?_}. Naturaalarvude võrratusest {\tt p} on koostatud konteksti pikkusega piiratud naturaalarv {\tt fromℕ≤ p}, mida kasutatakse muutujale vastava tüübi otsimiseks kontekstist {\tt lkp Γ}.
+\item {\tt LAM σ t} puhul tuleb kontrollida, et arvutusliikmega {\tt t} antud keha on hästi tüübitud kontekstis, mida on laiendatud parameetri {\tt σ} võrra. Arvutusliikme tüübi tuletus {\tt infer-ctype} on toodud allpool.
+\end{itemize}
 
 \begin{figure}
   \begin{verbatim}
-infer-vtype : (Γ : Ctx) → vTerm → Maybe VType
+infer-vtype : Ctx → vTerm → Maybe VType
 infer-vtype Γ TT = just bool
 infer-vtype Γ FF = just bool
 infer-vtype Γ ZZ = just nat
@@ -637,18 +653,31 @@ infer-vtype Γ (SND t) with infer-vtype Γ t
 ... | just (_ ∏ σ') = just σ'
 ... | _             = nothing
 infer-vtype Γ (VAR x) with x <? Γ
-infer-vtype Γ (VAR x) | yes p = just (lkp Γ (fromℕ≤ p))
-infer-vtype Γ (VAR x) | no ¬p = nothing
+... | yes p = just (lkp Γ (fromℕ≤ p))
+... | no ¬p = nothing
 infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
 ... | just τ = just (σ ⇒ τ)
 ... | _      = nothing\end{verbatim}
-  \caption{Eranditega keele väärtustüüpide tüübituletus.}
+  \caption{Eranditega keele väärtusliikmete tüübituletus.}
   \label{fig:exc.infer-vtype}
 \end{figure}
 
+Joonisel \ref{fig:exc.infer-ctype} on toodud etteantud kontekstis arvutusliikmele tüübi tuletamine.
+Nagu väärtusliikmete tüübituletuse puhul, on ka arvutusliikmete tüübituletus {\tt infer-ctype} tulemus mähitud {\tt Maybe} monaadi.
+Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
+\begin{itemize}
+\item {\tt VAL x} on tüübitud, kui väärtusliikme {\tt x} tüübituletus õnnestub. Arvutuse väärtustüübiks on tuletatud tüüp. Efekti hinnang {\tt ok} tähistab arvutuse õnnestumist. 
+\item {\tt FAIL σ} on alati väärtustüübi {\tt σ} ebaõnnestumise tüüpi, mille efekti hinnang on {\tt err}.
+\item {\tt TRY t WITH t'} on tüübitud, kui arvutusliikmed {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüübiks on põhiarvutuse tüübi {\tt τ} parandamine erandikäsitleja tüübiga {\tt τ'}. Arvutustüüpide parandus _⊹C_ on defineeritud efektide paranduse _⊹_ ja väärtustüüpide ülemise raja _⊔V_ abil.
+\item {\tt IF x THEN t ELSE t'} eeldab, et väärtusliige {\tt x} on tõeväärtustüüpi. Kogu arvutuse tüüp on määratud harude tüüpide {\tt τ} ja {\tt τ'} ülemise rajaga {\tt τ ⊔C τ'}.
+\item {\tt f \$ t} korral kontrollitakse, et väärtusliikme {\tt f} tüübiks on funktsiooniruum ja väärtusliikmele {\tt t} tuletatud tüüp on {\tt f} parameetri alamtüüp. Ülejäänud juhtudel ei ole funktsiooni rakendamine hästi tüübitud.
+\item {\tt PREC x t t'}
+\item {\tt LET t IN t'}
+\end{itemize}
+
 \begin{figure}
   \begin{verbatim}
-infer-ctype : (Γ : Ctx) → cTerm → Maybe CType
+infer-ctype : Ctx → cTerm → Maybe CType
 infer-ctype Γ (VAL x) with infer-vtype Γ x
 ... | just σ = just (ok / σ)
 ... | _      = nothing
@@ -668,22 +697,87 @@ infer-ctype Γ (f $ t) | _ | _ = nothing
 infer-ctype Γ (PREC x t t')
     with infer-vtype Γ x
 ... | just nat with infer-ctype Γ t
+...        | nothing = nothing
 ...        | just (e / σ) with infer-ctype (σ ∷ nat ∷ Γ) t'
+...                       | nothing = nothing
 ...                       | just (e' / σ') with e · e' ⊑? e | σ ≡V? σ'
 ...                                        | yes _ | yes _ = just (e / σ)
 ...                                        | _     | _     = nothing
-infer-ctype Γ (PREC x t t') | just nat | just (_ / _) | _ = nothing
-infer-ctype Γ (PREC x t t') | just nat | _ = nothing
 infer-ctype Γ (PREC x t t') | _ = nothing
 infer-ctype Γ (LET t IN t') with infer-ctype Γ t 
+... | nothing = nothing
 ... | just (e / σ) with infer-ctype (σ ∷ Γ) t'
-...                | just (e' / σ') = just (e · e' / σ')
-...                | _              = nothing
-infer-ctype Γ (LET t IN t') | _            = nothing\end{verbatim}
-  \caption{Eranditega keele arvutustüüpide tüübituletus.}
+...                | nothing        = nothing
+...                | just (e' / σ') = just (e · e' / σ')\end{verbatim}
+  \caption{Eranditega keele arvutusliikmete tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
 
+\subsubsection{Liikmete efektituletus}
+
+
+\begin{figure}
+  \begin{verbatim}
+infer-vtermType : Ctx → vTerm → Set
+infer-vtermType Γ t with infer-vtype Γ t 
+... | nothing = ⊤
+... | just τ = VTerm Γ τ
+
+infer-ctermType : Ctx → cTerm → Set
+infer-ctermType Γ t with infer-ctype Γ t 
+... | nothing = ⊤
+... | just τ = CTerm Γ τ\end{verbatim}
+  \caption{Väärtus- ja arvutusliikmete efektituletuste tüübikonstruktorid.}
+  \label{fig:exc.infer-term-type}
+\end{figure}
+
+\begin{figure}
+  \begin{verbatim}
+infer-vterm : (Γ : Ctx) (t : vTerm) → infer-vtermType Γ t 
+infer-vterm Γ TT = TT
+infer-vterm Γ FF = FF
+infer-vterm Γ ZZ = ZZ
+infer-vterm Γ (SS t) with infer-vtype Γ t | infer-vterm Γ t
+... | just nat | u = SS u
+... | just bool | _ = tt
+... | just (_ ∏ _) | _ = tt
+... | just (_ ⇒ _) | _ = tt
+... | nothing | _ = tt
+infer-vterm Γ ⟨ t , t' ⟩
+    with infer-vtype Γ t | infer-vterm Γ t |
+         infer-vtype Γ t' | infer-vterm Γ t'
+... | just _  | u | just _  | u' = ⟨ u , u' ⟩
+... | just _  | _ | nothing | _  = tt
+... | nothing | _ | _       | _  = tt
+infer-vterm Γ (FST t) with infer-vtype Γ t | infer-vterm Γ t
+... | just nat | _ = tt
+... | just bool | _ = tt
+... | just (_ ∏ _) | u = FST u
+... | just (_ ⇒ _) | _ = tt
+... | nothing | _ = tt
+infer-vterm Γ (SND t) with infer-vtype Γ t | infer-vterm Γ t
+... | just nat | _ = tt
+... | just bool | _ = tt
+... | just (_ ∏ _) | u = SND u
+... | just (_ ⇒ _) | _ = tt
+... | nothing | _ = tt
+infer-vterm Γ (VAR x) with x <? Γ
+... | yes p = VAR (trace Γ (fromℕ≤ p))
+... | no _  = tt
+infer-vterm Γ (LAM σ t)
+    with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
+... | just _ | u = LAM σ u
+... | nothing | u = tt\end{verbatim}
+  \caption{Eranditega keele väärtusliikmete efektituletus.}
+  \label{fig:exc.infer-vterm}
+\end{figure}
+
+\begin{figure}
+  \begin{verbatim}
+  \end{verbatim}
+  \caption{Eranditega keele arvutusliikmete efektituletus.}
+  \label{fig:exc.infer-cterm}
+\end{figure}
 
 \subsection{Semantika}\label{ssec:exc.semantics}
 aoeu
