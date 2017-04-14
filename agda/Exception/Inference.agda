@@ -92,13 +92,13 @@ mutual -- refined type inference
 
 ------------------------------------------------------------------------
 
-infer-vtermType : Ctx → vTerm → Set
-infer-vtermType Γ t with infer-vtype Γ t 
+refined-vterm : Ctx → vTerm → Set
+refined-vterm Γ t with infer-vtype Γ t 
 ... | nothing = ⊤
 ... | just τ = VTerm Γ τ
 
-infer-ctermType : Ctx → cTerm → Set
-infer-ctermType Γ t with infer-ctype Γ t 
+refined-cterm : Ctx → cTerm → Set
+refined-cterm Γ t with infer-ctype Γ t 
 ... | nothing = ⊤
 ... | just τ = CTerm Γ τ
 
@@ -111,7 +111,7 @@ infer-ctermType Γ t with infer-ctype Γ t
 
 
 mutual -- refined term inference
-  infer-vterm : (Γ : Ctx) (t : vTerm) → infer-vtermType Γ t 
+  infer-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
   infer-vterm Γ TT = TT
   infer-vterm Γ FF = FF
   infer-vterm Γ ZZ = ZZ
@@ -148,7 +148,7 @@ mutual -- refined term inference
   ... | nothing | u = tt
 
 
-  infer-cterm : (Γ : Ctx) (t : cTerm) → infer-ctermType Γ t
+  infer-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
   infer-cterm Γ (VAL t) with infer-vtype Γ t | infer-vterm Γ t
   ... | nothing | u = tt
   ... | just _ | u = VAL u
@@ -276,11 +276,11 @@ mutual
 
 ---------------------------------------------------------------------------------------------
 
---infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : infer-ctermType Γ t) → erase t' ≡ t -- leq
+--infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : refined-cterm Γ t) → erase t' ≡ t -- leq
 --infer-corr = {!!}
 
 --infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) →
---             infer-ctype Γ (erase-cterm t) ≡ just τ → (t' : infer-ctermType Γ (erase-cterm t)) → t' ≤C t
+--             infer-ctype Γ (erase-cterm t) ≡ just τ → (t' : refined-cterm Γ (erase-cterm t)) → t' ≤C t
 --infer-corr = ?
 
 correct-type : (Γ : Ctx) {τ : CType} (t : CTerm Γ τ) → Set

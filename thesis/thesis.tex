@@ -45,6 +45,7 @@
 \newunicodechar{ℕ}{$\mathbb{N}$}
 \newunicodechar{∘}{$\circ$}
 \newunicodechar{₁}{\textsubscript{1}}
+\newunicodechar{₂}{\textsubscript{2}}
 \newunicodechar{η}{$\eta$}
 \newunicodechar{⊤}{$\top$}
 
@@ -116,7 +117,7 @@
 
 \begin{verbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
-∘ ₁ ⊤
+∘ ₁ ₂ ⊤
 \end{verbatim}
 % ------------------------------------------------------------
   \begin{center}
@@ -718,13 +719,13 @@ infer-ctype Γ (LET t IN t') with infer-ctype Γ t
 
 \begin{figure}
   \begin{verbatim}
-infer-vtermType : Ctx → vTerm → Set
-infer-vtermType Γ t with infer-vtype Γ t 
+refined-vterm : Ctx → vTerm → Set
+refined-vterm Γ t with infer-vtype Γ t 
 ... | nothing = ⊤
 ... | just τ = VTerm Γ τ
 
-infer-ctermType : Ctx → cTerm → Set
-infer-ctermType Γ t with infer-ctype Γ t 
+refined-cterm : Ctx → cTerm → Set
+refined-cterm Γ t with infer-ctype Γ t 
 ... | nothing = ⊤
 ... | just τ = CTerm Γ τ\end{verbatim}
   \caption{Väärtus- ja arvutusliikmete efektituletuste tüübikonstruktorid.}
@@ -733,7 +734,7 @@ infer-ctermType Γ t with infer-ctype Γ t
 
 \begin{figure}
   \begin{verbatim}
-infer-vterm : (Γ : Ctx) (t : vTerm) → infer-vtermType Γ t 
+infer-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
 infer-vterm Γ TT = TT
 infer-vterm Γ FF = FF
 infer-vterm Γ ZZ = ZZ
@@ -780,7 +781,83 @@ infer-vterm Γ (LAM σ t)
 \end{figure}
 
 \subsection{Semantika}\label{ssec:exc.semantics}
-aoeu
+
+Joonisel \ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- ja arvutustüüpide ning konteksti semantiline interpretatsioon metakeeles Agda.
+\begin{itemize}
+\item {\tt nat} interpreteeritakse kui naturaalarvud {\tt ℕ} ja {\tt bool} kui tõeväärtused {\tt Bool}.
+\item {\tt σ ∏ σ'} korral tehakse rekursiivsed väljakutsed korrutatavatele ning tulemused korrutatakse Agdas {\tt _×_}.
+\item {\tt σ ⇒ τ} interpretatsioon vastab Agda funktsioonile, mille parameetri ja tulemuse tüüp on interpreeritud vastavalt väärtustüübist {\tt σ} ja arvutustüübist {\tt τ}.
+\item Arvutustüübi {\tt ε / σ} interpreteerimiseks rakendatakse gradeeritud monaadi tüübikonstruktorit {\tt T} efektile {\tt ε} ja väärtustüübi {\tt σ} interpretatsioonile.
+\item Tühi kontekst vastab tipp-tüübile {\tt ⊤}. Mitte-tühja konteksti pea-element interpreteeritakse ja korrutatakse rekursiivselt interpreteeritud sabaga.
+\end{itemize}
+
+\begin{figure}
+  \begin{verbatim}
+mutual
+  ⟪_⟫v : VType → Set
+  ⟪ nat ⟫v = ℕ
+  ⟪ bool ⟫v = Bool
+  ⟪ σ ∏ σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
+  ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
+
+  ⟪_⟫c : CType → Set
+  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫v
+
+⟪_⟫x : Ctx → Set
+⟪ [] ⟫x = ⊤
+⟪ σ ∷ Γ ⟫x = ⟪ σ ⟫v × ⟪ Γ ⟫x\end{verbatim}
+  \caption{Väärtus-, arvutustüüpide ja konteksti semantika.}
+  \label{fig:type-semantics}
+\end{figure}
+
+Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme interpretatsioon antud konteksti interpretatsioonis.
+\begin{itemize}
+\item {\tt TT} ja {\tt FF} seatakse vastavusse tõese ja vääraga.
+\item {\tt ZZ} vastab nullile. {\tt SS t} on {\tt t} interpretatsiooni järglane.
+\item {\tt ⟨ t , t' ⟩} tõlgendatakse kui {\tt t} ja {\tt t'} interpretatsioonide paari.
+\item {\tt FST t} ja {\tt SND t} teevad vastavalt esimese ja teise projektsiooni {\tt t} interpretatsioonist.
+\item {\tt VAR x} projekteerib konteksti interpretatsioonist {\tt ρ} tõestusele {\tt x} vastava (n-ö {\tt x}-nda) väärtuse.
+\item {\tt LAM σ t} interpreteeritakse kui lambda abstraktsiooni, mille seotud muutuja {\tt x} lisatakse arvutusliikme {\tt t} interpreteerimise konteksti.
+\item {\tt VCAST t p} puhul interpreteeritakse väärtusliige {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
+\end{itemize}
+
+\begin{figure}
+  \begin{verbatim}
+⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫x → ⟪ σ ⟫v
+⟦ TT ⟧v ρ = true
+⟦ FF ⟧v ρ = false
+⟦ ZZ ⟧v ρ = zero
+⟦ SS t ⟧v ρ = suc (⟦ t ⟧v ρ)
+⟦ ⟨ t , t' ⟩ ⟧v ρ = ⟦ t ⟧v ρ , ⟦ t' ⟧v ρ
+⟦ FST t ⟧v ρ = proj₁ (⟦ t ⟧v ρ)
+⟦ SND t ⟧v ρ = proj₂ (⟦ t ⟧v ρ)
+⟦ VAR x ⟧v ρ = proj x ρ
+⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧c (x , ρ)
+⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)\end{verbatim}
+  \caption{Eranditega keele väärtusliikmete semantika.}
+  \label{fig:exc.vterm-semantics}
+\end{figure}
+
+
+\begin{figure}
+  \begin{verbatim}
+⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
+⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
+⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
+⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
+⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
+                                       then (sub (lub e e') (⟦ t ⟧c ρ))
+                                       else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
+⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ)
+                                (⟦ t ⟧c ρ)
+                                ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
+⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
+⟦ LET_IN_ {e} {e'} m n ⟧c ρ = bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
+⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)\end{verbatim}
+  \caption{Eranditega keele arvutusliikmete semantika.}
+  \label{fig:exc.cterm-semantics}
+\end{figure}
+
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 aeoust haoseu th
 

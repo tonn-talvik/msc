@@ -25,11 +25,11 @@ mutual
   ⟪_⟫v : VType → Set
   ⟪ nat ⟫v = ℕ
   ⟪ bool ⟫v = Bool
-  ⟪ t ∏ u ⟫v = ⟪ t ⟫v × ⟪ u ⟫v
-  ⟪ t ⇒ c ⟫v = ⟪ t ⟫v → ⟪ c ⟫c
+  ⟪ σ ∏ σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
+  ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
 
   ⟪_⟫c : CType → Set
-  ⟪ ε / t ⟫c = T ε ⟪ t ⟫v
+  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫v
 
 ⟪_⟫x : Ctx → Set
 ⟪ [] ⟫x = ⊤
