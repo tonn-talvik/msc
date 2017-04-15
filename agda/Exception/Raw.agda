@@ -23,7 +23,7 @@ mutual
     LAM : VType → cTerm → vTerm
 
   data cTerm : Set where
-    VAL : vTerm → cTerm -- superfluous
+    VAL : vTerm → cTerm
     FAIL : VType → cTerm
     TRY_WITH_ : cTerm → cTerm → cTerm
     IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm

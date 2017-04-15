@@ -49,9 +49,6 @@
 \newunicodechar{η}{$\eta$}
 \newunicodechar{⊤}{$\top$}
 
-%\renewcommand{\ttdefault}{\sfdefault}
-%\usepackage{inconsolata}
-
 \usepackage[estonian]{babel}
 %\usepackage[none]{hyphenat}
 
@@ -838,33 +835,59 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme in
   \label{fig:exc.vterm-semantics}
 \end{figure}
 
+Rafineeritud arvutusliikme semantiline interpretatsioon etteantud konteksti interpretatsioonis on toodud joonisel \ref{fig:exc.cterm-semantics}.
+\begin{itemize}
+\item {\tt VAL x} interpreteerib väärtusliikme {\tt x} antud kontekstis ja tagastab selle gradeeritud monaadis.
+\item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
+\item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. \todo{explain sor}
+\item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
+\item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtusliikme {\tt x} interpretatsioon, baas on arvutusliikme {\tt t} interpretatsioon ja sammuks on arvutusliikme {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. \todo{explain primrecT}
+\item {\tt f \$ x} korral rakendatakse väärtusliikme {\tt f} interpretatsiooni väärtusliikme {\tt x} interpretatsioonile.
+\item {\tt LET_IN_} seob osaarvutused: esimese osarvutuse interpretatsioon lisatakse teise osaarvutuse interpreteerimise konteksti.
+\item {\tt CCAST t p} puhul interpreteeritakse arvutusliige {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
+\end{itemize}
 
 \begin{figure}
   \begin{verbatim}
+sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+sor err _ _ x' = x'
+sor ok _ x _ = x
+sor errok err x _ = x
+sor errok ok (just x) _ = x
+sor errok ok nothing x' = x'
+sor errok errok (just x) x' = just x
+sor errok errok nothing x' = x'
+
+primrecT : {e e' : E} {X : Set} →
+           ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
+primrecT zero z s p = z
+primrecT {e} {e'} (suc n) z s p =
+    sub p (bind {e} {e'} (s n) (primrecT n z s p))
+
 ⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
 ⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
-⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
+⟦ FAIL σ ⟧c ρ = tt
 ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
 ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
-                                       then (sub (lub e e') (⟦ t ⟧c ρ))
-                                       else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
-⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ)
-                                (⟦ t ⟧c ρ)
+                                      then (sub (lub e e') (⟦ t ⟧c ρ))
+                                      else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
+⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ) (⟦ t ⟧c ρ)
                                 ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
-⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
-⟦ LET_IN_ {e} {e'} m n ⟧c ρ = bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
+⟦ f $ x ⟧c ρ = ⟦ f ⟧v ρ (⟦ x ⟧v ρ)
+⟦ LET_IN_ {e} {e'} m n ⟧c ρ =
+    bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
 ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)\end{verbatim}
   \caption{Eranditega keele arvutusliikmete semantika.}
   \label{fig:exc.cterm-semantics}
 \end{figure}
 
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
-aeoust haoseu th
+
 
 \clearpage
 
 \section{Mitte-deterministlik keel}
-aseo huasousato usaoheu s
+
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
 \clearpage

@@ -57,13 +57,12 @@ proj (here' refl) ρ = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
 
-primrecT : {e e' : E} {X : Set} → ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
+primrecT : {e e' : E} {X : Set} →
+           ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
 primrecT zero z s p = z
-primrecT {e} {e'} (suc n) z s p = sub p (bind {e} {e'} (s n) (primrecT n z s p)) 
+primrecT {e} {e'} (suc n) z s p =
+    sub p (bind {e} {e'} (s n) (primrecT n z s p)) 
 
-
-sfail : {X : Set} → T err X
-sfail = tt
 
 sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
 sor err _ _ x' = x'
@@ -90,17 +89,17 @@ mutual
 
   ⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
   ⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
-  ⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
+  ⟦ FAIL σ ⟧c ρ = tt
   ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
   ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
                                          then (sub (lub e e') (⟦ t ⟧c ρ))
                                          else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
-  ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ)
-                                  (⟦ t ⟧c ρ)
+  ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ) (⟦ t ⟧c ρ)
                                   ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
-  ⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
-  ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
+  ⟦ f $ x ⟧c ρ = ⟦ f ⟧v ρ (⟦ x ⟧v ρ)
+  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ =
+      bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
+  ⟦ CCAST t p ⟧c ρ = ccast p (⟦ t ⟧c ρ)
 
 
 
