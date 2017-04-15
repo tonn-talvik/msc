@@ -46,6 +46,7 @@
 \newunicodechar{∘}{$\circ$}
 \newunicodechar{₁}{\textsubscript{1}}
 \newunicodechar{₂}{\textsubscript{2}}
+\newunicodechar{₃}{\textsubscript{3}}
 \newunicodechar{η}{$\eta$}
 \newunicodechar{⊤}{$\top$}
 
@@ -114,13 +115,13 @@
 
 \begin{verbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
-∘ ₁ ₂ ⊤
+∘ ₁ ₂ ₃ ⊤
 \end{verbatim}
 % ------------------------------------------------------------
   \begin{center}
     \textsc{tallinna tehnikaülikool}\\
     Infotehnoloogia teaduskond\\
-    Arvutiteaduse instituut\\
+    Tarkvarateaduse instituut\\
     \vfill
     
     Tõnn Talvik 132619IAPM
@@ -669,8 +670,16 @@ Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
 \item {\tt TRY t WITH t'} on tüübitud, kui arvutusliikmed {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüübiks on põhiarvutuse tüübi {\tt τ} parandamine erandikäsitleja tüübiga {\tt τ'}. Arvutustüüpide parandus _⊹C_ on defineeritud efektide paranduse _⊹_ ja väärtustüüpide ülemise raja _⊔V_ abil.
 \item {\tt IF x THEN t ELSE t'} eeldab, et väärtusliige {\tt x} on tõeväärtustüüpi. Kogu arvutuse tüüp on määratud harude tüüpide {\tt τ} ja {\tt τ'} ülemise rajaga {\tt τ ⊔C τ'}.
 \item {\tt f \$ t} korral kontrollitakse, et väärtusliikme {\tt f} tüübiks on funktsiooniruum ja väärtusliikmele {\tt t} tuletatud tüüp on {\tt f} parameetri alamtüüp. Ülejäänud juhtudel ei ole funktsiooni rakendamine hästi tüübitud.
-\item {\tt PREC x t t'}
-\item {\tt LET t IN t'}
+\item {\tt PREC x t t'} korral kontollitakse viit tingimust.
+  \begin{itemize}
+  \item Väärtusliige {\tt x} peab olema antud kontekstis naturaalarvu tüüpi.
+  \item Baasi arvutusliige {\tt t} peab olema antud kontekstis hästi tüübitud.
+  \item Sammu arvutusliige {\tt t'} peab olema tüübitud kontekstis, kuhu on lisatud naturaalarvu tüübi sammuloendur ja arvutusliikme {\tt t} väärtustüüpi {\tt σ} akumulaator.
+  \item Osaarvutustele tuletatud väärtustüübid peavad olema samad. Selleks kasutatakse lahendajat {\tt _≡V?_}.
+  \item Osaarvutuste efektide korrutis ei tohi olla suurem, kui baasi efekt. Seda kontrollitakse lahendajaga {\tt _⊑?_}.
+  \end{itemize}
+  Kui kõik tingimused kehtivad, siis kogu arvutuse tüüp on määratud baasi efekti ja väärtustüübiga.
+\item {\tt LET t IN t'} on tüübitud, kui arvutusliige {\tt t} on tüübitud antud kontekstis ja arvutusliige {\tt t'} on tüübitud kontekstis, mida on laiendatud esimese osaarvutuse väärtustüübi võrra. Arvutuse efektiks on osarvutuste efektide korrutis ning väärtustüübiks teise osaarvutuse väärtustüüp. Kui üks osaarvutust ei ole hästi tüübitud, siis ei ole ka kogu arvutus tüübitud.
 \end{itemize}
 
 \begin{figure}
@@ -765,7 +774,7 @@ infer-vterm Γ (VAR x) with x <? Γ
 infer-vterm Γ (LAM σ t)
     with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
 ... | just _ | u = LAM σ u
-... | nothing | u = tt\end{verbatim}
+    ... | nothing | u = tt\end{verbatim}
   \caption{Eranditega keele väärtusliikmete efektituletus.}
   \label{fig:exc.infer-vterm}
 \end{figure}
@@ -883,7 +892,108 @@ primrecT {e} {e'} (suc n) z s p =
 
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 
+\begin{figure}
+  \begin{verbatim}
+wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
+-- 
+  mutual
+  wkV : {Γ : Ctx} {σ τ : VType} →
+        (x : Fin (suc (length Γ))) →
+        VTerm Γ τ → VTerm (wkT Γ σ x) τ
+  -- 
+  wkC : {Γ : Ctx} {σ : VType} {τ : CType} →
+        (x : Fin (suc (length Γ))) →
+        CTerm Γ τ → CTerm (wkT Γ σ x) τ
+  --
 
+wk : {Γ : Ctx} → ⟪ Γ ⟫x →
+     {σ : VType} → ⟪ σ ⟫v →
+     (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫x 
+--
+mutual
+  lemmaV : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
+           {σ : VType} (v : ⟪ σ ⟫v) →
+           (x : Fin (suc (length Γ))) →
+           {τ : VType} (t : VTerm Γ τ) →
+           ⟦ wkV x t ⟧v (wk ρ v x) ≡ ⟦ t ⟧v ρ
+  --
+  lemmaC : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
+           {σ : VType} (v : ⟪ σ ⟫v) →
+           (x : Fin (suc (length Γ))) →
+           {τ : CType} (t : CTerm Γ τ) →
+           ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
+  --
+\end{verbatim}
+  \caption{Konteksti ja liikmete lõdvendamine.}
+  \label{fig:weakening}
+\end{figure}
+
+
+Monaadi spetsiifilised, efektist sõltumatud optimisatsioonid on toodud joonisel \ref{fig:exc.opt1}. {\tt the-same} näitab, et arvutust {\tt m} ei saa muuta, lisades sellele erandikäsitlejana sama arvutuse.
+
+\begin{figure}
+  \begin{verbatim}
+⊹-itself : (e : Exc) → e ⊹ e ≡ e
+⊹-itself err = refl
+⊹-itself ok = refl
+⊹-itself errok = refl
+
+the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X : VType}
+           (m : CTerm Γ (e / X)) →
+           sub-eq (⊹-itself e) (⟦ TRY m WITH m ⟧c ρ) ≡ ⟦ m ⟧c ρ
+the-same {err} m = refl
+the-same {ok} m = refl
+the-same {errok} {ρ = ρ} m with ⟦ m ⟧c ρ
+... | just _ = refl
+... | nothing = refl
+
+
+⊹-ass : (e e' e'' : Exc) → e ⊹ (e' ⊹ e'') ≡ (e ⊹ e') ⊹ e''
+⊹-ass err e' e'' = refl
+⊹-ass ok e' e'' = refl
+⊹-ass errok err e'' = refl
+⊹-ass errok ok e'' = refl
+⊹-ass errok errok err = refl
+⊹-ass errok errok ok = refl
+⊹-ass errok errok errok = refl
+
+handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X : VType}
+              (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
+              (m₃ : CTerm Γ (e₃ / X)) →
+              sub-eq (⊹-ass e₁ e₂ e₃)
+                     (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧c ρ)
+              ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧c ρ
+handler-ass {err} m₁ m₂ m₃ = refl
+handler-ass {ok} m₁ m₂ m₃ = refl
+handler-ass {errok} {err} m₁ m₂ m₃ = refl
+handler-ass {errok} {ok} m₁ m₂ m₃ = refl
+handler-ass {errok} {errok} {err} m₁ m₂ m₃ = refl
+handler-ass {errok} {errok} {ok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
+... | just _ = refl
+... | nothing = refl
+handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
+... | just x = refl
+... | nothing = refl\end{verbatim}
+  \caption{Monaadi spetsiifilised, efektist sõltumatud optimisatsioonid.}
+  \label{fig:exc.opt1}
+\end{figure}
+
+Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel \ref{fig:exc.opt2}.
+\begin{figure}
+  \begin{verbatim}
+failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
+          ⟦ m ⟧c ≡ ⟦ FAIL X ⟧c
+failure m = refl
+
+
+dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
+            (m : CTerm Γ (ok / σ)) (n : CTerm Γ (ε / τ ) ) →
+            (ρ : ⟪ Γ ⟫x) → 
+            ⟦ LET m IN (wkC zero n) ⟧c ρ ≡ ⟦ n ⟧c ρ
+dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n\end{verbatim}
+  \caption{Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid.}
+  \label{fig:exc.opt2}
+\end{figure}
 \clearpage
 
 \section{Mitte-deterministlik keel}
