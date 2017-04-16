@@ -552,7 +552,7 @@ mutual
 Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vastastikku joonisel~\ref{fig:exc.subtypes}.
 \todo{explain}
 
-\subsubsection{Keele rafineerimine}
+\subsubsection{Rafineeritud keel}
 
 Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutusliikmed.
 Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
@@ -619,7 +619,7 @@ Rafineeritud arvutusliikmed (jn \ref{fig:exc.refined}) määravad täpselt osaar
 \end{itemize}
 
 
-\subsubsection{Liikmete tüübituletus}
+\subsubsection{Liikmete tüübituletus}\label{sssec:exc.infer-type}
 
 Etteantud kontekstis saab väärtusliikmele tuletada vastava väärtustüübi (jn \ref{fig:exc.infer-vtype}).
 Kuna vaste võib puududa, siis on {\tt infer-vtype} tulemus mähitud {\tt Maybe} monaadi.
@@ -720,9 +720,11 @@ infer-ctype Γ (LET t IN t') with infer-ctype Γ t
   \label{fig:exc.infer-ctype}
 \end{figure}
 
-\subsubsection{Liikmete efektituletus}
+\subsubsection{Liikmete rafineerimine}
 
-
+Kui n-ö ``toorele'' liikmele õnnestub mingis kontekstis tuletada tüüp, siis saab sellest liikmest konstrueerida rafineeritud liikme.
+Joonisel \ref{fig:exc.infer-term-type} on toodud väärtus- ja arvutusliikmete rafineeritud tüübikonstruktorid.
+Tipp-tüüp {\tt ⊤} tähistab tüübituletuse ebaõnnestumist.
 \begin{figure}
   \begin{verbatim}
 refined-vterm : Ctx → vTerm → Set
@@ -734,49 +736,59 @@ refined-cterm : Ctx → cTerm → Set
 refined-cterm Γ t with infer-ctype Γ t 
 ... | nothing = ⊤
 ... | just τ = CTerm Γ τ\end{verbatim}
-  \caption{Väärtus- ja arvutusliikmete efektituletuste tüübikonstruktorid.}
+  \caption{Väärtus- ja arvutusliikmete rafineerimiste tüübikonstruktorid.}
   \label{fig:exc.infer-term-type}
 \end{figure}
 
+Väärtusliikmete rafineerimine etteantud kontekstis (jn \ref{fig:exc.refine-vterm}) matkib väärtusliikmete tüübituletust (alaptk \ref{sssec:exc.infer-type}).
+\begin{itemize}
+\item {\tt TT} ja {\tt FF} korral konstrueeritakse vastav rafineeritud väärtusliige.
+\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusliige null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusliige {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud naturaalarvu järglane {\tt SS} koostatakse alamväärtuse {\tt t} rafineeringust {\tt u}. Kui väärtusliikme {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks koostatakse tipp-tüübi element {\tt tt}.
+\item {\tt ⟨ t , t' ⟩} korral kontrollitakse, et mõlemad väärtusliikmed {\tt t} ja {\tt t'} on kontekstis hästi tüübitud ja rafineeritud paar koostatakse rafineeritud liikmetest {\tt u} ja {\tt u'}.
+\item {\tt FST t} puhul peab väärtusliikmele {\tt t} tuletatud tüüp olema korrutis. Rafineeritud projektsiooni saab koostada {\tt t} rafineeringust {\tt u}. {\tt SND t} juhtum on analoogne.
+\item {\tt VAR x} korral koostatakse lahendist {\tt p}, mis näitab, et naturaalarv {\tt x} on väiksem kui konteksti {\tt Γ} pikkus, rafineeritud muutuja tõestusega, et {\tt x}-iga määratud muutuja on kontekstis.
+\item {\tt LAM σ t} juhtumis lisatakse parameetri tüüp {\tt σ} konteksti ja kontrollitakse arvutusliikme {\tt t} hästi-tüübitust. Rafineeritud funktsiooni abstraktsioon koostatakse uues kontekstis rafineeritud arvutusest {\tt u}.
+\end{itemize}
+
 \begin{figure}
   \begin{verbatim}
-infer-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
-infer-vterm Γ TT = TT
-infer-vterm Γ FF = FF
-infer-vterm Γ ZZ = ZZ
-infer-vterm Γ (SS t) with infer-vtype Γ t | infer-vterm Γ t
+refine-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
+refine-vterm Γ TT = TT
+refine-vterm Γ FF = FF
+refine-vterm Γ ZZ = ZZ
+refine-vterm Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | u = SS u
 ... | just bool | _ = tt
 ... | just (_ ∏ _) | _ = tt
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
-infer-vterm Γ ⟨ t , t' ⟩
-    with infer-vtype Γ t | infer-vterm Γ t |
-         infer-vtype Γ t' | infer-vterm Γ t'
+refine-vterm Γ ⟨ t , t' ⟩
+    with infer-vtype Γ t | refine-vterm Γ t |
+         infer-vtype Γ t' | refine-vterm Γ t'
 ... | just _  | u | just _  | u' = ⟨ u , u' ⟩
 ... | just _  | _ | nothing | _  = tt
 ... | nothing | _ | _       | _  = tt
-infer-vterm Γ (FST t) with infer-vtype Γ t | infer-vterm Γ t
+refine-vterm Γ (FST t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | _ = tt
 ... | just bool | _ = tt
 ... | just (_ ∏ _) | u = FST u
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
-infer-vterm Γ (SND t) with infer-vtype Γ t | infer-vterm Γ t
+refine-vterm Γ (SND t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | _ = tt
 ... | just bool | _ = tt
 ... | just (_ ∏ _) | u = SND u
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
-infer-vterm Γ (VAR x) with x <? Γ
+refine-vterm Γ (VAR x) with x <? Γ
 ... | yes p = VAR (trace Γ (fromℕ≤ p))
 ... | no _  = tt
-infer-vterm Γ (LAM σ t)
-    with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
+refine-vterm Γ (LAM σ t)
+    with infer-ctype (σ ∷ Γ) t | refine-cterm (σ ∷ Γ) t
 ... | just _ | u = LAM σ u
-    ... | nothing | u = tt\end{verbatim}
-  \caption{Eranditega keele väärtusliikmete efektituletus.}
-  \label{fig:exc.infer-vterm}
+... | nothing | u = tt\end{verbatim}
+  \caption{Eranditega keele väärtusliikmete rafineerimine.}
+  \label{fig:exc.refine-vterm}
 \end{figure}
 
 \begin{figure}

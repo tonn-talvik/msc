@@ -110,55 +110,55 @@ refined-cterm Γ t with infer-ctype Γ t
 ⊔V-subtype-sym {σ} {σ'} p = ⊔V-subtype (trans (⊔V-sym σ' σ) p)
 
 
-mutual -- refined term inference
-  infer-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
-  infer-vterm Γ TT = TT
-  infer-vterm Γ FF = FF
-  infer-vterm Γ ZZ = ZZ
-  infer-vterm Γ (SS t) with infer-vtype Γ t | infer-vterm Γ t
+mutual
+  refine-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
+  refine-vterm Γ TT = TT
+  refine-vterm Γ FF = FF
+  refine-vterm Γ ZZ = ZZ
+  refine-vterm Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | u = SS u
   ... | just bool | _ = tt
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
-  infer-vterm Γ ⟨ t , t' ⟩
-      with infer-vtype Γ t | infer-vterm Γ t |
-           infer-vtype Γ t' | infer-vterm Γ t'
+  refine-vterm Γ ⟨ t , t' ⟩
+      with infer-vtype Γ t | refine-vterm Γ t |
+           infer-vtype Γ t' | refine-vterm Γ t'
   ... | just _  | u | just _  | u' = ⟨ u , u' ⟩
   ... | just _  | _ | nothing | _  = tt
   ... | nothing | _ | _       | _  = tt
-  infer-vterm Γ (FST t) with infer-vtype Γ t | infer-vterm Γ t
+  refine-vterm Γ (FST t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | _ = tt
   ... | just bool | _ = tt
   ... | just (_ ∏ _) | u = FST u
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
-  infer-vterm Γ (SND t) with infer-vtype Γ t | infer-vterm Γ t
+  refine-vterm Γ (SND t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | _ = tt
   ... | just bool | _ = tt
   ... | just (_ ∏ _) | u = SND u
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
-  infer-vterm Γ (VAR x) with x <? Γ
+  refine-vterm Γ (VAR x) with x <? Γ
   ... | yes p = VAR (trace Γ (fromℕ≤ p))
   ... | no _  = tt
-  infer-vterm Γ (LAM σ t)
-      with infer-ctype (σ ∷ Γ) t | infer-cterm (σ ∷ Γ) t
+  refine-vterm Γ (LAM σ t)
+      with infer-ctype (σ ∷ Γ) t | refine-cterm (σ ∷ Γ) t
   ... | just _ | u = LAM σ u
   ... | nothing | u = tt
 
 
-  infer-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
-  infer-cterm Γ (VAL t) with infer-vtype Γ t | infer-vterm Γ t
+  refine-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
+  refine-cterm Γ (VAL t) with infer-vtype Γ t | refine-vterm Γ t
   ... | nothing | u = tt
   ... | just _ | u = VAL u
 
-  infer-cterm Γ (FAIL σ) with infer-ctype Γ (FAIL σ)
+  refine-cterm Γ (FAIL σ) with infer-ctype Γ (FAIL σ)
   ... | _ = FAIL σ
   
-  infer-cterm Γ (TRY t WITH t')
-      with infer-ctype Γ t | infer-cterm Γ t |
-           infer-ctype Γ t' | infer-cterm Γ t'
+  refine-cterm Γ (TRY t WITH t')
+      with infer-ctype Γ t | refine-cterm Γ t |
+           infer-ctype Γ t' | refine-cterm Γ t'
   ... | nothing      | _ | _              | _ = tt
   ... | just _       | _ | nothing        | _ = tt
   ... | just (e / σ) | u | just (e' / σ') | u'
@@ -168,17 +168,17 @@ mutual -- refined term inference
       TRY  CCAST u (⊔V-subtype p)
       WITH CCAST u' (⊔V-subtype-sym {σ} p)
 
-  infer-cterm Γ (IF x THEN t ELSE t')
-      with infer-vtype Γ x | infer-vterm Γ x
+  refine-cterm Γ (IF x THEN t ELSE t')
+      with infer-vtype Γ x | refine-vterm Γ x
   ... | nothing | _ = tt
   ... | just nat | _ = tt
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
   ... | just bool | x'
-           with infer-ctype Γ t | infer-cterm Γ t
+           with infer-ctype Γ t | refine-cterm Γ t
   ...      | nothing | u = tt
   ...      | just (e  / σ) | u
-                with infer-ctype Γ t' | infer-cterm Γ t'
+                with infer-ctype Γ t' | refine-cterm Γ t'
   ...           | nothing | u' = tt
   ...           | just (e' / σ') | u'
                      with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
@@ -187,9 +187,9 @@ mutual -- refined term inference
       IF x' THEN CCAST u (⊔V-subtype p)
             ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 
-  infer-cterm Γ (f $ x)
-      with infer-vtype Γ f | infer-vterm Γ f |
-           infer-vtype Γ x | infer-vterm Γ x
+  refine-cterm Γ (f $ x)
+      with infer-vtype Γ f | refine-vterm Γ f |
+           infer-vtype Γ x | refine-vterm Γ x
   ... | nothing   | _ | _ | _ = tt
   ... | just nat  | _ | _ | _ = tt
   ... | just bool | _ | _ | _ = tt
@@ -199,24 +199,24 @@ mutual -- refined term inference
   ...                                     | no _  = tt
   ...                                     | yes p = f' $ VCAST x' p
 
-  infer-cterm Γ (PREC x t t')  with infer-vtype Γ x | infer-vterm Γ x
+  refine-cterm Γ (PREC x t t')  with infer-vtype Γ x | refine-vterm Γ x
   ... | nothing | _  = tt
   ... | just bool | _ = tt
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
-  ... | just nat | x' with infer-ctype Γ t | infer-cterm Γ t 
+  ... | just nat | x' with infer-ctype Γ t | refine-cterm Γ t 
   ...                 | nothing | _ = tt
-  ...                 | just (e / σ) | u with infer-ctype (σ ∷ nat ∷ Γ) t' | infer-cterm (σ ∷ nat ∷ Γ) t'
+  ...                 | just (e / σ) | u with infer-ctype (σ ∷ nat ∷ Γ) t' | refine-cterm (σ ∷ nat ∷ Γ) t'
   ...                                    | nothing | _ = tt
   ...                                    | just (e' / σ') | u' with e · e' ⊑? e | σ ≡V? σ'
   ...                                                          | no  _ | _        = tt
   ...                                                          | yes _ | no _     = tt
-  infer-cterm Γ (PREC x t t')
+  refine-cterm Γ (PREC x t t')
       | just nat | x' | just (e / σ) | u | just (e' / .σ) | u' | yes p | yes refl = PREC x' u u' p
 
-  infer-cterm Γ (LET t IN t') with infer-ctype Γ t | infer-cterm Γ t 
+  refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t 
   ... | nothing | _  = tt
-  ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' | infer-cterm (σ ∷ Γ) t'
+  ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' | refine-cterm (σ ∷ Γ) t'
   ...                    | nothing        | _  = tt
   ...                    | just (e' / σ') | u' = LET u IN u'
 
@@ -276,8 +276,46 @@ mutual
 
 ---------------------------------------------------------------------------------------------
 
---infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : refined-cterm Γ t) → erase t' ≡ t -- leq
+
+--infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : refined-cterm Γ t) → erase-cterm t' ≡ t -- leq
 --infer-corr = {!!}
+
+{-
+corr-vtype : Ctx → vTerm → Set
+corr-vtype Γ t with infer-vtype Γ t | refine-vterm Γ t
+... | just σ' | t' = erase-vterm t' ≡ t
+... | nothing | _ = ⊤
+
+corr-ctype : Ctx → cTerm → Set
+corr-ctype Γ t with infer-ctype Γ t | refine-cterm Γ t
+... | just τ' | t' = erase-cterm t' ≡ t
+... | nothing | _ = ⊤
+
+mutual
+  infer-vorr : (Γ : Ctx) (t : vTerm) → corr-vtype Γ t
+  infer-vorr Γ TT with refine-vterm Γ TT
+  ... | _ = refl
+  infer-vorr Γ FF with refine-vterm Γ FF
+  ... | _ = refl
+  infer-vorr Γ ZZ with refine-vterm Γ ZZ
+  ... | _ = refl
+  infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t 
+  infer-vorr Γ (SS t) | just nat | t' = cong SS (infer-vorr Γ {!t!})
+  infer-vorr Γ (SS t) | just bool | t' = tt
+  infer-vorr Γ (SS t) | just (x ∏ x₁) | t' = tt
+  infer-vorr Γ (SS t) | just (x ⇒ x₁) | t' = tt
+  infer-vorr Γ (SS t) | nothing | t' = tt
+  infer-vorr Γ ⟨ t , t₁ ⟩ = {!!}
+  infer-vorr Γ (FST t) = {!!}
+  infer-vorr Γ (SND t) = {!!}
+  infer-vorr Γ (VAR x) = {!!}
+  infer-vorr Γ (LAM x x₁) = {!!}
+
+  infer-corr : (Γ : Ctx) (t : cTerm) → corr-ctype Γ t
+  infer-corr Γ t with infer-ctype Γ t | refine-cterm Γ t
+  infer-corr Γ t | just τ' | t' = {!!}
+  infer-corr Γ t | nothing | t' = tt
+-}
 
 --infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) →
 --             infer-ctype Γ (erase-cterm t) ≡ just τ → (t' : refined-cterm Γ (erase-cterm t)) → t' ≤C t
@@ -288,8 +326,9 @@ correct-type Γ {τ} t with infer-ctype Γ (erase-cterm t)
 ... | just τ' = τ' ≤C τ
 ... | nothing = ⊤
 
-{-infer-corr : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) → correct-type Γ t
-infer-corr {Γ} t with infer-ctype Γ (erase-cterm t) | infer-cterm Γ (erase-cterm t)
-infer-corr t | just (e / σ) | t' = {!!}
-infer-corr t | nothing | _ = tt
+{-
+infer-correct : {Γ : Ctx} {τ : CType} (t : CTerm Γ τ) → correct-type Γ t
+infer-correct {Γ} t with infer-ctype Γ (erase-cterm t) | refine-cterm Γ (erase-cterm t)
+infer-correct t | just (e / σ) | t' = {!!}
+infer-correct t | nothing | _ = tt
 -}
