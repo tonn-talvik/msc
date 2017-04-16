@@ -70,8 +70,8 @@ mutual -- refined type inference
   ... | _         | _      | _       = nothing
   infer-ctype Γ (f $ t) with infer-vtype Γ f | infer-vtype Γ t
   ... | just (σ ⇒ τ) | just σ' with σ' ≤V? σ
-  ...                           | yes _ = just τ
-  ...                           | no  _ = nothing
+  ...                          | yes _ = just τ
+  ...                          | no  _ = nothing
   infer-ctype Γ (f $ t) | _ | _ = nothing
   infer-ctype Γ (PREC x t t')
       with infer-vtype Γ x

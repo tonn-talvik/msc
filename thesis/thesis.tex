@@ -182,8 +182,10 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 \section{Sissejuhatus}
 
 % background and motivation?
-Taust: efektid ja monaadid. Moggi, Benton, Katsumata.
+Motivatsioon. Taust: efektid ja monaadid. Moggi, Benton, Katsumata.
 
+Efektisüsteemid on staatilised programmi analüüsid, mis hindavad arvutuste võimalikke efekte.
+See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
 % https://courses.cs.ttu.ee/pages/Problem_Statement
 
 % Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
@@ -197,21 +199,31 @@ Taust: efektid ja monaadid. Moggi, Benton, Katsumata.
 % - eritingimused, mida on rakendatud ülesande lahendamisel/ülesande püstitamisel.
 
 % Rigor
-Agda on sõltuvate tüüpidega programmeerimiskeel ja interaktiivne tõestusassistent,
+Agda on sõltuvate tüüpidega funktsionaalne programmeerimiskeel ja interaktiivne tõestusassistent,
 mis põhineb intuitsionistlikul tüübiteoorial.
 Selles kirjutatud programm on tõlgendatav ja automaatselt kontrollitav kui matemaatiline tõestus.
 
-
-Töö eesmärgiks on realiseerida programmeerimiskeeles Agda idee tõestus taseme
+% Goal
+Selle töö eesmärgiks on realiseerida programmeerimiskeeles Agda idee tõendamise
 raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
 Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korrektsed.
 
+Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne.
+Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaevaga, kui õppimisele kuluv aeg maha arvata.
+
+Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toimivad keele juures, mis toetab andmetüüpe, milleks antud töös on naturaalarvud. \todo{???}
+
+Teises peatükis realiseeritakse näitekeel, mille efektiks on erandid.
+Järgmiseks defineeritakse selliste efektide hindamine.
+Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt lisades selle arvutustele efektid ja tüübid.
+Edasi antakse rafineeritud keele semantika ning tuuakse mõningased programmiteisendused, näidates, et semantiliselt on tulemus sama.
+
+Kolmandaks peatükis tuuakse efektianalüüs ja optimeerimise näited mitte-determinismi toetava keele kohta.
 
 % Reproducibility
 Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
 Lähtekoodi kompileerimiseks on kasutatud Agda versiooni 2.5.1.1 koos standardteegi versiooniga 0.12.
 Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teistest varamutest.
-
 
 \clearpage
 
@@ -799,7 +811,12 @@ refine-vterm Γ (LAM σ t)
 Arvutusliikmete rafineerimine on toodud joonistel \ref{fig:exc.refine-cterm1} ja \ref{fig:exc.refine-cterm2}.
 \begin{itemize}
 \item {\tt VAL t} korral kontrollitakse, et väärtusliige {\tt t} on hästi tüübitud, ja rafineeritud arvutus koostatakse vastavast rafineeritud väärtusliikmest {\tt u}.
-\item {\tt FAIL σ}
+\item {\tt FAIL σ} rafineerimisel näidatakse, et selle arvutusliikme tüübituletus alati õnnestub.
+\item {\tt TRY t WITH t'} korral kontrollitakse, et mõlemad osaarvutused on hästi tüübitud ja tuletatud väärtustüüpidel leidub ülemine raja. Rafineeritud arvutuse konstrueerimiseks suurendatakse rafineeritud osaarvutuste {\tt u} ja {\tt u'} tüüpi ülemise rajani vastavalt alamtüübi tõestusele {\tt p}.
+\item {\tt IF x THEN t ELSE t'} korral peab väärtusliige {\tt x} olema tõeväärtustüüpi ning arvutusliikmed {\tt t} ja {\tt t'} peavad olema hästi tüübitud. Kui harude arvutuste väärtustüüpidel leidub ülemine raja, siis rafineeritud tingimuslause tingimus on rafineeritud väärtusliige {\tt x'} ja tingimuslause harudes suurendatakse rafineeritud arvutuste {\tt u} ja {\tt u'} tüüpi vastavalt alamtüübi tõestusele {\tt p}. Ülejäänud juhtudel koostatakse tipp-tüübi element {\tt tt}.
+\item {\tt f \$ x} korral peab väärtusliige {\tt f} olema funktsiooniruumi tüüpi ja seejuures peab argumendile {\tt x} tuletatud tüüp olema mainitud funktsiooniruumi parameetri alamtüüp. Rafineeritud funktsiooni {\tt f'} rakendamise koostamisel on rafineeritud argumendi {\tt x'} tüüpi suurendatud vastavalt alamtüübi tõestusele {\tt p}.
+\item {\tt PREC x t t'}
+\item {\tt LET t IN t'} puhul peab osaarvutus {\tt t} olema hästi tüübitud antud kontekstis ja osaarvutus {\tt t'} tüübitud kontekstis, kuhu on lisatud {\tt t}-le tuletatud tüüp {\tt σ}. Rafineeritud arvutuste sidumine koostatakse rafineeritud osaarvutustest {\tt u} ja {\tt u'}.
 \end{itemize}
 \begin{figure}
   \begin{verbatim}
@@ -837,10 +854,10 @@ refine-cterm Γ (IF x THEN t ELSE t')
 ...                | nothing | _     = tt
 ...                | just ⊔σ | [ p ] =
     IF x' THEN CCAST u (⊔V-subtype p)
-    ELSE CCAST u' (⊔V-subtype-sym {σ} p)
+          ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 --\end{verbatim}
   \caption{Eranditega keele arvutusliikmete rafineerimine, I osa.}
-  \label{fig:exc.infer-cterm1}
+  \label{fig:exc.refine-cterm1}
 \end{figure}
 \begin{figure}
   \begin{verbatim}
@@ -854,8 +871,8 @@ refine-cterm Γ (f $ x)
 ... | just (_ ∏ _) | _ | _ | _ = tt
 ... | just (_ ⇒ _) | _ | nothing | _ = tt  
 ... | just (σ ⇒ τ) | f' | just σ' | x' with σ' ≤V? σ
-...                                     | no _  = tt
-...                                     | yes p = f' $ VCAST x' p
+...                                    | no _  = tt
+...                                    | yes p = f' $ VCAST x' p
 refine-cterm Γ (PREC x t t')  with infer-vtype Γ x | refine-vterm Γ x
 ... | nothing | _  = tt
 ... | just bool | _ = tt
@@ -882,7 +899,7 @@ refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t
 ...                    | nothing        | _  = tt
 ...                    | just (e' / σ') | u' = LET u IN u'\end{verbatim}
   \caption{Eranditega keele arvutusliikmete rafineerimine, II osa.}
-  \label{fig:exc.infer-cterm2}
+  \label{fig:exc.refine-cterm2}
 \end{figure}
 
 \subsection{Semantika}\label{ssec:exc.semantics}
