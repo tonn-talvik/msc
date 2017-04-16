@@ -204,19 +204,25 @@ mutual
   ... | just bool | _ = tt
   ... | just (_ ∏ _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
-  ... | just nat | x' with infer-ctype Γ t | refine-cterm Γ t 
-  ...                 | nothing | _ = tt
-  ...                 | just (e / σ) | u with infer-ctype (σ ∷ nat ∷ Γ) t' | refine-cterm (σ ∷ nat ∷ Γ) t'
-  ...                                    | nothing | _ = tt
-  ...                                    | just (e' / σ') | u' with e · e' ⊑? e | σ ≡V? σ'
-  ...                                                          | no  _ | _        = tt
-  ...                                                          | yes _ | no _     = tt
+  ... | just nat | x'
+          with infer-ctype Γ t | refine-cterm Γ t 
+  ...     | nothing | _ = tt
+  ...     | just (e / σ) | u
+              with infer-ctype (σ ∷ nat ∷ Γ) t' |
+                   refine-cterm (σ ∷ nat ∷ Γ) t'
+  ...         | nothing | _ = tt
+  ...         | just (e' / σ') | u' with e · e' ⊑? e | σ ≡V? σ'
+  ...                               | no  _ | _    = tt
+  ...                               | yes _ | no _ = tt
   refine-cterm Γ (PREC x t t')
-      | just nat | x' | just (e / σ) | u | just (e' / .σ) | u' | yes p | yes refl = PREC x' u u' p
+      | just nat | x'
+          | just (e / σ) | u
+              | just (e' / .σ) | u' | yes p | yes refl = PREC x' u u' p
 
   refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t 
   ... | nothing | _  = tt
-  ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' | refine-cterm (σ ∷ Γ) t'
+  ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' |
+                              refine-cterm (σ ∷ Γ) t'
   ...                    | nothing        | _  = tt
   ...                    | just (e' / σ') | u' = LET u IN u'
 

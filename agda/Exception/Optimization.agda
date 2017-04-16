@@ -193,8 +193,11 @@ the-same {errok} {ρ = ρ} m with ⟦ m ⟧c ρ
 ⊹-ass errok errok errok = refl
 
 handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X : VType}
-              (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X)) (m₃ : CTerm Γ (e₃ / X)) →
-              sub-eq (⊹-ass e₁ e₂ e₃) (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧c ρ) ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧c ρ
+              (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
+              (m₃ : CTerm Γ (e₃ / X)) →
+              sub-eq (⊹-ass e₁ e₂ e₃)
+                     (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧c ρ)
+              ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧c ρ
 handler-ass {err} m₁ m₂ m₃ = refl
 handler-ass {ok} m₁ m₂ m₃ = refl
 handler-ass {errok} {err} m₁ m₂ m₃ = refl
