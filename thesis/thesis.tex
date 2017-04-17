@@ -1008,11 +1008,17 @@ primrecT {e} {e'} (suc n) z s p =
 
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 
+Etteantud konteksti saab laiendada lisades selle mingisse kohta kindla tüübi.
+Seda nimetatakse lõdvendamiseks {\tt wkT} (jn \ref{fig:weakening}).
+Samamoodi saab lõdvendada rafineeritud väärtusliikmeid {\tt wkV} ja arvutusliikmeid {\tt wkC}.
+Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt wk}.
+Lemmad {\tt lemmaV} ja {\tt lemmaC} näitavad, et lõdventatud liikme interpretatsioon lõdventatud kontekstis on sama, mis selle liikme interpretatsioon.
+Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{verbatim}
 wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
 -- 
-  mutual
+mutual
   wkV : {Γ : Ctx} {σ τ : VType} →
         (x : Fin (suc (length Γ))) →
         VTerm Γ τ → VTerm (wkT Γ σ x) τ
@@ -1045,7 +1051,10 @@ mutual
 \end{figure}
 
 
-Monaadi spetsiifilised, efektist sõltumatud optimisatsioonid on toodud joonisel \ref{fig:exc.opt1}. {\tt the-same} näitab, et arvutust {\tt m} ei saa muuta, lisades sellele erandikäsitlejana sama arvutuse.
+Monaadi spetsiifilised, efektist sõltumatud optimisatsioonid on toodud joonisel \ref{fig:exc.opt1}.
+{\tt the-same} näitab, et arvutust {\tt m} ei saa parandada, lisades sellele erandikäsitlejana sama arvutuse.
+Erandikäsitlejate assotsiatiivsus on näidatud {\tt handler-ass}'iga.
+Selle tõestus matkib arvutuse parandusoperaatori assotsiatiivsuse {\tt ⊹-ass} tõestust, mis seisneb efektide juhtumite analüüsil.
 
 \begin{figure}
   \begin{verbatim}
@@ -1095,6 +1104,12 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c 
 \end{figure}
 
 Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel \ref{fig:exc.opt2}.
+\begin{itemize}
+\item Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL X}.
+  Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
+\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutusliikme lõdvenduse {\tt lemmaC} rakendus.
+\end{itemize}
+
 \begin{figure}
   \begin{verbatim}
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
