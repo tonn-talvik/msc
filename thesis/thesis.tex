@@ -58,8 +58,8 @@
 \fancypagestyle{FirstPage}{\fancyhf{}\renewcommand{\headrulewidth}{0pt}\fancyfoot[C]{Tallinn 2017}}
 
 \addto\captionsestonian{
-  \renewcommand*\contentsname{\vskip 60pt\centering Sisukord}
-  \renewcommand*\listfigurename{\vskip 60pt\centering Jooniste loetelu}
+  \renewcommand*\contentsname{\centering Sisukord}
+  \renewcommand*\listfigurename{\centering Jooniste loetelu}
 }
 
 %\usepackage{biblatex}
@@ -101,6 +101,8 @@
 \g@addto@macro\@floatboxreset\centering
 \makeatother
 
+\usepackage{flafter}
+
 \usepackage{tikz}
 
 \renewcommand{\labelitemi}{$\smblksquare$}
@@ -113,20 +115,22 @@
 \begin{document}
 \onehalfspacing
 
+\iffalse
 \begin{BVerbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
 ∘ ₁ ₂ ₃ ⊤
 \end{BVerbatim}
+\fi
 % ------------------------------------------------------------
   \begin{center}
-    \textsc{tallinna tehnikaülikool}\\
+    \uppercase{Tallinna Tehnikaülikool}\\
     Infotehnoloogia teaduskond\\
     Tarkvarateaduse instituut\\
     \vfill
     
     Tõnn Talvik 132619IAPM
     \vskip 3em 
-    \LARGE\textsc{efektianalüüsidel põhinevate programmiteisenduste sertifitseerimine}\\
+    \LARGE\uppercase{efektianalüüsidel põhinevate programmiteisenduste sertifitseerimine}\\
     \normalsize\vskip 4em 
     Magistritöö\\
     \vskip 4em    
@@ -141,41 +145,38 @@
   \end{flushright}
   
   \thispagestyle{FirstPage}
-  \clearpage
+  \clearpage\vspace*{0pt}
   \setcounter{page}{2}
 % ------------------------------------------------------------
 
-\section*{\vskip 60pt\centering Autorideklaratsioon}
+\section*{\centering Autorideklaratsioon}
 
 Kinnitan, et olen koostanud antud lõputöö iseseisvalt ning seda ei ole kellegi teise poolt varem kaitsmisele esitatud. Kõik töö koostamisel kasutatud teiste autorite tööd, olulised seisukohad, kirjandusallikatest ja mujalt pärinevad andmed on töös viidatud.
 
 Autor: Tõnn Talvik
 
 8. mai 2017
-\clearpage
 
-\section*{\vskip 60pt\centering Annotatsioon}
+\clearpage\vspace*{0pt}
+
+\section*{\centering Annotatsioon}
 [tekst]
          
 Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, \totalfigures\ joonist, [tabelite arv] tabelit.
-\clearpage
+\clearpage\vspace*{0pt}
 
-\section*{\vskip 60pt\centering Abstract\\
+\section*{\centering Abstract\\
 Certification of effect-analysis based program~transformations}
 
 [text]
 The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, \totalfigures\ figures, [tables] tables.
-\clearpage
+\clearpage\vspace*{0pt}
 
 \tableofcontents
-\clearpage
+\clearpage\vspace*{0pt}
 
 \listoffigures
-\clearpage
-
-
-
-
+\clearpage\vspace*{0pt}
 
 
 
@@ -225,7 +226,7 @@ Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aa
 Lähtekoodi kompileerimiseks on kasutatud Agda versiooni 2.5.1.1 koos standardteegi versiooniga 0.12.
 Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teistest varamutest.
 
-\clearpage
+\clearpage\vspace*{0pt}
 
 \section{Erandid}
 
@@ -271,7 +272,6 @@ Järgnevalt on selgitatud väärtusliikme {\tt vTerm} konstruktorite tähendust.
 \item {\tt VAR} koostab De~Bruijn'i indeksiga määratud muutuja.
 \item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusliige.
 \end{itemize}
-
 \begin{figure}
   \begin{BVerbatim}
 mutual
@@ -1143,26 +1143,31 @@ dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n
   \caption{Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid.}
   \label{fig:exc.opt2}
 \end{figure}
-\clearpage
+
+\clearpage\vspace*{0pt}
+
 
 \section{Mitte-deterministlik keel}
 
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
-\clearpage
+\clearpage\vspace*{0pt}
+
 
 \section{Võimalikud edasiarendused}
 
 - muteeritava oleku laiendused\\
 - mittedeterminismi teine gradeering nd0, 1, 01, 1+, N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
 
-\clearpage
+\clearpage\vspace*{0pt}
+
 
 \section{Kokkuvõte}
 Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
 küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 
-\clearpage
+\clearpage\vspace*{0pt}
+
 
 \renewcommand{\baselinestretch}{1.15}
 \small
