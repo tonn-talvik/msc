@@ -1,5 +1,5 @@
 \documentclass[a4paper,12pt]{article}
-\usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm,showframe]{geometry}
+\usepackage[lmargin=30mm,rmargin=30mm,tmargin=25mm,bmargin=25mm]{geometry}
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{newtxtext} 
@@ -90,16 +90,16 @@
 \titlespacing*{\subsection}{0pt}{24pt}{12pt}
 % III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
 
-\makeatletter
-\patchcmd{\@verbatim}
-  {\verbatim@font}
-  {\verbatim@font\small}
-  {}{}
-\makeatother
-
 \usepackage{float}
-\floatstyle{boxed} 
-\restylefloat{figure}
+%\floatstyle{boxed} 
+%\restylefloat{figure}
+
+\usepackage{fancyvrb}
+\fvset{fontsize=\small}
+% https://tex.stackexchange.com/questions/2651/should-i-use-center-or-centering-for-figures-and-tables
+\makeatletter
+\g@addto@macro\@floatboxreset\centering
+\makeatother
 
 \usepackage{tikz}
 
@@ -113,10 +113,10 @@
 \begin{document}
 \onehalfspacing
 
-\begin{verbatim}
+\begin{BVerbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
 ∘ ₁ ₂ ₃ ⊤
-\end{verbatim}
+\end{BVerbatim}
 % ------------------------------------------------------------
   \begin{center}
     \textsc{tallinna tehnikaülikool}\\
@@ -243,7 +243,7 @@ Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{f
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
 Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 mutual
   data VType : Set where
     nat : VType
@@ -252,7 +252,8 @@ mutual
     _⇒_ : VType → CType → VType
 
   data CType : Set where
-    _/_ : E → VType → CType\end{verbatim}
+    _/_ : E → VType → CType
+  \end{BVerbatim}
   \caption{Eranditega keele tüübid.}
   \label{fig:exc.types}
 \end{figure}
@@ -272,7 +273,7 @@ Järgnevalt on selgitatud väärtusliikme {\tt vTerm} konstruktorite tähendust.
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 mutual
   data vTerm : Set where
     TT FF : vTerm
@@ -290,7 +291,8 @@ mutual
     IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
     _$_ : vTerm → vTerm → cTerm
     PREC : vTerm → cTerm → cTerm → cTerm
-    LET_IN_ : cTerm → cTerm → cTerm\end{verbatim}
+    LET_IN_ : cTerm → cTerm → cTerm
+  \end{BVerbatim}
   \caption{Eranditega keele väärtus- ja arvutusliikmed.}
   \label{fig:exc.raw}
 \end{figure}
@@ -307,7 +309,7 @@ Järgnevalt on selgitatud arvutusliikme {\tt cTerm} konstruktorite (jn~\ref{fig:
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 ADD : vTerm
 ADD = LAM nat
           (VAL (LAM nat
@@ -320,7 +322,8 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
               IN VAR 0 $ (SS (SS (SS (SS ZZ))))
 
 BAD-ONE : cTerm
-BAD-ONE = ZZ $ TT\end{verbatim}
+BAD-ONE = ZZ $ TT
+  \end{BVerbatim}
   \caption{Näidisavaldised eranditega keeles.}
   \label{fig:exc.raw.ex1}
 \end{figure}
@@ -346,7 +349,7 @@ konstruktor {\tt ok} arvutuse õnnestumisele ja konstruktor {\tt errok} arvutuse
 mille kohta pole teada, kas see õnnestub või mitte.
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 data Exc : Set where
   err : Exc
   ok : Exc
@@ -363,7 +366,8 @@ _⊹_ : Exc → Exc → Exc
 err ⊹ e' = e'
 ok ⊹ _ = ok
 errok ⊹ ok = ok
-errok ⊹ _ = errok\end{verbatim}
+errok ⊹ _ = errok
+  \end{BVerbatim}
   \caption{Erandite efektid ja operatsioonid nendel.}
   \label{fig:exc.exc}
 \end{figure}
@@ -399,7 +403,7 @@ Transitiivsuse seost on võimalik kodeerida järjestusseose konstruktorina, kuid
 kuna hilisemates tõestuses tekib sellest täiendavad juhtumid, mida peab analüüsima.
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 data _⊑_ : Exc → Exc → Set where
   ⊑-refl : {e : Exc} → e ⊑ e
   err⊑errok : err ⊑ errok
@@ -418,7 +422,7 @@ _⊓_ : Exc → Exc → Maybe Exc
 lub : (e e' : Exc) → e ⊑ (e ⊔ e')
 glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
 lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
-  \end{verbatim}
+  \end{BVerbatim}
   \caption{Erandite efektide järjestatus.}
   \label{fig:exc.ord}
 \end{figure}
@@ -438,7 +442,7 @@ siis on tegemist järjestatud monoidiga.
 Joonisel~\ref{fig:ordered-monoid} on toodud järjestatud monoidi kirje tüüp Agdas.
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 record OrderedMonoid : Set where
   field
     E : Set
@@ -453,7 +457,8 @@ record OrderedMonoid : Set where
     ⊑-refl : {e : E} → e ⊑ e
     ⊑-trans : {e e' e'' : E} → e ⊑ e' → e' ⊑ e'' → e ⊑ e''
 
-    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''\end{verbatim}
+    mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
+  \end{BVerbatim}
   \caption{Järjestatud monoid.}
   \label{fig:ordered-monoid}
 \end{figure}
@@ -477,7 +482,7 @@ Täidetud on monaadi seadused {\tt mlaw1}, {\tt mlaw2} ja {\tt mlaw3}.
 Joonisel~\ref{fig:graded-monad} on toodud gradeeritud monaadi kirje tüüp Agdas.
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 subeq : {E : Set} → {T : E → Set → Set} → {e e' : E} → {X : Set} →
         e ≡ e' → T e X → T e' X
 subeq refl p = p
@@ -518,7 +523,8 @@ record GradedMonad : Set where
             sub-eq ass (bind g (bind f c)) ≡ bind (bind g ∘ f) c 
 
   T₁ : {e : E} {X Y : Set} → (X → Y) → T e X → T e Y
-  T₁ f = sub-eq (sym ru) ∘ bind (η ∘ f)\end{verbatim}
+  T₁ f = sub-eq (sym ru) ∘ bind (η ∘ f)
+  \end{BVerbatim}
   \caption{Gradeeritud monaad.}
   \label{fig:graded-monad}
 \end{figure}
@@ -536,7 +542,7 @@ Funktsioonid on alamtüübid {\tt st-func}, kui funktsioonide kehade arvutused o
 ja funktsioonide argumendid on kontravariantsed.
 Arvutustüüp on teise arvutustüübi alamtüüp {\tt st-comp}, kui nende efektid ja väärtustüübid on järjestatud.
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 mutual
   data _≤V_ : VType → VType → Set where
     st-bn : bool ≤V nat
@@ -561,7 +567,8 @@ mutual
 
   sct-trans : {σ σ' σ'' : CType} → σ ≤C σ' → σ' ≤C σ'' → σ ≤C σ''
   sct-trans (st-comp p q) (st-comp p' q') = st-comp (⊑-trans p p')
-                                                    (st-trans q q')\end{verbatim}
+                                                    (st-trans q q')
+  \end{BVerbatim}
   \caption{Väärtus- ja arvutustüüpide alamtüüpimine.}
   \label{fig:exc.subtypes}
 \end{figure}
@@ -585,7 +592,7 @@ Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud liikmetega, on rafineeritud liikme
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 Ctx = List VType
 
 mutual
@@ -618,7 +625,7 @@ mutual
              CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
    CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
            e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
-  \end{verbatim}
+  \end{BVerbatim}
   \caption{Eranditega keele rafineeritud liikmed.}
   \label{fig:exc.refined}
 \end{figure}
@@ -651,7 +658,7 @@ Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 infer-vtype : Ctx → vTerm → Maybe VType
 infer-vtype Γ TT = just bool
 infer-vtype Γ FF = just bool
@@ -673,7 +680,8 @@ infer-vtype Γ (VAR x) with x <? Γ
 ... | no ¬p = nothing
 infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
 ... | just τ = just (σ ⇒ τ)
-... | _      = nothing\end{verbatim}
+... | _      = nothing
+  \end{BVerbatim}
   \caption{Eranditega keele väärtusliikmete tüübituletus.}
   \label{fig:exc.infer-vtype}
 \end{figure}
@@ -700,7 +708,7 @@ Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 infer-ctype : Ctx → cTerm → Maybe CType
 infer-ctype Γ (VAL x) with infer-vtype Γ x
 ... | just σ = just (ok / σ)
@@ -732,7 +740,8 @@ infer-ctype Γ (LET t IN t') with infer-ctype Γ t
 ... | nothing = nothing
 ... | just (e / σ) with infer-ctype (σ ∷ Γ) t'
 ...                | nothing        = nothing
-...                | just (e' / σ') = just (e · e' / σ')\end{verbatim}
+...                | just (e' / σ') = just (e · e' / σ')
+  \end{BVerbatim}
   \caption{Eranditega keele arvutusliikmete tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
@@ -743,7 +752,7 @@ Kui n-ö ``toorele'' liikmele õnnestub mingis kontekstis tuletada tüüp, siis 
 Joonisel \ref{fig:exc.infer-term-type} on toodud väärtus- ja arvutusliikmete rafineeritud tüübikonstruktorid.
 Tipp-tüüp {\tt ⊤} tähistab tüübituletuse ebaõnnestumist.
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 refined-vterm : Ctx → vTerm → Set
 refined-vterm Γ t with infer-vtype Γ t 
 ... | nothing = ⊤
@@ -752,7 +761,8 @@ refined-vterm Γ t with infer-vtype Γ t
 refined-cterm : Ctx → cTerm → Set
 refined-cterm Γ t with infer-ctype Γ t 
 ... | nothing = ⊤
-... | just τ = CTerm Γ τ\end{verbatim}
+... | just τ = CTerm Γ τ
+  \end{BVerbatim}
   \caption{Väärtus- ja arvutusliikmete rafineerimiste tüübikonstruktorid.}
   \label{fig:exc.infer-term-type}
 \end{figure}
@@ -768,7 +778,7 @@ Väärtusliikmete rafineerimine etteantud kontekstis (jn \ref{fig:exc.refine-vte
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 refine-vterm : (Γ : Ctx) (t : vTerm) → refined-vterm Γ t 
 refine-vterm Γ TT = TT
 refine-vterm Γ FF = FF
@@ -803,7 +813,8 @@ refine-vterm Γ (VAR x) with x <? Γ
 refine-vterm Γ (LAM σ t)
     with infer-ctype (σ ∷ Γ) t | refine-cterm (σ ∷ Γ) t
 ... | just _ | u = LAM σ u
-... | nothing | u = tt\end{verbatim}
+... | nothing | u = tt
+  \end{BVerbatim}
   \caption{Eranditega keele väärtusliikmete rafineerimine.}
   \label{fig:exc.refine-vterm}
 \end{figure}
@@ -819,7 +830,7 @@ Arvutusliikmete rafineerimine on toodud joonistel \ref{fig:exc.refine-cterm1} ja
 \item {\tt LET t IN t'} puhul peab osaarvutus {\tt t} olema hästi tüübitud antud kontekstis ja osaarvutus {\tt t'} tüübitud kontekstis, kuhu on lisatud {\tt t}-le tuletatud tüüp {\tt σ}. Rafineeritud arvutuste sidumine koostatakse rafineeritud osaarvutustest {\tt u} ja {\tt u'}.
 \end{itemize}
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 refine-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
 refine-cterm Γ (VAL t) with infer-vtype Γ t | refine-vterm Γ t
 ... | nothing | u = tt
@@ -855,12 +866,13 @@ refine-cterm Γ (IF x THEN t ELSE t')
 ...                | just ⊔σ | [ p ] =
     IF x' THEN CCAST u (⊔V-subtype p)
           ELSE CCAST u' (⊔V-subtype-sym {σ} p)
---\end{verbatim}
+--
+  \end{BVerbatim}
   \caption{Eranditega keele arvutusliikmete rafineerimine, I osa.}
   \label{fig:exc.refine-cterm1}
 \end{figure}
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 --refine-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
 refine-cterm Γ (f $ x)
     with infer-vtype Γ f | refine-vterm Γ f |
@@ -897,7 +909,8 @@ refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t
 ... | just (e / σ) | u with infer-ctype (σ ∷ Γ) t' |
                             refine-cterm (σ ∷ Γ) t'
 ...                    | nothing        | _  = tt
-...                    | just (e' / σ') | u' = LET u IN u'\end{verbatim}
+...                    | just (e' / σ') | u' = LET u IN u'
+  \end{BVerbatim}
   \caption{Eranditega keele arvutusliikmete rafineerimine, II osa.}
   \label{fig:exc.refine-cterm2}
 \end{figure}
@@ -914,7 +927,7 @@ Joonisel \ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- 
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 mutual
   ⟪_⟫v : VType → Set
   ⟪ nat ⟫v = ℕ
@@ -927,7 +940,8 @@ mutual
 
 ⟪_⟫x : Ctx → Set
 ⟪ [] ⟫x = ⊤
-⟪ σ ∷ Γ ⟫x = ⟪ σ ⟫v × ⟪ Γ ⟫x\end{verbatim}
+⟪ σ ∷ Γ ⟫x = ⟪ σ ⟫v × ⟪ Γ ⟫x
+  \end{BVerbatim}
   \caption{Väärtus-, arvutustüüpide ja konteksti semantika.}
   \label{fig:type-semantics}
 \end{figure}
@@ -944,7 +958,7 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme in
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 ⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫x → ⟪ σ ⟫v
 ⟦ TT ⟧v ρ = true
 ⟦ FF ⟧v ρ = false
@@ -955,7 +969,8 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme in
 ⟦ SND t ⟧v ρ = proj₂ (⟦ t ⟧v ρ)
 ⟦ VAR x ⟧v ρ = proj x ρ
 ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧c (x , ρ)
-⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)\end{verbatim}
+⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)
+  \end{BVerbatim}
   \caption{Eranditega keele väärtusliikmete semantika.}
   \label{fig:exc.vterm-semantics}
 \end{figure}
@@ -973,7 +988,7 @@ Rafineeritud arvutusliikme semantiline interpretatsioon etteantud konteksti inte
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
 sor err _ _ x' = x'
 sor ok _ x _ = x
@@ -1001,7 +1016,8 @@ primrecT {e} {e'} (suc n) z s p =
 ⟦ f $ x ⟧c ρ = ⟦ f ⟧v ρ (⟦ x ⟧v ρ)
 ⟦ LET_IN_ {e} {e'} m n ⟧c ρ =
     bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
-⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)\end{verbatim}
+⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
+  \end{BVerbatim}
   \caption{Eranditega keele arvutusliikmete semantika.}
   \label{fig:exc.cterm-semantics}
 \end{figure}
@@ -1015,7 +1031,7 @@ Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõd
 Lemmad {\tt lemmaV} ja {\tt lemmaC} näitavad, et lõdventatud liikme interpretatsioon lõdventatud kontekstis on sama, mis selle liikme interpretatsioon.
 Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
 -- proof omitted
 mutual
@@ -1045,7 +1061,7 @@ mutual
            {τ : CType} (t : CTerm Γ τ) →
            ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
   -- proof omitted
-\end{verbatim}
+\end{BVerbatim}
   \caption{Konteksti ja liikmete lõdvendamine.}
   \label{fig:weakening}
 \end{figure}
@@ -1057,7 +1073,7 @@ Erandikäsitlejate assotsiatiivsus on näidatud {\tt handler-ass}'iga.
 Selle tõestus matkib arvutuse parandusoperaatori assotsiatiivsuse {\tt ⊹-ass} tõestust, mis seisneb efektide juhtumite analüüsil.
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 ⊹-itself : (e : Exc) → e ⊹ e ≡ e
 ⊹-itself err = refl
 ⊹-itself ok = refl
@@ -1098,7 +1114,8 @@ handler-ass {errok} {errok} {ok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
 ... | nothing = refl
 handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
 ... | just x = refl
-... | nothing = refl\end{verbatim}
+... | nothing = refl
+  \end{BVerbatim}
   \caption{Monaadi spetsiifilised, efektist sõltumatud optimisatsioonid.}
   \label{fig:exc.opt1}
 \end{figure}
@@ -1111,7 +1128,7 @@ Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel \
 \end{itemize}
 
 \begin{figure}
-  \begin{verbatim}
+  \begin{BVerbatim}
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
           ⟦ m ⟧c ≡ ⟦ FAIL X ⟧c
 failure m = refl
@@ -1121,7 +1138,8 @@ dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
             (m : CTerm Γ (ok / σ)) (n : CTerm Γ (ε / τ ) ) →
             (ρ : ⟪ Γ ⟫x) → 
             ⟦ LET m IN (wkC zero n) ⟧c ρ ≡ ⟦ n ⟧c ρ
-dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n\end{verbatim}
+dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n
+  \end{BVerbatim}
   \caption{Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid.}
   \label{fig:exc.opt2}
 \end{figure}
