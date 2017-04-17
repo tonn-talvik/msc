@@ -815,7 +815,7 @@ Arvutusliikmete rafineerimine on toodud joonistel \ref{fig:exc.refine-cterm1} ja
 \item {\tt TRY t WITH t'} korral kontrollitakse, et mõlemad osaarvutused on hästi tüübitud ja tuletatud väärtustüüpidel leidub ülemine raja. Rafineeritud arvutuse konstrueerimiseks suurendatakse rafineeritud osaarvutuste {\tt u} ja {\tt u'} tüüpi ülemise rajani vastavalt alamtüübi tõestusele {\tt p}.
 \item {\tt IF x THEN t ELSE t'} korral peab väärtusliige {\tt x} olema tõeväärtustüüpi ning arvutusliikmed {\tt t} ja {\tt t'} peavad olema hästi tüübitud. Kui harude arvutuste väärtustüüpidel leidub ülemine raja, siis rafineeritud tingimuslause tingimus on rafineeritud väärtusliige {\tt x'} ja tingimuslause harudes suurendatakse rafineeritud arvutuste {\tt u} ja {\tt u'} tüüpi vastavalt alamtüübi tõestusele {\tt p}. Ülejäänud juhtudel koostatakse tipp-tüübi element {\tt tt}.
 \item {\tt f \$ x} korral peab väärtusliige {\tt f} olema funktsiooniruumi tüüpi ja seejuures peab argumendile {\tt x} tuletatud tüüp olema mainitud funktsiooniruumi parameetri alamtüüp. Rafineeritud funktsiooni {\tt f'} rakendamise koostamisel on rafineeritud argumendi {\tt x'} tüüpi suurendatud vastavalt alamtüübi tõestusele {\tt p}.
-\item {\tt PREC x t t'}
+\item {\tt PREC x t t'} korral kontrollitakse, et väärtusliige {\tt x} on tõeväärtustüüpi ning baasile vastav arvutus {\tt t} hästi tüübitud. Seejärel, et sammule vastav arvutus {\tt t'} on hästi tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ning baasi väärtustüübile vastav akumulaator. Viimaks kontrollitakse, et baasi ja sammu efektide korrutamine ei ületaks baasi efekti ning et baasile ja sammule vastavad väärtustüübid langevad kokku. Rafineeritud primitiivse rekursiooni liige koostatakse vastavatest rafineeritud liikmetest {\tt x'}, {\tt u}, {\tt u'} ja efektide püsipunkti tõestusest {\tt p}.
 \item {\tt LET t IN t'} puhul peab osaarvutus {\tt t} olema hästi tüübitud antud kontekstis ja osaarvutus {\tt t'} tüübitud kontekstis, kuhu on lisatud {\tt t}-le tuletatud tüüp {\tt σ}. Rafineeritud arvutuste sidumine koostatakse rafineeritud osaarvutustest {\tt u} ja {\tt u'}.
 \end{itemize}
 \begin{figure}
@@ -1017,34 +1017,34 @@ Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{verbatim}
 wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
--- 
+-- proof omitted
 mutual
   wkV : {Γ : Ctx} {σ τ : VType} →
         (x : Fin (suc (length Γ))) →
         VTerm Γ τ → VTerm (wkT Γ σ x) τ
-  -- 
+  -- proof omitted
   wkC : {Γ : Ctx} {σ : VType} {τ : CType} →
         (x : Fin (suc (length Γ))) →
         CTerm Γ τ → CTerm (wkT Γ σ x) τ
-  --
+  -- proof omitted
 
 wk : {Γ : Ctx} → ⟪ Γ ⟫x →
      {σ : VType} → ⟪ σ ⟫v →
      (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫x 
---
+-- proof omitted
 mutual
   lemmaV : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
            {σ : VType} (v : ⟪ σ ⟫v) →
            (x : Fin (suc (length Γ))) →
            {τ : VType} (t : VTerm Γ τ) →
            ⟦ wkV x t ⟧v (wk ρ v x) ≡ ⟦ t ⟧v ρ
-  --
+  -- proof omitted
   lemmaC : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
            {σ : VType} (v : ⟪ σ ⟫v) →
            (x : Fin (suc (length Γ))) →
            {τ : CType} (t : CTerm Γ τ) →
            ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
-  --
+  -- proof omitted
 \end{verbatim}
   \caption{Konteksti ja liikmete lõdvendamine.}
   \label{fig:weakening}
