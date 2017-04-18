@@ -104,7 +104,9 @@ private
   bind {err} f x = tt
   bind {ok} f x = f x
   bind {errok} {err} f x = tt
-  bind {errok} {ok} f x = map f x
+--  bind {errok} {ok} f x = map f x
+  bind {errok} {ok} f (just x) = just (f x)
+  bind {errok} {ok} f nothing = nothing
   bind {errok} {errok} f (just x) = f x
   bind {errok} {errok} f nothing = nothing
 

@@ -286,7 +286,17 @@ mutual
 --infer-corr : (Γ : Ctx) (t : cTerm) {τ : CType} → infer-ctype Γ t ≡ just τ → (t' : refined-cterm Γ t) → erase-cterm t' ≡ t -- leq
 --infer-corr = {!!}
 
+
 {-
+xxx : (Γ : Ctx) → (t : vTerm) {σ : VType} → infer-vtype Γ t ≡ just σ → Set
+xxx Γ t eq = {!erase-vterm (refine-vterm Γ t) ≡ t!}
+corr-vtype : Ctx → vTerm → Set
+corr-vtype Γ t with infer-vtype Γ t | inspect (infer-vtype Γ) t
+corr-vtype Γ t | just σ' | Reveal_·_is_.[ eq ] = {!erase-vterm (refine-vterm Γ t) ≡ t!} --nwith refine-vterm Γ t
+--...           | t' = erase-vterm t' ≡ t
+... | nothing | _ = ⊤
+-}
+
 corr-vtype : Ctx → vTerm → Set
 corr-vtype Γ t with infer-vtype Γ t | refine-vterm Γ t
 ... | just σ' | t' = erase-vterm t' ≡ t
@@ -296,7 +306,20 @@ corr-ctype : Ctx → cTerm → Set
 corr-ctype Γ t with infer-ctype Γ t | refine-cterm Γ t
 ... | just τ' | t' = erase-cterm t' ≡ t
 ... | nothing | _ = ⊤
+{-
+help : (Γ : Ctx) (t : vTerm) → infer-vtype Γ t ≡ just nat → corr-vtype Γ (SS t)
+help Γ t eq with infer-vtype Γ t | refine-vterm Γ t
+help Γ t refl | just .nat | t' = {!!}
+help Γ t eq | nothing | t' = tt
 
+
+helper : (Γ : List VType) (t : vTerm) (w : Maybe VType) → w ≡ just nat →
+  Reveal infer-vtype Γ · t is w →
+  (w₁ : refined-vterm Γ t) →
+  Reveal refine-vterm Γ · t is w₁ →
+  corr-vtype Γ (SS t)
+helper Γ t (just x) eq Reveal_·_is_.[ eq₁ ] w1 Reveal_·_is_.[ eq₂ ] = {!!}
+helper Γ t nothing () p w1 q
 mutual
   infer-vorr : (Γ : Ctx) (t : vTerm) → corr-vtype Γ t
   infer-vorr Γ TT with refine-vterm Γ TT
@@ -305,8 +328,14 @@ mutual
   ... | _ = refl
   infer-vorr Γ ZZ with refine-vterm Γ ZZ
   ... | _ = refl
-  infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t 
-  infer-vorr Γ (SS t) | just nat | t' = cong SS (infer-vorr Γ {!t!})
+{ -  infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t | inspect (infer-vtype Γ) t |  inspect (refine-vterm Γ) t
+  infer-vorr Γ (SS t) | just nat | t' | Reveal_·_is_.[ eq ] | q = {!!} --cong SS (infer-vorr Γ {!t!})
+  infer-vorr Γ (SS t) | just bool | t' | p  | q = tt
+  infer-vorr Γ (SS t) | just (x ∏ x₁) | t' | p | q = tt
+  infer-vorr Γ (SS t) | just (x ⇒ x₁) | t' | p | q = tt
+  infer-vorr Γ (SS t) | nothing | t' | p | q = tt- }
+  infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
+  infer-vorr Γ (SS t) | just nat | t' = {!!}
   infer-vorr Γ (SS t) | just bool | t' = tt
   infer-vorr Γ (SS t) | just (x ∏ x₁) | t' = tt
   infer-vorr Γ (SS t) | just (x ⇒ x₁) | t' = tt
