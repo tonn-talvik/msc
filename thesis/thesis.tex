@@ -979,7 +979,7 @@ Rafineeritud arvutusliikme semantiline interpretatsioon etteantud konteksti inte
 \begin{itemize}
 \item {\tt VAL x} interpreteerib väärtusliikme {\tt x} antud kontekstis ja tagastab selle gradeeritud monaadis.
 \item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
-\item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. \todo{explain sor}
+\item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. \todo{explain or-else}
 \item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
 \item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtusliikme {\tt x} interpretatsioon, baas on arvutusliikme {\tt t} interpretatsioon ja sammuks on arvutusliikme {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. \todo{explain primrecT}
 \item {\tt f \$ x} korral rakendatakse väärtusliikme {\tt f} interpretatsiooni väärtusliikme {\tt x} interpretatsioonile.
@@ -989,14 +989,14 @@ Rafineeritud arvutusliikme semantiline interpretatsioon etteantud konteksti inte
 
 \begin{figure}
   \begin{BVerbatim}
-sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
-sor err _ _ x' = x'
-sor ok _ x _ = x
-sor errok err x _ = x
-sor errok ok (just x) _ = x
-sor errok ok nothing x' = x'
-sor errok errok (just x) x' = just x
-sor errok errok nothing x' = x'
+or-else : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+or-else err _ _ x' = x'
+or-else ok _ x _ = x
+or-else errok err x _ = x
+or-else errok ok (just x) _ = x
+or-else errok ok nothing x' = x'
+or-else errok errok (just x) x' = just x
+or-else errok errok nothing x' = x'
 
 primrecT : {e e' : E} {X : Set} →
            ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
@@ -1007,7 +1007,7 @@ primrecT {e} {e'} (suc n) z s p =
 ⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
 ⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
 ⟦ FAIL σ ⟧c ρ = tt
-⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
+⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = or-else e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
 ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
                                       then (sub (lub e e') (⟦ t ⟧c ρ))
                                       else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))

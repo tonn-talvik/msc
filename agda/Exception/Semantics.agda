@@ -64,14 +64,14 @@ primrecT {e} {e'} (suc n) z s p =
     sub p (bind {e} {e'} (s n) (primrecT n z s p)) 
 
 
-sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
-sor err _ _ x' = x'
-sor ok _ x _ = x
-sor errok err x _ = x
-sor errok ok (just x) _ = x
-sor errok ok nothing x' = x'
-sor errok errok (just x) x' = just x
-sor errok errok nothing x' = x'
+or-else : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+or-else err _ _ x' = x'
+or-else ok _ x _ = x
+or-else errok err x _ = x
+or-else errok ok (just x) _ = x
+or-else errok ok nothing x' = x'
+or-else errok errok (just x) x' = just x
+or-else errok errok nothing x' = x'
 
 mutual
   ⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫x → ⟪ σ ⟫v
@@ -90,7 +90,7 @@ mutual
   ⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
   ⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
   ⟦ FAIL σ ⟧c ρ = tt
-  ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
+  ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = or-else e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
   ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
                                          then (sub (lub e e') (⟦ t ⟧c ρ))
                                          else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
