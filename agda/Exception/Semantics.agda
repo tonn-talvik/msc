@@ -25,7 +25,7 @@ mutual
   ⟪_⟫v : VType → Set
   ⟪ nat ⟫v = ℕ
   ⟪ bool ⟫v = Bool
-  ⟪ σ ∏ σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
+  ⟪ σ ● σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
   ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
 
   ⟪_⟫c : CType → Set

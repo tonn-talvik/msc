@@ -19,7 +19,7 @@
 \newunicodechar{τ}{$\tau$}
 \newunicodechar{∷}{$\Colon$} % requires fdsymbol
 %\newunicodechar{∷}{$::$}
-\newunicodechar{∏}{$\prod$}
+\newunicodechar{●}{$\smblkcircle$}
 %\newunicodechar{→}{$\rightarrow$} % not needed
 \newunicodechar{⇒}{$\Rightarrow$}
 \newunicodechar{⟹}{$\Longrightarrow$} % unused
@@ -117,7 +117,7 @@
 
 \iffalse
 \begin{BVerbatim}
-λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ∏ → ⇒ ⟹ _ ℕ 
+λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ● → ⇒ ⟹ _ ℕ 
 ∘ ₁ ₂ ₃ ⊤
 \end{BVerbatim}
 \fi
@@ -249,7 +249,7 @@ mutual
   data VType : Set where
     nat : VType
     bool : VType
-    _∏_ : VType → VType → VType
+    _●_ : VType → VType → VType
     _⇒_ : VType → CType → VType
 
   data CType : Set where
@@ -548,7 +548,7 @@ mutual
     st-bn : bool ≤V nat
     st-refl : {σ : VType} → σ ≤V σ
     st-prod : {σ σ' τ τ' : VType} →
-              σ ≤V σ' → τ ≤V τ' → σ ∏ τ ≤V σ' ∏ τ'
+              σ ≤V σ' → τ ≤V τ' → σ ● τ ≤V σ' ● τ'
     st-func : {σ σ' : VType} {τ τ' : CType} →
               σ' ≤V σ → τ ≤C τ' → σ ⇒ τ ≤V σ' ⇒ τ'
 
@@ -601,9 +601,9 @@ mutual
    ZZ : VTerm Γ nat
    SS : VTerm Γ nat → VTerm Γ nat
    ⟨_,_⟩ : {σ σ' : VType} →
-           VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ∏ σ')
-   FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
-   SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
+           VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ● σ')
+   FST : {σ σ' : VType} → VTerm Γ (σ ● σ') → VTerm Γ σ
+   SND : {σ σ' : VType} → VTerm Γ (σ ● σ') → VTerm Γ σ'
    VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
    LAM : (σ : VType) {τ : CType} →
          CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
@@ -667,13 +667,13 @@ infer-vtype Γ (SS t) with  infer-vtype Γ t
 ... | just nat = just nat
 ... | _        = nothing
 infer-vtype Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vtype Γ t'
-... | just σ | just σ' = just (σ ∏ σ')
+... | just σ | just σ' = just (σ ● σ')
 ... | _      | _       = nothing
 infer-vtype Γ (FST t) with infer-vtype Γ t
-... | just (σ ∏ _) = just σ
+... | just (σ ● _) = just σ
 ... | _            = nothing
 infer-vtype Γ (SND t) with infer-vtype Γ t
-... | just (_ ∏ σ') = just σ'
+... | just (_ ● σ') = just σ'
 ... | _             = nothing
 infer-vtype Γ (VAR x) with x <? Γ
 ... | yes p = just (lkp Γ (fromℕ≤ p))
@@ -786,7 +786,7 @@ refine-vterm Γ ZZ = ZZ
 refine-vterm Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | u = SS u
 ... | just bool | _ = tt
-... | just (_ ∏ _) | _ = tt
+... | just (_ ● _) | _ = tt
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
 refine-vterm Γ ⟨ t , t' ⟩
@@ -798,13 +798,13 @@ refine-vterm Γ ⟨ t , t' ⟩
 refine-vterm Γ (FST t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | _ = tt
 ... | just bool | _ = tt
-... | just (_ ∏ _) | u = FST u
+... | just (_ ● _) | u = FST u
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
 refine-vterm Γ (SND t) with infer-vtype Γ t | refine-vterm Γ t
 ... | just nat | _ = tt
 ... | just bool | _ = tt
-... | just (_ ∏ _) | u = SND u
+... | just (_ ● _) | u = SND u
 ... | just (_ ⇒ _) | _ = tt
 ... | nothing | _ = tt
 refine-vterm Γ (VAR x) with x <? Γ
@@ -852,7 +852,7 @@ refine-cterm Γ (IF x THEN t ELSE t')
     with infer-vtype Γ x | refine-vterm Γ x
 ... | nothing | _ = tt
 ... | just nat | _ = tt
-... | just (_ ∏ _) | _ = tt
+... | just (_ ● _) | _ = tt
 ... | just (_ ⇒ _) | _ = tt
 ... | just bool | x'
          with infer-ctype Γ t | refine-cterm Γ t
@@ -880,7 +880,7 @@ refine-cterm Γ (f $ x)
 ... | nothing   | _ | _ | _ = tt
 ... | just nat  | _ | _ | _ = tt
 ... | just bool | _ | _ | _ = tt
-... | just (_ ∏ _) | _ | _ | _ = tt
+... | just (_ ● _) | _ | _ | _ = tt
 ... | just (_ ⇒ _) | _ | nothing | _ = tt  
 ... | just (σ ⇒ τ) | f' | just σ' | x' with σ' ≤V? σ
 ...                                    | no _  = tt
@@ -888,7 +888,7 @@ refine-cterm Γ (f $ x)
 refine-cterm Γ (PREC x t t')  with infer-vtype Γ x | refine-vterm Γ x
 ... | nothing | _  = tt
 ... | just bool | _ = tt
-... | just (_ ∏ _) | _ = tt
+... | just (_ ● _) | _ = tt
 ... | just (_ ⇒ _) | _ = tt
 ... | just nat | x'
         with infer-ctype Γ t | refine-cterm Γ t 
@@ -920,7 +920,7 @@ refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t
 Joonisel \ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- ja arvutustüüpide ning konteksti semantiline interpretatsioon metakeeles Agda.
 \begin{itemize}
 \item {\tt nat} interpreteeritakse kui naturaalarvud {\tt ℕ} ja {\tt bool} kui tõeväärtused {\tt Bool}.
-\item {\tt σ ∏ σ'} korral tehakse rekursiivsed väljakutsed korrutatavatele ning tulemused korrutatakse Agdas {\tt _×_}.
+\item {\tt σ ● σ'} korral tehakse rekursiivsed väljakutsed korrutatavatele ning tulemused korrutatakse Agdas {\tt _×_}.
 \item {\tt σ ⇒ τ} interpretatsioon vastab Agda funktsioonile, mille parameetri ja tulemuse tüüp on interpreeritud vastavalt väärtustüübist {\tt σ} ja arvutustüübist {\tt τ}.
 \item Arvutustüübi {\tt ε / σ} interpreteerimiseks rakendatakse gradeeritud monaadi tüübikonstruktorit {\tt T} efektile {\tt ε} ja väärtustüübi {\tt σ} interpretatsioonile.
 \item Tühi kontekst vastab tipp-tüübile {\tt ⊤}. Mitte-tühja konteksti pea-element interpreteeritakse ja korrutatakse rekursiivselt interpreteeritud sabaga.
@@ -932,7 +932,7 @@ mutual
   ⟪_⟫v : VType → Set
   ⟪ nat ⟫v = ℕ
   ⟪ bool ⟫v = Bool
-  ⟪ σ ∏ σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
+  ⟪ σ ● σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
   ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
 
   ⟪_⟫c : CType → Set

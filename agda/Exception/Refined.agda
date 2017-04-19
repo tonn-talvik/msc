@@ -23,9 +23,9 @@ mutual -- value and computation terms
     TT FF : VTerm Γ bool
     ZZ : VTerm Γ nat
     SS : VTerm Γ nat → VTerm Γ nat
-    ⟨_,_⟩ : {σ σ' : VType} → VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ∏ σ')
-    FST : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ
-    SND : {σ σ' : VType} → VTerm Γ (σ ∏ σ') → VTerm Γ σ'
+    ⟨_,_⟩ : {σ σ' : VType} → VTerm Γ σ → VTerm Γ σ' → VTerm Γ (σ ● σ')
+    FST : {σ σ' : VType} → VTerm Γ (σ ● σ') → VTerm Γ σ
+    SND : {σ σ' : VType} → VTerm Γ (σ ● σ') → VTerm Γ σ'
     VAR : {σ : VType} → σ ∈ Γ → VTerm Γ σ
     LAM : (σ : VType) {τ : CType} → CTerm (σ ∷ Γ) τ → VTerm Γ (σ ⇒ τ)
     VCAST : {σ σ' : VType} → VTerm Γ σ → σ ≤V σ' → VTerm Γ σ'

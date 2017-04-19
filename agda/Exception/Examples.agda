@@ -36,8 +36,8 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
 BAD-ONE : cTerm
 BAD-ONE = ZZ $ TT
 
-infer-add = infer-vterm [] ADD
-infer-add-3-and-4 = infer-cterm [] ADD-3-and-4
+infer-add = refine-vterm [] ADD
+infer-add-3-and-4 = refine-cterm [] ADD-3-and-4
 
 sem-add = ⟦ infer-add ⟧v tt
 sem-add-3-and-4 = ⟦ infer-add-3-and-4 ⟧c tt
@@ -49,25 +49,25 @@ raw1 = IF FF THEN VAL ZZ ELSE (FAIL nat)
 raw2 = IF (VAR 0) THEN (FAIL nat) ELSE (FAIL nat)
 raw3 = LET VAL ZZ IN VAL (SS ZZ)
 
-inf1 : infer-ctermType [] raw1
-inf1 = infer-cterm [] raw1
-inf2 = infer-cterm [ bool ] raw2
-inf3 = infer-cterm [] raw3
+ref1 : refined-cterm [] raw1
+ref1 = refine-cterm [] raw1
+ref2 = refine-cterm [ bool ] raw2
+ref3 = refine-cterm [] raw3
 
-sem1 = ⟦ inf1 ⟧c tt
-sem2 = ⟦ inf2 ⟧c (true , tt)
-sem3 = ⟦ inf3 ⟧c tt
+sem1 = ⟦ ref1 ⟧c tt
+sem2 = ⟦ ref2 ⟧c (true , tt)
+sem3 = ⟦ ref3 ⟧c tt
 
 ss = ⟦ VAL (SS ZZ) ⟧c tt
 
 p : sem3 ≡ ss
 p = refl
 
-pp : ⟦ inf3 ⟧c ≡ ⟦ VAL (SS ZZ) ⟧c
+pp : ⟦ ref3 ⟧c ≡ ⟦ VAL (SS ZZ) ⟧c
 pp = refl
 
 ⟦_⟧' : (t : cTerm) (Γ : Ctx) {τ : CType} → {p : infer-ctype Γ t ≡ just τ} → ⟪ Γ ⟫x  → ⟪ τ ⟫c
-⟦_⟧' t Γ {p = p} with infer-ctype Γ t | infer-cterm Γ t
+⟦_⟧' t Γ {p = p} with infer-ctype Γ t | refine-cterm Γ t
 ⟦_⟧' t Γ {p = refl} | just τ | t' = ⟦ t' ⟧c
 ⟦_⟧' t Γ {p = ()} | nothing | t'
 

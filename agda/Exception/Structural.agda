@@ -109,7 +109,7 @@ mutual
            ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
   lemmaC ρ v x (VAL x') = cong η (lemmaV ρ v x x')
   lemmaC ρ v x (FAIL σ) = refl
-  lemmaC ρ v x (TRY_WITH_ {e} {e'} t t') = cong₂ (sor e e') (lemmaC ρ v x t) (lemmaC ρ v x t')
+  lemmaC ρ v x (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemmaC ρ v x t) (lemmaC ρ v x t')
   lemmaC ρ v x (IF_THEN_ELSE_ {e} {e'} b t t')
     rewrite lemmaV ρ v x b | lemmaC ρ v x t | lemmaC ρ v x t' = refl
 {- alternative without rewrite
@@ -210,7 +210,7 @@ mutual
                ⟦ t ⟧c (ctr ρ p) ≡ ⟦ ctrC p t ⟧c ρ
   lemma-ctrC ρ p (VAL x) = cong η (lemma-ctrV ρ p x)
   lemma-ctrC ρ p (FAIL σ) = refl
-  lemma-ctrC ρ p (TRY_WITH_ {e} {e'} t t') = cong₂ (sor e e') (lemma-ctrC ρ p t) (lemma-ctrC ρ p t')
+  lemma-ctrC ρ p (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemma-ctrC ρ p t) (lemma-ctrC ρ p t')
   lemma-ctrC ρ p (IF x THEN t ELSE t') rewrite lemma-ctrV ρ p x | lemma-ctrC ρ p t | lemma-ctrC ρ p t' = refl
   lemma-ctrC ρ p (f $ x) rewrite lemma-ctrV ρ p f | lemma-ctrV ρ p x = refl
   lemma-ctrC ρ p (PREC x t t' q) = 

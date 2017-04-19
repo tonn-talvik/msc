@@ -41,13 +41,13 @@ mutual -- refined type inference
   ... | just nat = just nat
   ... | _        = nothing
   infer-vtype Γ ⟨ t , t' ⟩ with infer-vtype Γ t | infer-vtype Γ t'
-  ... | just σ | just σ' = just (σ ∏ σ')
+  ... | just σ | just σ' = just (σ ● σ')
   ... | _      | _       = nothing
   infer-vtype Γ (FST t) with infer-vtype Γ t
-  ... | just (σ ∏ _) = just σ
+  ... | just (σ ● _) = just σ
   ... | _            = nothing
   infer-vtype Γ (SND t) with infer-vtype Γ t
-  ... | just (_ ∏ σ') = just σ'
+  ... | just (_ ● σ') = just σ'
   ... | _             = nothing
   infer-vtype Γ (VAR x) with x <? Γ
   ... | yes p = just (lkp Γ (fromℕ≤ p))
@@ -118,7 +118,7 @@ mutual
   refine-vterm Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | u = SS u
   ... | just bool | _ = tt
-  ... | just (_ ∏ _) | _ = tt
+  ... | just (_ ● _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
   refine-vterm Γ ⟨ t , t' ⟩
@@ -130,13 +130,13 @@ mutual
   refine-vterm Γ (FST t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | _ = tt
   ... | just bool | _ = tt
-  ... | just (_ ∏ _) | u = FST u
+  ... | just (_ ● _) | u = FST u
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
   refine-vterm Γ (SND t) with infer-vtype Γ t | refine-vterm Γ t
   ... | just nat | _ = tt
   ... | just bool | _ = tt
-  ... | just (_ ∏ _) | u = SND u
+  ... | just (_ ● _) | u = SND u
   ... | just (_ ⇒ _) | _ = tt
   ... | nothing | _ = tt
   refine-vterm Γ (VAR x) with x <? Γ
@@ -172,7 +172,7 @@ mutual
       with infer-vtype Γ x | refine-vterm Γ x
   ... | nothing | _ = tt
   ... | just nat | _ = tt
-  ... | just (_ ∏ _) | _ = tt
+  ... | just (_ ● _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
   ... | just bool | x'
            with infer-ctype Γ t | refine-cterm Γ t
@@ -193,7 +193,7 @@ mutual
   ... | nothing   | _ | _ | _ = tt
   ... | just nat  | _ | _ | _ = tt
   ... | just bool | _ | _ | _ = tt
-  ... | just (_ ∏ _) | _ | _ | _ = tt
+  ... | just (_ ● _) | _ | _ | _ = tt
   ... | just (_ ⇒ _) | _ | nothing | _ = tt  
   ... | just (σ ⇒ τ) | f' | just σ' | x' with σ' ≤V? σ
   ...                                     | no _  = tt
@@ -202,7 +202,7 @@ mutual
   refine-cterm Γ (PREC x t t')  with infer-vtype Γ x | refine-vterm Γ x
   ... | nothing | _  = tt
   ... | just bool | _ = tt
-  ... | just (_ ∏ _) | _ = tt
+  ... | just (_ ● _) | _ = tt
   ... | just (_ ⇒ _) | _ = tt
   ... | just nat | x'
           with infer-ctype Γ t | refine-cterm Γ t 
@@ -237,7 +237,7 @@ mutual
   erase-vtype : VType → vType
   erase-vtype nat = nat
   erase-vtype bool = bool
-  erase-vtype (σ ∏ σ') = erase-vtype σ π erase-vtype σ'
+  erase-vtype (σ ● σ') = erase-vtype σ π erase-vtype σ'
   erase-vtype (σ ⇒ σ') = erase-vtype σ ⇒ erase-ctype σ'
 
   erase-ctype : CType → cType
@@ -331,14 +331,14 @@ mutual
 { -  infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t | inspect (infer-vtype Γ) t |  inspect (refine-vterm Γ) t
   infer-vorr Γ (SS t) | just nat | t' | Reveal_·_is_.[ eq ] | q = {!!} --cong SS (infer-vorr Γ {!t!})
   infer-vorr Γ (SS t) | just bool | t' | p  | q = tt
-  infer-vorr Γ (SS t) | just (x ∏ x₁) | t' | p | q = tt
+  infer-vorr Γ (SS t) | just (x ● x₁) | t' | p | q = tt
   infer-vorr Γ (SS t) | just (x ⇒ x₁) | t' | p | q = tt
   infer-vorr Γ (SS t) | nothing | t' | p | q = tt- }
   infer-vorr Γ (SS t) with infer-vtype Γ t | refine-vterm Γ t
   infer-vorr Γ (SS t) | just nat | t' = {!!}
   infer-vorr Γ (SS t) | just bool | t' = tt
-  infer-vorr Γ (SS t) | just (x ∏ x₁) | t' = tt
-  infer-vorr Γ (SS t) | just (x ⇒ x₁) | t' = tt
+  infer-vorr Γ (SS t) | just (_ ● _) | t' = tt
+  infer-vorr Γ (SS t) | just (_ ⇒ _) | t' = tt
   infer-vorr Γ (SS t) | nothing | t' = tt
   infer-vorr Γ ⟨ t , t₁ ⟩ = {!!}
   infer-vorr Γ (FST t) = {!!}
