@@ -131,33 +131,9 @@ dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
 dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n 
 
 
-
-{-
-need to compare:
-
-bind {errok} {errok · e'}  (λ x → bind {errok} {e'} (λ y → ⟦ n ⟧c (y , x , ρ)) (⟦ m ⟧c ρ)) ((⟦ m ⟧c ρ)
-
-bind {errok} {e'} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
--}
-
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})
 
-
-dup-comp : {e : Exc} {X Y : Set} → (m : T errok X) → (n : X → X → T e Y) → 
-           sub-eq (errok-seq e) (bind {errok} {errok · e}
-                                      (λ x → bind {errok} {e} (λ y → n y x) m)
-                                      m)
-           ≡ bind {errok} {e} (λ x → n x x) m
-dup-comp {err} m n = refl
-dup-comp {ok} (just x) n = refl
-dup-comp {ok} nothing n = refl
-dup-comp {errok} (just x) n = refl
-dup-comp {errok} nothing n = refl 
-
--- lemma-ctrC : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) {σ : VType} (p : σ ∈ Γ) {τ : CType}
---              (t : CTerm (ctrT p) τ) →
---              ⟦ t ⟧c (ctr ρ p) ≡ ⟦ ctrC p t ⟧c ρ
 
 dup-comp' : {e : Exc} {Γ : Ctx} {X Y : VType} 
             (m : CTerm Γ (errok / X)) (n : CTerm (ctrT here) (e / Y)) →
@@ -166,31 +142,10 @@ dup-comp' : {e : Exc} {Γ : Ctx} {X Y : VType}
                    (⟦ LET m IN LET wkC zero m IN n ⟧c ρ)
             ≡ ⟦ LET m IN ctrC here n ⟧c ρ
 dup-comp' {err} m n ρ = refl
-dup-comp' {ok} m n ρ = {!!}
-{-dup-comp' {ok} m n ρ with ⟦ m ⟧c ρ 
-dup-comp' {ok} m n ρ | just x rewrite lemmaC ρ x zero m = {!!} -- lemma-ctrC ρ x {!!} n = {!!}
-dup-comp' {ok} m n ρ | nothing = refl-}
-dup-comp' {errok} m n ρ with ⟦ m ⟧c ρ
-dup-comp' {errok} m n ρ | just x = {!!}
-dup-comp' {errok} m n ρ | nothing = refl
-
-mm = maybe
-
-dup-comp2 : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X Y : VType}
-            (m : CTerm Γ (errok / X)) (n : CTerm (X ∷ X ∷ Γ) (e / Y)) → 
-            sub-eq (errok-seq e)
-                   (bind {errok} {errok · e}
-                         (λ x → bind {errok} {e}
-                                      (λ y → ⟦ n ⟧c (y , x , ρ))
-                                      (⟦ m ⟧c ρ))
-                         (⟦ m ⟧c ρ))
-            ≡ bind {errok} {e} (λ x → ⟦ n ⟧c (x , x , ρ)) (⟦ m ⟧c ρ)
-dup-comp2 {err} m n = refl
---dup-comp2 {ok} m n = {!!} -- Auto ↝ "An internal error has occurred. Please report this as a bug. ..."
-dup-comp2 {ok} {ρ = ρ} m n with ⟦ m ⟧c ρ
-... | just x = refl
-... | nothing = refl
-dup-comp2 {errok} {ρ = ρ} m n with ⟦ m ⟧c ρ
-... | just x = refl
-... | nothing = refl
+dup-comp' {ok} m n ρ with ⟦ m ⟧c ρ | inspect ⟦ m ⟧c ρ
+dup-comp' {ok} m n ρ | just x | [ eq ] rewrite lemmaC ρ x zero m | eq = cong just (lemma-ctrC (x , ρ) here n)
+dup-comp' {ok} m n ρ | nothing | _ = refl
+dup-comp' {errok} m n ρ with ⟦ m ⟧c ρ | inspect (⟦ m ⟧c) ρ 
+dup-comp' {errok} m n ρ | just x | [ eq ] rewrite lemmaC ρ x zero m | eq = lemma-ctrC (x , ρ) here n
+dup-comp' {errok} m n ρ | nothing | _ = refl
 
