@@ -124,28 +124,28 @@ failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
 failure m = refl
 
 
-dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
-            (m : CTerm Γ (ok / σ)) (n : CTerm Γ (ε / τ ) ) →
+dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
+            (m : CTerm Γ (ok / σ)) (n : CTerm Γ (e / σ')) →
             (ρ : ⟪ Γ ⟫x) → 
-            ⟦ LET m IN (wkC zero n) ⟧c ρ ≡ ⟦ n ⟧c ρ
-dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n 
+            ⟦ LET m IN (wkC here n) ⟧c ρ ≡ ⟦ n ⟧c ρ
+dead-comp m n ρ = lemmaC (⟦ m ⟧c ρ , ρ) here n
 
 
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})
 
 
-dup-comp' : {e : Exc} {Γ : Ctx} {X Y : VType} 
-            (m : CTerm Γ (errok / X)) (n : CTerm (ctrT here) (e / Y)) →
-            (ρ : ⟪ Γ ⟫x) → 
-            sub-eq (errok-seq e)
-                   (⟦ LET m IN LET wkC zero m IN n ⟧c ρ)
-            ≡ ⟦ LET m IN ctrC here n ⟧c ρ
-dup-comp' {err} m n ρ = refl
-dup-comp' {ok} m n ρ with ⟦ m ⟧c ρ | inspect ⟦ m ⟧c ρ
-dup-comp' {ok} m n ρ | just x | [ eq ] rewrite lemmaC ρ x zero m | eq = cong just (lemma-ctrC (x , ρ) here n)
-dup-comp' {ok} m n ρ | nothing | _ = refl
-dup-comp' {errok} m n ρ with ⟦ m ⟧c ρ | inspect (⟦ m ⟧c) ρ 
-dup-comp' {errok} m n ρ | just x | [ eq ] rewrite lemmaC ρ x zero m | eq = lemma-ctrC (x , ρ) here n
-dup-comp' {errok} m n ρ | nothing | _ = refl
+dup-comp : {e : Exc} {Γ : Ctx} {X Y : VType} 
+           (m : CTerm Γ (errok / X)) (n : CTerm (ctrT here) (e / Y)) →
+           (ρ : ⟪ Γ ⟫x) → 
+           sub-eq (errok-seq e)
+                  (⟦ LET m IN LET wkC here m IN n ⟧c ρ)
+           ≡ ⟦ LET m IN ctrC here n ⟧c ρ
+dup-comp {err} m n ρ = refl
+dup-comp {ok} m n ρ with ⟦ m ⟧c ρ | inspect ⟦ m ⟧c ρ
+... | just x | [ eq ] rewrite lemmaC (x , ρ) here m | eq = cong just (lemma-ctrC (x , ρ) here n)
+... | nothing | _ = refl
+dup-comp {errok} m n ρ with ⟦ m ⟧c ρ | inspect (⟦ m ⟧c) ρ 
+... | just x | [ eq ] rewrite lemmaC (x , ρ) here m | eq = lemma-ctrC (x , ρ) here n
+... | nothing | _ = refl
 

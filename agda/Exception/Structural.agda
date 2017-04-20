@@ -19,24 +19,19 @@ open import Refined
 open import Semantics
 open import Types
 
+dropT : (Γ : Ctx) {σ : VType} (x : σ ∈ Γ) → Ctx
+dropT .(x' ∷ xs) (here' {x'} {xs} x) = xs
+dropT .(x' ∷ xs) (there {x'} {xs} x) = x' ∷ dropT xs x
 
-wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
-wkT Γ σ zero = σ ∷ Γ
-wkT [] σ (suc x) = σ ∷ []
-wkT (σ' ∷ Γ) σ (suc x) = σ' ∷ wkT Γ σ x 
-
-wkvar : {Γ : Ctx} {σ : VType} →
-        (x : Fin (suc (length Γ))) →
-        {τ : VType} → τ ∈ Γ → τ ∈ wkT Γ σ x
-wkvar zero y = there y
-wkvar (suc x) (here' refl) = here' refl
-wkvar (suc x) (there y) = there (wkvar x y) 
+wkvar : {Γ : Ctx} {σ : VType} (x : σ ∈ Γ) {τ : VType} → τ ∈ dropT Γ x → τ ∈ Γ
+wkvar (here' refl) y = there y
+wkvar (there x) (here' refl) = here' refl
+wkvar (there x) (there y) = there (wkvar x y)
 
 
 mutual
-  wkV : {Γ : Ctx} {σ τ : VType} →
-        (x : Fin (suc (length Γ))) →
-        VTerm Γ τ → VTerm (wkT Γ σ x) τ
+  wkV : {Γ : Ctx} {σ τ : VType} (x : σ ∈ Γ) →
+        VTerm (dropT Γ x) τ → VTerm Γ τ
   wkV x TT = TT
   wkV x FF = FF
   wkV x ZZ = ZZ
@@ -45,37 +40,34 @@ mutual
   wkV x (FST t) = FST (wkV x t)
   wkV x (SND t) = SND (wkV x t)
   wkV x (VAR x') = VAR (wkvar x x')
-  wkV x (LAM σ t) = LAM σ (wkC (suc x) t)
+  wkV x (LAM σ t) = LAM σ (wkC (there x) t)
   wkV x (VCAST t p) = VCAST (wkV x t) p
 
   
-  wkC : {Γ : Ctx} {σ : VType} {τ : CType} →
-        (x : Fin (suc (length Γ))) →
-        CTerm Γ τ → CTerm (wkT Γ σ x) τ
+  wkC : {Γ : Ctx} {σ : VType} {τ : CType} (x : σ ∈ Γ) →
+        CTerm (dropT Γ x) τ → CTerm Γ τ
   wkC x (VAL y) = VAL (wkV x y) 
   wkC x (FAIL σ) = FAIL σ
   wkC x (TRY t WITH t') = TRY (wkC x t) WITH (wkC x t')
   wkC x (IF b THEN t ELSE t') = IF (wkV x b) THEN (wkC x t) ELSE (wkC x t')
   wkC x (t $ u) = wkV x t $ wkV x u
-  wkC x (PREC y t t' p) = PREC (wkV x y) (wkC x t) (wkC (suc (suc x)) t') p
-  wkC x (LET t IN t') = LET (wkC x t) IN (wkC (suc x) t')
+  wkC x (PREC y t t' p) = PREC (wkV x y) (wkC x t) (wkC (there (there x)) t') p
+  wkC x (LET t IN t') = LET (wkC x t) IN (wkC (there x) t')
   wkC x (CCAST t p) = CCAST (wkC x t) p 
 
-wk : {Γ : Ctx} → ⟪ Γ ⟫x →
-     {σ : VType} → ⟪ σ ⟫v →
-     (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫x 
-wk ρ v zero = v , ρ
-wk {[]} tt v (suc x) = v , tt
-wk {_ ∷ _} (w , ρ) v (suc x) = w , wk ρ v x
 
-lemmaVar : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
-           {σ : VType} (v : ⟪ σ ⟫v) →
-           (x : Fin (suc (length Γ))) →
-           {τ : VType} (y : τ ∈ Γ) →
-           proj (wkvar x y) (wk ρ v x) ≡ proj y ρ
-lemmaVar ρ v zero y = refl
-lemmaVar ρ v (suc x) (here' refl) = refl
-lemmaVar (_ , ρ) v (suc x) (there y) = lemmaVar ρ v x y
+dropt : {Γ : Ctx} → ⟪ Γ ⟫x  → {σ : VType}  → (x : σ ∈ Γ) → 
+     ⟪ dropT Γ x ⟫x 
+dropt (_ , ρ) (here' refl) = ρ
+dropt (v , ρ) (there x) = v , dropt ρ x
+
+lemmaVar : {Γ : Ctx} → (ρ : ⟪ Γ ⟫x) → {σ : VType} 
+  → (x : σ ∈ Γ) 
+  → {τ : VType} → (y : τ ∈ dropT Γ x) → proj (wkvar x y) ρ ≡ proj y (dropt ρ x)
+lemmaVar ρ (here' refl) y = refl
+lemmaVar ρ (there x) (here' refl) = refl
+lemmaVar {_ ∷ Γ} (_ , ρ) (there x) (there y) = lemmaVar ρ x y
+
 
 cong₃ : ∀ {a b c d} {A : Set a} {B : Set b} {C : Set c} {D : Set d}
         (f : A → B → C → D) {x y u v w z} → x ≡ y → u ≡ v → w ≡ z → f x u w ≡ f y v z
@@ -84,53 +76,47 @@ cong₃ f refl refl refl = refl
 
 mutual 
   lemmaV : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
-           {σ : VType} (v : ⟪ σ ⟫v) →
-           (x : Fin (suc (length Γ))) →
-           {τ : VType} (t : VTerm Γ τ) →
-           ⟦ wkV x t ⟧v (wk ρ v x) ≡ ⟦ t ⟧v ρ
-  lemmaV ρ v x TT = refl
-  lemmaV ρ v x FF = refl
-  lemmaV ρ v x ZZ = refl
-  lemmaV ρ v x (SS t) = cong suc (lemmaV ρ v x t)
-  lemmaV ρ v x ⟨ t , u ⟩ = cong₂ _,_ (lemmaV ρ v x t) (lemmaV ρ v x u)
-  lemmaV ρ v x (FST t) = cong proj₁ (lemmaV ρ v x t)
-  lemmaV ρ v x (SND t) = cong proj₂ (lemmaV ρ v x t)
-  lemmaV ρ v x (VAR y) = lemmaVar ρ v x y
-  lemmaV ρ v x (LAM σ t) = funext (λ z → ⟦ wkC (suc x) t ⟧c (z , wk ρ v x))
-                                  (λ z → ⟦ t ⟧c (z , ρ))
-                                  (λ z → lemmaC (z , ρ) v (suc x) t)
-  lemmaV ρ v x (VCAST t p) = cong (vcast p) (lemmaV ρ v x t)
+           {σ : VType} (x : σ ∈ Γ) →
+           {τ : VType} (t : VTerm (dropT Γ x) τ) →
+           ⟦ wkV x t ⟧v ρ ≡ ⟦ t ⟧v (dropt ρ x)
+  lemmaV ρ x TT = refl
+  lemmaV ρ x FF = refl
+  lemmaV ρ x ZZ = refl
+  lemmaV ρ x (SS t) = cong suc (lemmaV ρ x t)
+  lemmaV ρ x ⟨ t , u ⟩ = cong₂ _,_ (lemmaV ρ x t) (lemmaV ρ x u)
+  lemmaV ρ x (FST t) = cong proj₁ (lemmaV ρ x t)
+  lemmaV ρ x (SND t) = cong proj₂ (lemmaV ρ x t)
+  lemmaV ρ x (VAR y) = lemmaVar ρ x y
+  lemmaV ρ x (LAM σ t) = funext (λ z → ⟦ wkC (there x) t ⟧c (z , ρ))
+                                (λ z → ⟦ t ⟧c (z , dropt ρ x))
+                                (λ z → lemmaC (z , ρ) (there x) t)
+  lemmaV ρ x (VCAST t p) = cong (vcast p) (lemmaV ρ x t)
 
 
   lemmaC : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
-           {σ : VType} (v : ⟪ σ ⟫v) →
-           (x : Fin (suc (length Γ))) →
-           {τ : CType} (t : CTerm Γ τ) →
-           ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
-  lemmaC ρ v x (VAL x') = cong η (lemmaV ρ v x x')
-  lemmaC ρ v x (FAIL σ) = refl
-  lemmaC ρ v x (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemmaC ρ v x t) (lemmaC ρ v x t')
-  lemmaC ρ v x (IF_THEN_ELSE_ {e} {e'} b t t')
-    rewrite lemmaV ρ v x b | lemmaC ρ v x t | lemmaC ρ v x t' = refl
-{- alternative without rewrite
-  lemmaC ρ v x (IF_THEN_ELSE_ {e} {e'} b t t') =
-    cong₃ (λ b t f → if b then (sub (lub e e') t) else (sub (lub-sym e' e) f))
-          (lemmaV ρ v x b) (lemmaC ρ v x t) (lemmaC ρ v x t') -}
-  lemmaC ρ v x (f $ x') rewrite lemmaV ρ v x f | lemmaV ρ v x x' = refl
-  lemmaC ρ v x (PREC y t t' p) =
+           {σ : VType} (x : σ ∈ Γ) →
+           {τ : CType} (t : CTerm (dropT Γ x) τ) →
+           ⟦ wkC x t ⟧c ρ ≡ ⟦ t ⟧c (dropt ρ x)
+  lemmaC ρ x (VAL x') = cong η (lemmaV ρ x x')
+  lemmaC ρ x (FAIL σ) = refl
+  lemmaC ρ x (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemmaC ρ x t) (lemmaC ρ x t')
+  lemmaC ρ x (IF_THEN_ELSE_ {e} {e'} b t t')
+    rewrite lemmaV ρ x b | lemmaC ρ x t | lemmaC ρ x t' = refl
+  lemmaC ρ x (f $ x') rewrite lemmaV ρ x f | lemmaV ρ x x' = refl
+  lemmaC ρ x (PREC y t t' p) =
     cong₃ (λ n z s → primrecT n z s p)
-          (lemmaV ρ v x y) (lemmaC ρ v x t)
-          (funext (λ i acc → ⟦ wkC (suc (suc x)) t' ⟧c (acc , i , wk ρ v x))
-                  (λ i acc → ⟦ t' ⟧c (acc , i , ρ))
-                  (λ i → funext (λ acc → ⟦ wkC (suc (suc x)) t' ⟧c (acc , i , wk ρ v x))
-                                 (λ acc → ⟦ t' ⟧c (acc , i , ρ))
-                                 (λ acc → lemmaC (acc , i , ρ) v (suc (suc x)) t')))
-  lemmaC ρ v x (LET_IN_ {e} {e'} t t') rewrite lemmaC ρ v x t =
-    cong (λ f → bind {e} {e'} f (⟦ t ⟧c ρ))
-         (funext (λ w → ⟦ wkC (suc x) t' ⟧c (w , wk ρ v x))
-                 (λ w → ⟦ t' ⟧c (w , ρ))
-                 (λ w → lemmaC (w , ρ) v (suc x) t'))
-  lemmaC ρ v x (CCAST t p) = cong (ccast p) (lemmaC ρ v x t)
+          (lemmaV ρ x y) (lemmaC ρ x t)
+          (funext (λ i acc → ⟦ wkC (there (there x)) t' ⟧c (acc , i , ρ))
+                  (λ i acc → ⟦ t' ⟧c (acc , i , dropt ρ x))
+                  (λ i → funext (λ acc → ⟦ wkC (there (there x)) t' ⟧c (acc , i , ρ))
+                                 (λ acc → ⟦ t' ⟧c (acc , i , dropt ρ x))
+                                 (λ acc → lemmaC (acc , i , ρ) (there (there x)) t')))
+  lemmaC ρ x (LET_IN_ {e} {e'} t t') rewrite lemmaC ρ x t =
+    cong (λ f → bind {e} {e'} f (⟦ t ⟧c (dropt ρ x)))
+         (funext (λ w → ⟦ wkC (there x) t' ⟧c (w , ρ))
+                 (λ w → ⟦ t' ⟧c (w , dropt ρ x))
+                 (λ w → lemmaC (w , ρ) (there x) t'))
+  lemmaC ρ x (CCAST t p) = cong (ccast p) (lemmaC ρ x t)
 
 ----------------------------------------------------------------------
 

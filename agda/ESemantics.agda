@@ -266,10 +266,10 @@ dup-comp' : {e : Exc} {Γ : Ctx} {X Y : VType}
 
 dup-comp' {err} m n ρ = refl
 dup-comp' {ok} m n ρ with ⟦ m ⟧c ρ | inspect (⟦ m ⟧c) ρ 
-dup-comp' {ok} m n ρ | just x | Reveal_is_.[ eq ] rewrite lemmaC (x , ρ) here m | eq = cong just (lemma-ctrC (x , ρ) here n) 
+dup-comp' {ok} m n ρ | just x | [ eq ] rewrite lemmaC (x , ρ) here m | eq = cong just (lemma-ctrC (x , ρ) here n) 
 dup-comp' {ok} m n ρ | nothing | _  = refl
 dup-comp' {errok} m n ρ with ⟦ m ⟧c ρ | inspect (⟦ m ⟧c) ρ 
-dup-comp' {errok} m n ρ | just x | Reveal_is_.[ eq ] rewrite lemmaC (x , ρ) here m | eq = lemma-ctrC (x , ρ) here n
+dup-comp' {errok} m n ρ | just x | [ eq ] rewrite lemmaC (x , ρ) here m | eq = lemma-ctrC (x , ρ) here n
 dup-comp' {errok} m n ρ | nothing | _ = refl
 
 
