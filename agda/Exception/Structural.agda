@@ -155,15 +155,15 @@ mutual
   ctrC {Γ} p (LET t IN t') = LET ctrC p t IN ctrC (there p) t'
   ctrC p (CCAST t q) = CCAST (ctrC p t) q
 
-ctr : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
-ctr (w , ρ) (here' refl) = w , w , ρ
-ctr (w , ρ) (there p) = w , ctr ρ p
+dup : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
+dup (w , ρ) (here' refl) = w , w , ρ
+dup (w , ρ) (there p) = w , dup ρ p
 
 
 lemma-ctr-var : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                 {σ : VType} (p : σ ∈ Γ) →
                 {τ : VType} (x : τ ∈ dupX p) →
-                proj x (ctr ρ p) ≡ proj (ctrvar p x) ρ
+                proj x (dup ρ p) ≡ proj (ctrvar p x) ρ
 lemma-ctr-var ρ (here' refl) (here' refl) = refl
 lemma-ctr-var ρ (here' refl) (there x) = refl
 lemma-ctr-var ρ (there p) (here' refl) = refl
@@ -173,7 +173,7 @@ mutual
   lemma-ctrV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                {σ : VType} (p : σ ∈ Γ) →
                {τ : VType} (t : VTerm (dupX p) τ) →
-               ⟦ t ⟧V (ctr ρ p) ≡ ⟦ ctrV p t ⟧V ρ
+               ⟦ t ⟧V (dup ρ p) ≡ ⟦ ctrV p t ⟧V ρ
   lemma-ctrV ρ p TT = refl
   lemma-ctrV ρ p FF = refl
   lemma-ctrV ρ p ZZ = refl
@@ -182,7 +182,7 @@ mutual
   lemma-ctrV ρ p (FST t) = cong proj₁ (lemma-ctrV ρ p t)
   lemma-ctrV ρ p (SND t) = cong proj₂ (lemma-ctrV ρ p t)
   lemma-ctrV ρ p (VAR x) = lemma-ctr-var ρ p x
-  lemma-ctrV ρ p (LAM σ x) = funext (λ z → ⟦ x ⟧C (z , ctr ρ p))
+  lemma-ctrV ρ p (LAM σ x) = funext (λ z → ⟦ x ⟧C (z , dup ρ p))
                                       (λ z → ⟦ ctrC (there p) x ⟧C (z , ρ))
                                       (λ z → lemma-ctrC (z , ρ) (there p) x)
   lemma-ctrV ρ p (VCAST t q) = cong (vcast q) (lemma-ctrV ρ p t)
@@ -190,7 +190,7 @@ mutual
   lemma-ctrC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                {σ : VType} (p : σ ∈ Γ) →
                {τ : CType} (t : CTerm (dupX p) τ) →
-               ⟦ t ⟧C (ctr ρ p) ≡ ⟦ ctrC p t ⟧C ρ
+               ⟦ t ⟧C (dup ρ p) ≡ ⟦ ctrC p t ⟧C ρ
   lemma-ctrC ρ p (VAL x) = cong η (lemma-ctrV ρ p x)
   lemma-ctrC ρ p (FAIL σ) = refl
   lemma-ctrC ρ p (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemma-ctrC ρ p t) (lemma-ctrC ρ p t')
@@ -199,14 +199,57 @@ mutual
   lemma-ctrC ρ p (PREC x t t' q) = 
      cong₃ (λ n z s → primrecT n z s q)
           (lemma-ctrV ρ p x) (lemma-ctrC ρ p t)
-          (funext (λ i acc → ⟦ t' ⟧C (acc , i , ctr ρ p))
+          (funext (λ i acc → ⟦ t' ⟧C (acc , i , dup ρ p))
                   (λ i acc → ⟦ ctrC (there (there p)) t' ⟧C (acc , i , ρ))
-                  (λ i → funext (λ acc → ⟦ t' ⟧C (acc , i , ctr ρ p))
+                  (λ i → funext (λ acc → ⟦ t' ⟧C (acc , i , dup ρ p))
                                  (λ acc → ⟦ ctrC (there (there p)) t' ⟧C (acc , i , ρ))
                                  (λ acc → lemma-ctrC (acc , i , ρ) (there (there p)) t')))
   lemma-ctrC ρ p (LET_IN_ {e} {e'} t t') rewrite lemma-ctrC ρ p t =
     cong (λ f → bind {e} {e'} f (⟦ ctrC p t ⟧C ρ))
-         (funext (λ w → ⟦ t' ⟧C (w , ctr ρ p))
+         (funext (λ w → ⟦ t' ⟧C (w , dup ρ p))
                  (λ w → ⟦ ctrC (there p) t' ⟧C (w , ρ))
                  (λ w → lemma-ctrC (w , ρ) (there p) t'))
   lemma-ctrC ρ p (CCAST t q) = cong (ccast q) (lemma-ctrC ρ p t)
+
+
+---------------------------------------------------------------------------
+
+
+swapX : {Γ : Ctx} {σ : VType} → σ ∈ Γ → Ctx
+swapX {σ ∷ []} (here' x) = σ ∷ []
+swapX {σ ∷ σ' ∷ Γ} (here' x) = σ' ∷ σ ∷ Γ
+swapX {σ ∷ Γ} (there p) = σ ∷ swapX p
+
+swapvar : {Γ : Ctx} {σ σ' : VType} (p : σ ∈ Γ) → σ' ∈ Γ → σ' ∈ swapX p
+swapvar {σ ∷ []} (here' refl) (here' refl) = here' refl
+swapvar {σ ∷ σ' ∷ Γ} (here' refl) (here' refl) = there (here' refl)
+swapvar {σ ∷ []} (here' refl) (there x) = there x
+swapvar {σ ∷ σ' ∷ Γ} (here' refl) (there (here' x)) = here' x
+swapvar {σ ∷ σ' ∷ Γ} (here' refl) (there (there x)) = there (there x)
+swapvar (there p) (here' x) = here' x
+swapvar (there p) (there x) = there (swapvar p x)
+
+mutual
+  swapV : {Γ : Ctx} {σ σ' : VType} (p : σ ∈ Γ) →
+          VTerm Γ σ' → VTerm (swapX p) σ'
+  swapV p TT = TT
+  swapV p FF = FF
+  swapV p ZZ = ZZ
+  swapV p (SS t) = SS (swapV p t)
+  swapV p ⟨ t , t' ⟩ = ⟨ swapV p t , swapV p t' ⟩
+  swapV p (FST t) = FST (swapV p t)
+  swapV p (SND t) = SND (swapV p t)
+  swapV p (VAR x) = VAR (swapvar p x)
+  swapV p (LAM σ t) = LAM σ (swapC (there p) t)
+  swapV p (VCAST t q) = VCAST (swapV p t) q
+
+  swapC : {Γ : Ctx} {σ : VType} {τ : CType} (p : σ ∈ Γ) →
+          CTerm Γ τ → CTerm (swapX p) τ
+  swapC p (VAL x) = VAL (swapV p x)
+  swapC p (FAIL σ) = FAIL σ
+  swapC p (TRY t WITH t') = TRY swapC p t WITH swapC p t'
+  swapC p (IF x THEN t ELSE t') = IF swapV p x THEN swapC p t ELSE swapC p t'
+  swapC p (f $ x) = swapV p f $ swapV p x
+  swapC p (PREC x t t' q) = PREC (swapV p x) (swapC p t) (swapC (there (there p)) t') q
+  swapC p (LET t IN t') = LET swapC p t IN swapC (there p) t'
+  swapC p (CCAST t q) = CCAST (swapC p t) q

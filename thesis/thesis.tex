@@ -1069,7 +1069,7 @@ mutual
   ctrC : {Γ : Ctx} {σ : VType} {τ : CType} (p : σ ∈ Γ) →
          CTerm (dupX p) τ → CTerm Γ τ
   -- proof omitted
-ctr : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
+dup : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
 -- proof omitted
 mutual
   lemma-ctrV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →

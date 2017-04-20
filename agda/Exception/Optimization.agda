@@ -22,8 +22,6 @@ open import Structural
 
 
 ---------------------------------------------------------------
-
----------------------------------
 -- monad-specific, effect-independent equivalences
 
 -- choice
@@ -41,6 +39,19 @@ the-same {ok} m = refl
 the-same {errok} {ρ = ρ} m with ⟦ m ⟧C ρ
 ... | just _ = refl
 ... | nothing = refl
+
+
+⊹-err : (e : Exc) → e ⊹ err ≡ e
+⊹-err err = refl
+⊹-err ok = refl
+⊹-err errok = refl
+
+handler-fails : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
+               (m : CTerm Γ (e / X)) →
+               sub-eq (⊹-err e) (⟦ TRY m WITH FAIL X ⟧C ρ) ≡ ⟦ m ⟧C ρ
+handler-fails {err} m = refl
+handler-fails {ok} m = refl
+handler-fails {errok} m = refl
 
 
 ⊹-ass : (e e' e'' : Exc) → e ⊹ (e' ⊹ e'') ≡ (e ⊹ e') ⊹ e''
@@ -84,18 +95,13 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
 ·-comm errok ok = refl
 ·-comm errok errok = refl
 
-{-
-swappy : {e : Exc} {Γ : Ctx} {X Y Z : VType} →
-         CTerm (X ∷ Y ∷ Γ) (e / Z) → CTerm (Y ∷ X ∷ Γ) (e / Z)
-swappy m = {!!}
 
--- show m&n independence?
 comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y Z : VType}
        (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) (o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
        sub-eq (·-comm e₁ e₂)
-              (⟦ LET m IN LET wkC zero n IN o ⟧C ρ) ≡ ⟦ LET n IN LET wkC zero m IN swappy o ⟧C ρ
+              (⟦ LET m IN LET wkC here n IN o ⟧C ρ) ≡ ⟦ LET n IN LET wkC here m IN swapC here o ⟧C ρ
 comm m n o = {!!}
--}
+
 
 -- distribution
 
@@ -116,7 +122,8 @@ fails-later : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
 fails-later m = refl
 
 
----------------------------------
+
+---------------------------------------------------------------
 --effect-dependent equivalences
 
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
