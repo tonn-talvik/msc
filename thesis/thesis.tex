@@ -336,9 +336,9 @@ Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk~\ref{
 
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
-Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestatus.
+Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestus.
 Sellega võimaldatakse alamtüüpide koostamine.
-Ühtlasi näidatakse, et selline hindamine rahuldab järjestatud monoidi ja gradeeritud monaadi omadusi,
+Ühtlasi näidatakse, et selline hindamine rahuldab eeljärjestatud monoidi ja gradeeritud monaadi omadusi,
 millele tuginevad semantika (alaptk~\ref{ssec:exc.semantics}) ja optimisatsioonid (alaptk~\ref{ssec:exc.optimizations}). 
 
 \subsubsection{Erandite efekti hinnang}\label{sssec:exc.exc}
@@ -423,23 +423,22 @@ lub : (e e' : Exc) → e ⊑ (e ⊔ e')
 glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
 lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \end{BVerbatim}
-  \caption{Erandite efektide järjestatus.}
+  \caption{Erandite efektide järjestus.}
   \label{fig:exc.ord}
 \end{figure}
 Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid, aga mitte definitsioonid (jn~\ref{fig:exc.ord}).
 Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 
-\subsubsection{Järjestatud monoid}
-\todo{osaline järjestatus või eeljärjestatus?}
+\subsubsection{Eeljärjestatud monoid}
 Hulk {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
 st {\tt i} on ühik korrutamise suhtes nii vasakult {\tt lu} kui ka paremalt {\tt ru},
 ning korrutamine on assotsiatiivne {\tt ass}, nimetatakse monoidiks.
-Kui sellel hulgal on osaline järjestatus {\tt _⊑_},
+Kui sellel hulgal on osaline järjestusseos {\tt _⊑_},
 mis on refleksiivne {\tt ⊑-refl} ja transitiivne {\tt ⊑-trans},
 ning kehtib korrutamise monotoonsus {\tt mon},
-siis on tegemist järjestatud monoidiga.
-Joonisel~\ref{fig:ordered-monoid} on toodud järjestatud monoidi kirje tüüp Agdas.
+siis on tegemist eeljärjestatud monoidiga.
+Joonisel~\ref{fig:ordered-monoid} on toodud eeljärjestatud monoidi kirje tüüp Agdas.
 
 \begin{figure}
   \begin{BVerbatim}
@@ -459,18 +458,18 @@ record OrderedMonoid : Set where
 
     mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
   \end{BVerbatim}
-  \caption{Järjestatud monoid.}
+  \caption{Eeljärjestatud monoid.}
   \label{fig:ordered-monoid}
 \end{figure}
 
 Saab näidata, et erandite hinnag {\tt Exc},
 korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
-ja osaline järjestatus {\tt _⊑_} moodustavad erandite järjestatud monoidi.
+ja osaline järjestusseos {\tt _⊑_} moodustavad eeljärjestatud monoidi instantsi.
 Vasakühiku tõestus tuleneb vahetult korrutamise definitsioonist.
 Paremühiku tõestamisel tuleb teha juhtumi analüüs varjatud argumendi konstruktori kuju peal
 ja seejärel lähtuda korrutamise definitsioonist.
-Assotsiatiivsus tõestatakse sarnaselt kasutades juhtumite analüüsi ja korrutamise definitsiooni.
-\todo{explain mon}
+Assotsiatiivsus tõestatakse sarnaselt kasutades juhtumite analüüsi ja korrutamise definitsiooni. Monotoonsuse tõestuses analüüsitakse nii võimalikke efekte kui ka nendevahelisi järjestusseoseid.
+Kõik mainitud tõestused on toodud töö käigus valminud lähtekoodis.
 
 
 \subsubsection{Gradeeritud monaad}
