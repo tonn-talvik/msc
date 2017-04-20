@@ -260,17 +260,17 @@ mutual
 \end{figure}
 
 
-Vastastikku defineeritud väärtus- ja arvutusliikmed on toodud joonisel~\ref{fig:exc.raw}.
+Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel~\ref{fig:exc.raw}.
 % pragmatics
-Liikmete konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standard funktsioonidega.
-Järgnevalt on selgitatud väärtusliikme {\tt vTerm} konstruktorite tähendust.
+Termidee konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standardfunktsioonidega.
+Järgnevalt on selgitatud väärtustermi {\tt vTerm} konstruktorite tähendust.
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} koostavad vastavalt tõeväärtused tõene ja väär.
 \item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
 \item {\tt ⟨_,_⟩} koostab oma argumentide paari e. korrutise.
 \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
 \item {\tt VAR} koostab De~Bruijn'i indeksiga määratud muutuja.
-\item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusliige.
+\item {\tt LAM} on funktsiooni abstraktsioon, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm.
 \end{itemize}
 \begin{figure}
   \begin{BVerbatim}
@@ -293,19 +293,19 @@ mutual
     PREC : vTerm → cTerm → cTerm → cTerm
     LET_IN_ : cTerm → cTerm → cTerm
   \end{BVerbatim}
-  \caption{Eranditega keele väärtus- ja arvutusliikmed.}
+  \caption{Eranditega keele väärtus- ja arvutustermid.}
   \label{fig:exc.raw}
 \end{figure}
 
-Järgnevalt on selgitatud arvutusliikme {\tt cTerm} konstruktorite (jn~\ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
+Järgnevalt on selgitatud arvutustermi {\tt cTerm} konstruktorite (jn~\ref{fig:exc.raw}) tähendust ja vastavas arvutuses kätketud efekti.
 \begin{itemize}
-\item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtusliikmega antud konstruktori argument.
+\item {\tt VAL} tähistab õnnestunud arvutust, seejuures arvutuse tulemuseks on väärtustermiga antud konstruktori argument.
 \item {\tt FAIL} tähistab arvutuse, mille väärtustüüp on eksplitsiitselt annoteeritud, ebaõnnestumist.
-\item {\tt TRY_WITH_} on erandikäsitlejaga arvutus: kogu arvutuse tulemuseks on esimese argumendiga antud liikme arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud liikme arvutus.
-\item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtusliikme tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutusliikmega antud arvutus.
-\item {\tt _\$_} on esimese väärtusliikmega antud funktsiooni rakendamine teise väärtusliikmega antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
-\item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtusliikme argumendiga. Esimene arvutusliige vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
-\item {\tt LET_IN_} lisab esimese arvutusliikmega antud väärtuse teise arvutusliikme kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
+\item {\tt TRY_WITH_} on erandikäsitlejaga arvutus: kogu arvutuse tulemuseks on esimese argumendiga antud termi arvutus, kui see õnnestub, vastasel korral aga teise argumendiga antud termi arvutus.
+\item {\tt IF_THEN_ELSE_} on valikuline arvutus: vastavalt väärtustermi tõeväärtusele on tulemuseks kas esimese (tõene haru) või teise (väär haru) arvutustermiga antud arvutus.
+\item {\tt _\$_} on esimese väärtustermiga antud funktsiooni rakendamine teise väärtustermiga antud väärtusele, kusjuures rakendamise efektiks on funktsioonis peituv efekt.
+\item {\tt PREC} on primitiivne rekursioon, mille sammude arv on määratud väärtustermi argumendiga. Esimene arvutusterm vastab rekursiooni baasile ja teine sammule, kusjuures sammuks on akumulaatori ja sammuloenduri parameetritega funktsioon. Kogu arvutuse efekt vastab kõigi osaarvutuste järjestikku sooritamisele.
+\item {\tt LET_IN_} lisab esimese arvutustermiga antud väärtuse teise arvutustermi kontekstis esimeseks muutujaks. Arvutuse efekt vastab osaarvutuste järjestikku sooritamisele.
 \end{itemize}
 
 \begin{figure}
@@ -328,11 +328,11 @@ BAD-ONE = ZZ $ TT
   \label{fig:exc.raw.ex1}
 \end{figure}
 
-Joonisel~\ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtusliikmena {\tt ADD}
-ning naturaalarvude 3 ja 4 liitmine arvutusliikmena {\tt ADD-3-and-4}.
-Lisaks on toodud näide arvutusliikmest {\tt BAD-ONE}, mida annab konstrueerida,
+Joonisel~\ref{fig:exc.raw.ex1} on toodud kahe naturaalarvu liitmise funktsioon väärtustermina {\tt ADD}
+ning naturaalarvude 3 ja 4 liitmine arvutustermina {\tt ADD-3-and-4}.
+Lisaks on toodud näide arvutustermist {\tt BAD-ONE}, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
-Sellised halvasti tüübitud liikmed tuvastatakse tüübituletusega (alaptk~\ref{ssec:exc.inference}).
+Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk~\ref{ssec:exc.inference}).
 
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
@@ -578,17 +578,17 @@ Väärtus- ja arvutustüüpide alamtüüpide transitiivsus on defineeritud vasta
 
 \subsubsection{Rafineeritud keel}
 
-Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutusliikmed.
+Joonisel~\ref{fig:exc.refined} on toodud vastastikku defineeritud rafineeritud väärtus- ja arvutustermid.
 Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list.
-Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud liikmetega, on rafineeritud liikmed parametriseeritud kontekstiga {\tt Γ} ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
+Võrreldes alaptk~\ref{ssec:exc.raw}-s toodud termidega, on rafineeritud termid parametriseeritud kontekstiga {\tt Γ} ning indekseeritud vastavalt väärtus- ja arvutustüüpidega.
 \begin{itemize}
-\item Konstruktorid {\tt TT} ja {\tt FF} koostavad tõeväärtustüüpi liikme.
-\item Konstruktor {\tt ZZ} koostab naturaalarvu tüüpi liikme. Konstruktor {\tt SS} koostab antud naturaalarvu tüüpi liikme järglase, mis on samuti naturaalarvu tüüpi.
-\item {\tt ⟨_,_⟩} koostab kahest antud väärtusliikmest paari, mille tüüp on liikmete tüüpide korrutis.
-\item {\tt FST} ja {\tt SND} projekteerivad paari tüüpi liikmest vastavalt esimese või teise korrutatava tüüpi liikme.
-\item {\tt VAR} võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtusliikme, mille tüüp on kõnealuse elemendiga määratud tüüp.
-\item {\tt LAM} võtab väärtustüübi ja arvutusliikme, mille kontekst on parameetriga antud kontekstist täpselt väärtustüübi argumendi võrra suurem, ning annab funktsiooniruumile vastava väärtusliikme.
-\item {\tt VCAST} suurendab ettantud väärtusliikme tüüpi vastavalt alamtüübi tõestusele. See võimaldab erinevate alamtüüpidega väärtusliikmeid ühtlustada, mis on vajalik rafineeritud arvutusliikmete koostamisel.
+\item Konstruktorid {\tt TT} ja {\tt FF} koostavad tõeväärtustüüpi termi.
+\item Konstruktor {\tt ZZ} koostab naturaalarvu tüüpi termi. Konstruktor {\tt SS} koostab antud naturaalarvu tüüpi termi järglase, mis on samuti naturaalarvu tüüpi.
+\item {\tt ⟨_,_⟩} koostab kahest antud väärtustermist paari, mille tüüp on termide tüüpide korrutis.
+\item {\tt FST} ja {\tt SND} projekteerivad paari tüüpi termist vastavalt esimese või teise korrutatava tüüpi termi.
+\item {\tt VAR} võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtustermi, mille tüüp on kõnealuse elemendiga määratud tüüp.
+\item {\tt LAM} võtab väärtustüübi ja arvutustermi, mille kontekst on parameetriga antud kontekstist täpselt väärtustüübi argumendi võrra suurem, ning annab funktsiooniruumile vastava väärtustermi.
+\item {\tt VCAST} suurendab ettantud väärtustermi tüüpi vastavalt alamtüübi tõestusele. See võimaldab erinevate alamtüüpidega väärtustermid ühtlustada, mis on vajalik rafineeritud arvutustermide koostamisel.
 \end{itemize}
 
 \begin{figure}
@@ -626,35 +626,35 @@ mutual
    CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
            e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
   \end{BVerbatim}
-  \caption{Eranditega keele rafineeritud liikmed.}
+  \caption{Eranditega keele rafineeritud termid.}
   \label{fig:exc.refined}
 \end{figure}
 
-Rafineeritud arvutusliikmed (jn \ref{fig:exc.refined}) määravad täpselt osaarvutuste efektide kombineerimise.
+Rafineeritud arvutustermid (jn \ref{fig:exc.refined}) määravad täpselt osaarvutuste efektide kombineerimise.
 \begin{itemize}
-\item {\tt VAL} koostab antud väärtusliikmest õnnestunud arvutuse.
+\item {\tt VAL} koostab antud väärtustermist õnnestunud arvutuse.
 \item {\tt FAIL} koostab väärtustüübist ebaõnnestunud arvutuse.
-\item {\tt TRY_WITH_} parandab põhiarvutusliikme efekti erandikäsitleja arvutusliikme efektiga. Kitsendusena peavad arvutusliikmed omama sama väärtustüüpi.
-\item {\tt IF_THEN_ELSE_} eeldab tõeväärtustüüpi tingimust. Kogu arvutusliikme efekt on määratud harude, millede väärtustüübid peavad ühtima, efektide ülemise rajaga.
-\item {\tt _\$_} rakendab esimesega väärtusliikmega antud funktsiooni teise väärtusliikmega argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Kogu arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
-\item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtusliiget. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutusliikme konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamisel püsipunkt.
-\item {\tt LET_IN_} lisab esimese arvutusliikme väärtustüübi teise arvutusliikme konteksti. Kogu arvutuse efektis on arvutusliikmete korrutis ning väärtustüüp on määratud teise arvutusliikme tüübiga.
-\item {\tt CCAST} suurendab etteantud arvutusliikme tüüpi vastavalt alamtüübi tõestusele.
+\item {\tt TRY_WITH_} parandab põhiarvutustermi efekti erandikäsitleja arvutustermi efektiga. Kitsendusena peavad arvutustermid omama sama väärtustüüpi.
+\item {\tt IF_THEN_ELSE_} eeldab tõeväärtustüüpi tingimust. Kogu arvutustermi efekt on määratud harude, millede väärtustüübid peavad ühtima, efektide ülemise rajaga.
+\item {\tt _\$_} rakendab esimesega väärtustermiga antud funktsiooni teise väärtustermiga argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Kogu arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
+\item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtustermi. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutustermi konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamisel püsipunkt.
+\item {\tt LET_IN_} lisab esimese arvutustermi väärtustüübi teise arvutustermi konteksti. Kogu arvutuse efektis on arvutustermide korrutis ning väärtustüüp on määratud teise arvutustermi tüübiga.
+\item {\tt CCAST} suurendab etteantud arvutustermi tüüpi vastavalt alamtüübi tõestusele.
 \end{itemize}
 
 
-\subsubsection{Liikmete tüübituletus}\label{sssec:exc.infer-type}
+\subsubsection{Termide tüübituletus}\label{sssec:exc.infer-type}
 
-Etteantud kontekstis saab väärtusliikmele tuletada vastava väärtustüübi (jn \ref{fig:exc.infer-vtype}).
+Etteantud kontekstis saab väärtustermile tuletada vastava väärtustüübi (jn \ref{fig:exc.infer-vtype}).
 Kuna vaste võib puududa, siis on {\tt infer-vtype} tulemus mähitud {\tt Maybe} monaadi.
 Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} annavad kindlasti tõeväärtustüübi.
-\item {\tt ZZ} on kindlasti naturaalarvu tüüpi. {\tt SS t} korral tuleb täiendavalt kontrollida, kas alamliige {\tt t} on samas kontekstis naturaalarvu tüüpi. Vastasel korral on liige halvasti koostatud ja selle tüüp puudub.
-\item Paari {\tt ⟨ t , t' ⟩} tüüp on määratud, kui alamliikmete {\tt t} ja {\tt t'} tüübid on samas kontekstis määratud. Paari tüübiks on alamliikmete tüüpide korrutis. Ülejäänud juhtudel pole paari tüüp määratud.
-\item {\tt FST t} ja {\tt SND t} on määratud, kui alamliige {\tt t} on paar, st antud kontekstis on ta korrutise tüüpi. Projektsiooni tüübiks on vastavalt esimene või teine korrutatav.
+\item {\tt ZZ} on kindlasti naturaalarvu tüüpi. {\tt SS t} korral tuleb täiendavalt kontrollida, kas alamterm {\tt t} on samas kontekstis naturaalarvu tüüpi. Vastasel korral on term halvasti koostatud ja selle tüüp puudub.
+\item Paari {\tt ⟨ t , t' ⟩} tüüp on määratud, kui alamtermide {\tt t} ja {\tt t'} tüübid on samas kontekstis määratud. Paari tüübiks on alamtermide tüüpide korrutis. Ülejäänud juhtudel pole paari tüüp määratud.
+\item {\tt FST t} ja {\tt SND t} on määratud, kui alamterm {\tt t} on paar, st antud kontekstis on ta korrutise tüüpi. Projektsiooni tüübiks on vastavalt esimene või teine korrutatav.
 \item {\tt VAR x} korral tuleb kontrollida, et naturaalarv {\tt x} on väiksem kui kontekst {\tt Γ} pikkus. Selleks on kasutatud lahendajat {\tt _<?_}. Naturaalarvude võrratusest {\tt p} on koostatud konteksti pikkusega piiratud naturaalarv {\tt fromℕ≤ p}, mida kasutatakse muutujale vastava tüübi otsimiseks kontekstist {\tt lkp Γ}.
-\item {\tt LAM σ t} puhul tuleb kontrollida, et arvutusliikmega {\tt t} antud keha on hästi tüübitud kontekstis, mida on laiendatud parameetri {\tt σ} võrra. Arvutusliikme tüübi tuletus {\tt infer-ctype} on toodud allpool.
+\item {\tt LAM σ t} puhul tuleb kontrollida, et arvutustermiga {\tt t} antud keha on hästi tüübitud kontekstis, mida on laiendatud parameetri {\tt σ} võrra. Arvutustermi tüübituletus {\tt infer-ctype} on toodud allpool.
 \end{itemize}
 
 \begin{figure}
@@ -682,29 +682,29 @@ infer-vtype Γ (LAM σ t) with infer-ctype (σ ∷ Γ) t
 ... | just τ = just (σ ⇒ τ)
 ... | _      = nothing
   \end{BVerbatim}
-  \caption{Eranditega keele väärtusliikmete tüübituletus.}
+  \caption{Eranditega keele väärtustermide tüübituletus.}
   \label{fig:exc.infer-vtype}
 \end{figure}
 
-Joonisel \ref{fig:exc.infer-ctype} on toodud etteantud kontekstis arvutusliikmele tüübi tuletamine.
-Nagu väärtusliikmete tüübituletuse puhul, on ka arvutusliikmete tüübituletus {\tt infer-ctype} tulemus mähitud {\tt Maybe} monaadi.
+Joonisel \ref{fig:exc.infer-ctype} on toodud etteantud kontekstis arvutustermile tüübi tuletamine.
+Nagu väärtustermide tüübituletuse puhul, on ka arvutustermide tüübituletus {\tt infer-ctype} tulemus mähitud {\tt Maybe} monaadi.
 Väärtustüübi tuletamisel lähtutakse väärtustüübi konstruktori kujust.
 \begin{itemize}
-\item {\tt VAL x} on tüübitud, kui väärtusliikme {\tt x} tüübituletus õnnestub. Arvutuse väärtustüübiks on tuletatud tüüp. Efekti hinnang {\tt ok} tähistab arvutuse õnnestumist. 
+\item {\tt VAL x} on tüübitud, kui väärtustermi {\tt x} tüübituletus õnnestub. Arvutuse väärtustüübiks on tuletatud tüüp. Efekti hinnang {\tt ok} tähistab arvutuse õnnestumist. 
 \item {\tt FAIL σ} on alati väärtustüübi {\tt σ} ebaõnnestumise tüüpi, mille efekti hinnang on {\tt err}.
-\item {\tt TRY t WITH t'} on tüübitud, kui arvutusliikmed {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüübiks on põhiarvutuse tüübi {\tt τ} parandamine erandikäsitleja tüübiga {\tt τ'}. Arvutustüüpide parandus _⊹C_ on defineeritud efektide paranduse _⊹_ ja väärtustüüpide ülemise raja _⊔V_ abil.
-\item {\tt IF x THEN t ELSE t'} eeldab, et väärtusliige {\tt x} on tõeväärtustüüpi. Kogu arvutuse tüüp on määratud harude tüüpide {\tt τ} ja {\tt τ'} ülemise rajaga {\tt τ ⊔C τ'}.
-\item {\tt f \$ t} korral kontrollitakse, et väärtusliikme {\tt f} tüübiks on funktsiooniruum ja väärtusliikmele {\tt t} tuletatud tüüp on {\tt f} parameetri alamtüüp. Ülejäänud juhtudel ei ole funktsiooni rakendamine hästi tüübitud.
+\item {\tt TRY t WITH t'} on tüübitud, kui arvutustermid {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüübiks on põhiarvutuse tüübi {\tt τ} parandamine erandikäsitleja tüübiga {\tt τ'}. Arvutustüüpide parandus _⊹C_ on defineeritud efektide paranduse _⊹_ ja väärtustüüpide ülemise raja _⊔V_ abil.
+\item {\tt IF x THEN t ELSE t'} eeldab, et väärtusterm {\tt x} on tõeväärtustüüpi. Kogu arvutuse tüüp on määratud harude tüüpide {\tt τ} ja {\tt τ'} ülemise rajaga {\tt τ ⊔C τ'}.
+\item {\tt f \$ t} korral kontrollitakse, et väärtustermi {\tt f} tüübiks on funktsiooniruum ja väärtustermile {\tt t} tuletatud tüüp on {\tt f} parameetri alamtüüp. Ülejäänud juhtudel ei ole funktsiooni rakendamine hästi tüübitud.
 \item {\tt PREC x t t'} korral kontollitakse viit tingimust.
   \begin{itemize}
-  \item Väärtusliige {\tt x} peab olema antud kontekstis naturaalarvu tüüpi.
-  \item Baasi arvutusliige {\tt t} peab olema antud kontekstis hästi tüübitud.
-  \item Sammu arvutusliige {\tt t'} peab olema tüübitud kontekstis, kuhu on lisatud naturaalarvu tüübi sammuloendur ja arvutusliikme {\tt t} väärtustüüpi {\tt σ} akumulaator.
+  \item Väärtusterm {\tt x} peab olema antud kontekstis naturaalarvu tüüpi.
+  \item Baasi arvutusterm {\tt t} peab olema antud kontekstis hästi tüübitud.
+  \item Sammu arvutusterm {\tt t'} peab olema tüübitud kontekstis, kuhu on lisatud naturaalarvu tüübi sammuloendur ja arvutustermi {\tt t} väärtustüüpi {\tt σ} akumulaator.
   \item Osaarvutustele tuletatud väärtustüübid peavad olema samad. Selleks kasutatakse lahendajat {\tt _≡V?_}.
   \item Osaarvutuste efektide korrutis ei tohi olla suurem, kui baasi efekt. Seda kontrollitakse lahendajaga {\tt _⊑?_}.
   \end{itemize}
   Kui kõik tingimused kehtivad, siis kogu arvutuse tüüp on määratud baasi efekti ja väärtustüübiga.
-\item {\tt LET t IN t'} on tüübitud, kui arvutusliige {\tt t} on tüübitud antud kontekstis ja arvutusliige {\tt t'} on tüübitud kontekstis, mida on laiendatud esimese osaarvutuse väärtustüübi võrra. Arvutuse efektiks on osarvutuste efektide korrutis ning väärtustüübiks teise osaarvutuse väärtustüüp. Kui üks osaarvutust ei ole hästi tüübitud, siis ei ole ka kogu arvutus tüübitud.
+\item {\tt LET t IN t'} on tüübitud, kui arvutusterm {\tt t} on tüübitud antud kontekstis ja arvutusterm {\tt t'} on tüübitud kontekstis, mida on laiendatud esimese osaarvutuse väärtustüübi võrra. Arvutuse efektiks on osarvutuste efektide korrutis ning väärtustüübiks teise osaarvutuse väärtustüüp. Kui üks osaarvutust ei ole hästi tüübitud, siis ei ole ka kogu arvutus tüübitud.
 \end{itemize}
 
 \begin{figure}
@@ -742,14 +742,14 @@ infer-ctype Γ (LET t IN t') with infer-ctype Γ t
 ...                | nothing        = nothing
 ...                | just (e' / σ') = just (e · e' / σ')
   \end{BVerbatim}
-  \caption{Eranditega keele arvutusliikmete tüübituletus.}
+  \caption{Eranditega keele arvutustermide tüübituletus.}
   \label{fig:exc.infer-ctype}
 \end{figure}
 
-\subsubsection{Liikmete rafineerimine}
+\subsubsection{Termide rafineerimine}
 
-Kui n-ö ``toorele'' liikmele õnnestub mingis kontekstis tuletada tüüp, siis saab sellest liikmest konstrueerida rafineeritud liikme.
-Joonisel \ref{fig:exc.infer-term-type} on toodud väärtus- ja arvutusliikmete rafineeritud tüübikonstruktorid.
+Kui n-ö ``toorele'' termile õnnestub mingis kontekstis tuletada tüüp, siis saab sellest termist konstrueerida rafineeritud termi.
+Joonisel \ref{fig:exc.infer-term-type} on toodud väärtus- ja arvutustermide rafineeritud tüübikonstruktorid.
 Tipp-tüüp {\tt ⊤} tähistab tüübituletuse ebaõnnestumist.
 \begin{figure}
   \begin{BVerbatim}
@@ -763,18 +763,18 @@ refined-cterm Γ t with infer-ctype Γ t
 ... | nothing = ⊤
 ... | just τ = CTerm Γ τ
   \end{BVerbatim}
-  \caption{Väärtus- ja arvutusliikmete rafineerimiste tüübikonstruktorid.}
+  \caption{Väärtus- ja arvutustermide rafineerimiste tüübikonstruktorid.}
   \label{fig:exc.infer-term-type}
 \end{figure}
 
-Väärtusliikmete rafineerimine etteantud kontekstis (jn \ref{fig:exc.refine-vterm}) matkib väärtusliikmete tüübituletust (alaptk \ref{sssec:exc.infer-type}).
+Väärtustermide rafineerimine etteantud kontekstis (jn \ref{fig:exc.refine-vterm}) matkib väärtustermide tüübituletust (alaptk \ref{sssec:exc.infer-type}).
 \begin{itemize}
-\item {\tt TT} ja {\tt FF} korral konstrueeritakse vastav rafineeritud väärtusliige.
-\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusliige null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusliige {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud naturaalarvu järglane {\tt SS} koostatakse alamväärtuse {\tt t} rafineeringust {\tt u}. Kui väärtusliikme {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks koostatakse tipp-tüübi element {\tt tt}.
-\item {\tt ⟨ t , t' ⟩} korral kontrollitakse, et mõlemad väärtusliikmed {\tt t} ja {\tt t'} on kontekstis hästi tüübitud ja rafineeritud paar koostatakse rafineeritud liikmetest {\tt u} ja {\tt u'}.
-\item {\tt FST t} puhul peab väärtusliikmele {\tt t} tuletatud tüüp olema korrutis. Rafineeritud projektsiooni saab koostada {\tt t} rafineeringust {\tt u}. {\tt SND t} juhtum on analoogne.
+\item {\tt TT} ja {\tt FF} korral konstrueeritakse vastav rafineeritud väärtusterm.
+\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusterm null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud naturaalarvu järglane {\tt SS} koostatakse alamväärtuse {\tt t} rafineeringust {\tt u}. Kui väärtustermi {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks koostatakse tipp-tüübi element {\tt tt}.
+\item {\tt ⟨ t , t' ⟩} korral kontrollitakse, et mõlemad väärtustermid {\tt t} ja {\tt t'} on kontekstis hästi tüübitud ja rafineeritud paar koostatakse rafineeritud termidest {\tt u} ja {\tt u'}.
+\item {\tt FST t} puhul peab väärtustermile {\tt t} tuletatud tüüp olema korrutis. Rafineeritud projektsiooni saab koostada {\tt t} rafineeringust {\tt u}. {\tt SND t} juhtum on analoogne.
 \item {\tt VAR x} korral koostatakse lahendist {\tt p}, mis näitab, et naturaalarv {\tt x} on väiksem kui konteksti {\tt Γ} pikkus, rafineeritud muutuja tõestusega, et {\tt x}-iga määratud muutuja on kontekstis.
-\item {\tt LAM σ t} juhtumis lisatakse parameetri tüüp {\tt σ} konteksti ja kontrollitakse arvutusliikme {\tt t} hästi-tüübitust. Rafineeritud funktsiooni abstraktsioon koostatakse uues kontekstis rafineeritud arvutusest {\tt u}.
+\item {\tt LAM σ t} juhtumis lisatakse parameetri tüüp {\tt σ} konteksti ja kontrollitakse arvutustermi {\tt t} hästi-tüübitust. Rafineeritud funktsiooni abstraktsioon koostatakse uues kontekstis rafineeritud arvutusest {\tt u}.
 \end{itemize}
 
 \begin{figure}
@@ -815,18 +815,18 @@ refine-vterm Γ (LAM σ t)
 ... | just _ | u = LAM σ u
 ... | nothing | u = tt
   \end{BVerbatim}
-  \caption{Eranditega keele väärtusliikmete rafineerimine.}
+  \caption{Eranditega keele väärtustermide rafineerimine.}
   \label{fig:exc.refine-vterm}
 \end{figure}
 
-Arvutusliikmete rafineerimine on toodud joonistel \ref{fig:exc.refine-cterm1} ja \ref{fig:exc.refine-cterm2}.
+Arvutustermide rafineerimine on toodud joonistel \ref{fig:exc.refine-cterm1} ja \ref{fig:exc.refine-cterm2}.
 \begin{itemize}
-\item {\tt VAL t} korral kontrollitakse, et väärtusliige {\tt t} on hästi tüübitud, ja rafineeritud arvutus koostatakse vastavast rafineeritud väärtusliikmest {\tt u}.
-\item {\tt FAIL σ} rafineerimisel näidatakse, et selle arvutusliikme tüübituletus alati õnnestub.
+\item {\tt VAL t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud, ja rafineeritud arvutus koostatakse vastavast rafineeritud väärtustermist {\tt u}.
+\item {\tt FAIL σ} rafineerimisel näidatakse, et selle arvutustermi tüübituletus alati õnnestub.
 \item {\tt TRY t WITH t'} korral kontrollitakse, et mõlemad osaarvutused on hästi tüübitud ja tuletatud väärtustüüpidel leidub ülemine raja. Rafineeritud arvutuse konstrueerimiseks suurendatakse rafineeritud osaarvutuste {\tt u} ja {\tt u'} tüüpi ülemise rajani vastavalt alamtüübi tõestusele {\tt p}.
-\item {\tt IF x THEN t ELSE t'} korral peab väärtusliige {\tt x} olema tõeväärtustüüpi ning arvutusliikmed {\tt t} ja {\tt t'} peavad olema hästi tüübitud. Kui harude arvutuste väärtustüüpidel leidub ülemine raja, siis rafineeritud tingimuslause tingimus on rafineeritud väärtusliige {\tt x'} ja tingimuslause harudes suurendatakse rafineeritud arvutuste {\tt u} ja {\tt u'} tüüpi vastavalt alamtüübi tõestusele {\tt p}. Ülejäänud juhtudel koostatakse tipp-tüübi element {\tt tt}.
-\item {\tt f \$ x} korral peab väärtusliige {\tt f} olema funktsiooniruumi tüüpi ja seejuures peab argumendile {\tt x} tuletatud tüüp olema mainitud funktsiooniruumi parameetri alamtüüp. Rafineeritud funktsiooni {\tt f'} rakendamise koostamisel on rafineeritud argumendi {\tt x'} tüüpi suurendatud vastavalt alamtüübi tõestusele {\tt p}.
-\item {\tt PREC x t t'} korral kontrollitakse, et väärtusliige {\tt x} on tõeväärtustüüpi ning baasile vastav arvutus {\tt t} hästi tüübitud. Seejärel, et sammule vastav arvutus {\tt t'} on hästi tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ning baasi väärtustüübile vastav akumulaator. Viimaks kontrollitakse, et baasi ja sammu efektide korrutamine ei ületaks baasi efekti ning et baasile ja sammule vastavad väärtustüübid langevad kokku. Rafineeritud primitiivse rekursiooni liige koostatakse vastavatest rafineeritud liikmetest {\tt x'}, {\tt u}, {\tt u'} ja efektide püsipunkti tõestusest {\tt p}.
+\item {\tt IF x THEN t ELSE t'} korral peab väärtusterm {\tt x} olema tõeväärtustüüpi ning arvutustermid {\tt t} ja {\tt t'} peavad olema hästi tüübitud. Kui harude arvutuste väärtustüüpidel leidub ülemine raja, siis rafineeritud tingimuslause tingimus on rafineeritud väärtusterm {\tt x'} ja tingimuslause harudes suurendatakse rafineeritud arvutuste {\tt u} ja {\tt u'} tüüpi vastavalt alamtüübi tõestusele {\tt p}. Ülejäänud juhtudel koostatakse tipp-tüübi element {\tt tt}.
+\item {\tt f \$ x} korral peab väärtusterm {\tt f} olema funktsiooniruumi tüüpi ja seejuures peab argumendile {\tt x} tuletatud tüüp olema mainitud funktsiooniruumi parameetri alamtüüp. Rafineeritud funktsiooni {\tt f'} rakendamise koostamisel on rafineeritud argumendi {\tt x'} tüüpi suurendatud vastavalt alamtüübi tõestusele {\tt p}.
+\item {\tt PREC x t t'} korral kontrollitakse, et väärtusterm {\tt x} on tõeväärtustüüpi ning baasile vastav arvutus {\tt t} hästi tüübitud. Seejärel, et sammule vastav arvutus {\tt t'} on hästi tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ning baasi väärtustüübile vastav akumulaator. Viimaks kontrollitakse, et baasi ja sammu efektide korrutamine ei ületaks baasi efekti ning et baasile ja sammule vastavad väärtustüübid langevad kokku. Rafineeritud primitiivse rekursiooni term koostatakse vastavatest rafineeritud termidest {\tt x'}, {\tt u}, {\tt u'} ja efektide püsipunkti tõestusest {\tt p}.
 \item {\tt LET t IN t'} puhul peab osaarvutus {\tt t} olema hästi tüübitud antud kontekstis ja osaarvutus {\tt t'} tüübitud kontekstis, kuhu on lisatud {\tt t}-le tuletatud tüüp {\tt σ}. Rafineeritud arvutuste sidumine koostatakse rafineeritud osaarvutustest {\tt u} ja {\tt u'}.
 \end{itemize}
 \begin{figure}
@@ -868,7 +868,7 @@ refine-cterm Γ (IF x THEN t ELSE t')
           ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 --
   \end{BVerbatim}
-  \caption{Eranditega keele arvutusliikmete rafineerimine, I osa.}
+  \caption{Eranditega keele arvutustermide rafineerimine, I osa.}
   \label{fig:exc.refine-cterm1}
 \end{figure}
 \begin{figure}
@@ -911,7 +911,7 @@ refine-cterm Γ (LET t IN t') with infer-ctype Γ t | refine-cterm Γ t
 ...                    | nothing        | _  = tt
 ...                    | just (e' / σ') | u' = LET u IN u'
   \end{BVerbatim}
-  \caption{Eranditega keele arvutusliikmete rafineerimine, II osa.}
+  \caption{Eranditega keele arvutustermide rafineerimine, II osa.}
   \label{fig:exc.refine-cterm2}
 \end{figure}
 
@@ -946,15 +946,15 @@ mutual
   \label{fig:type-semantics}
 \end{figure}
 
-Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme interpretatsioon antud konteksti interpretatsioonis.
+Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtustermi interpretatsioon antud konteksti interpretatsioonis.
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} seatakse vastavusse tõese ja vääraga.
 \item {\tt ZZ} vastab nullile. {\tt SS t} on {\tt t} interpretatsiooni järglane.
 \item {\tt ⟨ t , t' ⟩} tõlgendatakse kui {\tt t} ja {\tt t'} interpretatsioonide paari.
 \item {\tt FST t} ja {\tt SND t} teevad vastavalt esimese ja teise projektsiooni {\tt t} interpretatsioonist.
 \item {\tt VAR x} projekteerib konteksti interpretatsioonist {\tt ρ} tõestusele {\tt x} vastava (n-ö {\tt x}-nda) väärtuse.
-\item {\tt LAM σ t} interpreteeritakse kui lambda abstraktsiooni, mille seotud muutuja {\tt x} lisatakse arvutusliikme {\tt t} interpreteerimise konteksti.
-\item {\tt VCAST t p} puhul interpreteeritakse väärtusliige {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
+\item {\tt LAM σ t} interpreteeritakse kui lambda abstraktsiooni, mille seotud muutuja {\tt x} lisatakse arvutustermi {\tt t} interpreteerimise konteksti.
+\item {\tt VCAST t p} puhul interpreteeritakse väärtusterm {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
 \end{itemize}
 
 \begin{figure}
@@ -971,20 +971,20 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtusliikme in
 ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧c (x , ρ)
 ⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)
   \end{BVerbatim}
-  \caption{Eranditega keele väärtusliikmete semantika.}
+  \caption{Eranditega keele väärtustermide semantika.}
   \label{fig:exc.vterm-semantics}
 \end{figure}
 
-Rafineeritud arvutusliikme semantiline interpretatsioon etteantud konteksti interpretatsioonis on toodud joonisel \ref{fig:exc.cterm-semantics}.
+Rafineeritud arvutustermi semantiline interpretatsioon etteantud konteksti interpretatsioonis on toodud joonisel \ref{fig:exc.cterm-semantics}.
 \begin{itemize}
-\item {\tt VAL x} interpreteerib väärtusliikme {\tt x} antud kontekstis ja tagastab selle gradeeritud monaadis.
+\item {\tt VAL x} interpreteerib väärtustermi {\tt x} antud kontekstis ja tagastab selle gradeeritud monaadis.
 \item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
 \item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. \todo{explain or-else}
 \item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
-\item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtusliikme {\tt x} interpretatsioon, baas on arvutusliikme {\tt t} interpretatsioon ja sammuks on arvutusliikme {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. \todo{explain primrecT}
-\item {\tt f \$ x} korral rakendatakse väärtusliikme {\tt f} interpretatsiooni väärtusliikme {\tt x} interpretatsioonile.
+\item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtustermi {\tt x} interpretatsioon, baas on arvutustermi {\tt t} interpretatsioon ja sammuks on arvutustermi {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. \todo{explain primrecT}
+\item {\tt f \$ x} korral rakendatakse väärtustermi {\tt f} interpretatsiooni väärtustermi {\tt x} interpretatsioonile.
 \item {\tt LET_IN_} seob osaarvutused: esimese osarvutuse interpretatsioon lisatakse teise osaarvutuse interpreteerimise konteksti.
-\item {\tt CCAST t p} puhul interpreteeritakse arvutusliige {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
+\item {\tt CCAST t p} puhul interpreteeritakse arvutusterm {\tt t} ja konverteeritakse see vastavalt alamtüübi tõestusele {\tt p}.
 \end{itemize}
 
 \begin{figure}
@@ -1018,7 +1018,7 @@ primrecT {e} {e'} (suc n) z s p =
     bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
 ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
   \end{BVerbatim}
-  \caption{Eranditega keele arvutusliikmete semantika.}
+  \caption{Eranditega keele arvutustermide semantika.}
   \label{fig:exc.cterm-semantics}
 \end{figure}
 
@@ -1026,9 +1026,9 @@ primrecT {e} {e'} (suc n) z s p =
 
 Etteantud konteksti saab laiendada lisades selle mingisse kohta kindla tüübi.
 Seda nimetatakse lõdvendamiseks {\tt wkT} (jn \ref{fig:weakening}).
-Samamoodi saab lõdvendada rafineeritud väärtusliikmeid {\tt wkV} ja arvutusliikmeid {\tt wkC}.
+Samamoodi saab lõdvendada rafineeritud väärtusterme {\tt wkV} ja arvutusterme {\tt wkC}.
 Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt wk}.
-Lemmad {\tt lemmaV} ja {\tt lemmaC} näitavad, et lõdventatud liikme interpretatsioon lõdventatud kontekstis on sama, mis selle liikme interpretatsioon.
+Lemmad {\tt lemmaV} ja {\tt lemmaC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon.
 Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{BVerbatim}
@@ -1062,7 +1062,7 @@ mutual
            ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
   -- proof omitted
 \end{BVerbatim}
-  \caption{Konteksti ja liikmete lõdvendamine.}
+  \caption{Konteksti ja termide lõdvendamine.}
   \label{fig:weakening}
 \end{figure}
 
@@ -1124,7 +1124,7 @@ Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel \
 \begin{itemize}
 \item Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL X}.
   Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
-\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutusliikme lõdvenduse {\tt lemmaC} rakendus.
+\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemmaC} rakendus.
 \end{itemize}
 
 \begin{figure}
