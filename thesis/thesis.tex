@@ -928,18 +928,18 @@ Joonisel \ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- 
 \begin{figure}
   \begin{BVerbatim}
 mutual
-  ⟪_⟫v : VType → Set
-  ⟪ nat ⟫v = ℕ
-  ⟪ bool ⟫v = Bool
-  ⟪ σ ● σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
-  ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
+  ⟪_⟫V : VType → Set
+  ⟪ nat ⟫V = ℕ
+  ⟪ bool ⟫V = Bool
+  ⟪ σ ● σ' ⟫V = ⟪ σ ⟫V × ⟪ σ' ⟫V
+  ⟪ σ ⇒ τ ⟫V = ⟪ σ ⟫V → ⟪ τ ⟫c
 
   ⟪_⟫c : CType → Set
-  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫v
+  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫V
 
 ⟪_⟫X : Ctx → Set
 ⟪ [] ⟫X = ⊤
-⟪ σ ∷ Γ ⟫X = ⟪ σ ⟫v × ⟪ Γ ⟫X
+⟪ σ ∷ Γ ⟫X = ⟪ σ ⟫V × ⟪ Γ ⟫X
   \end{BVerbatim}
   \caption{Väärtus-, arvutustüüpide ja konteksti semantika.}
   \label{fig:type-semantics}
@@ -958,7 +958,7 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtustermi int
 
 \begin{figure}
   \begin{BVerbatim}
-⟦_⟧V : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫X → ⟪ σ ⟫v
+⟦_⟧V : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫X → ⟪ σ ⟫V
 ⟦ TT ⟧V ρ = true
 ⟦ FF ⟧V ρ = false
 ⟦ ZZ ⟧V ρ = zero
@@ -1024,45 +1024,67 @@ primrecT {e} {e'} (suc n) z s p =
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 
 Etteantud konteksti saab laiendada lisades selle mingisse kohta kindla tüübi.
-Seda nimetatakse lõdvendamiseks {\tt wkT} (jn \ref{fig:weakening}).
+Seda nimetatakse lõdvendamiseks {\tt dropX} (jn \ref{fig:weakening}).
 Samamoodi saab lõdvendada rafineeritud väärtusterme {\tt wkV} ja arvutusterme {\tt wkC}.
-Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt wk}.
+Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt drop}.
 Lemmad {\tt lemma-wkV} ja {\tt lemma-wkC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon.
 Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{BVerbatim}
-wkT : (Γ : Ctx) → (σ : VType) → Fin (suc (length Γ)) → Ctx
+dropX : (Γ : Ctx) {σ : VType} (x : σ ∈ Γ) → Ctx
 -- proof omitted
 mutual
-  wkV : {Γ : Ctx} {σ τ : VType} →
-        (x : Fin (suc (length Γ))) →
-        VTerm Γ τ → VTerm (wkT Γ σ x) τ
+  wkV : {Γ : Ctx} {σ τ : VType} (x : σ ∈ Γ) →
+        VTerm (dropX Γ x) τ → VTerm Γ τ
   -- proof omitted
-  wkC : {Γ : Ctx} {σ : VType} {τ : CType} →
-        (x : Fin (suc (length Γ))) →
-        CTerm Γ τ → CTerm (wkT Γ σ x) τ
+  wkC : {Γ : Ctx} {σ : VType} {τ : CType} (x : σ ∈ Γ) →
+        CTerm (dropX Γ x) τ → CTerm Γ τ
   -- proof omitted
-
-wk : {Γ : Ctx} → ⟪ Γ ⟫X →
-     {σ : VType} → ⟪ σ ⟫v →
-     (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫X 
+drop : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (x : σ ∈ Γ) → ⟪ dropX Γ x ⟫X 
 -- proof omitted
 mutual
   lemma-wkV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
-           {σ : VType} (v : ⟪ σ ⟫v) →
-           (x : Fin (suc (length Γ))) →
-           {τ : VType} (t : VTerm Γ τ) →
-           ⟦ wkV x t ⟧V (wk ρ v x) ≡ ⟦ t ⟧V ρ
+              {σ : VType} (x : σ ∈ Γ) →
+              {τ : VType} (t : VTerm (dropX Γ x) τ) →
+              ⟦ wkV x t ⟧V ρ ≡ ⟦ t ⟧V (drop ρ x)
   -- proof omitted
   lemma-wkC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
-           {σ : VType} (v : ⟪ σ ⟫v) →
-           (x : Fin (suc (length Γ))) →
-           {τ : CType} (t : CTerm Γ τ) →
-           ⟦ wkC x t ⟧C (wk ρ v x) ≡ ⟦ t ⟧C ρ
+              {σ : VType} (x : σ ∈ Γ) →
+              {τ : CType} (t : CTerm (dropX Γ x) τ) →
+              ⟦ wkC x t ⟧C ρ ≡ ⟦ t ⟧C (drop ρ x)
   -- proof omitted
 \end{BVerbatim}
   \caption{Konteksti ja termide lõdvendamine.}
   \label{fig:weakening}
+\end{figure}
+
+\begin{figure}
+  \begin{BVerbatim}
+dupX : {Γ : Ctx} {σ : VType} → σ ∈ Γ → Ctx
+-- proof omitted
+mutual
+  ctrV : {Γ : Ctx} {σ : VType} {τ : VType} (p : σ ∈ Γ) →
+         VTerm (dupX p) τ → VTerm Γ τ
+  -- proof omitted
+  ctrC : {Γ : Ctx} {σ : VType} {τ : CType} (p : σ ∈ Γ) →
+         CTerm (dupX p) τ → CTerm Γ τ
+  -- proof omitted
+ctr : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
+-- proof omitted
+mutual
+  lemma-ctrV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
+               {σ : VType} (p : σ ∈ Γ) →
+               {τ : VType} (t : VTerm (dupX p) τ) →
+               ⟦ t ⟧V (ctr ρ p) ≡ ⟦ ctrV p t ⟧V ρ
+  -- proof omitted
+  lemma-ctrC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
+               {σ : VType} (p : σ ∈ Γ) →
+               {τ : CType} (t : CTerm (dupX p) τ) →
+               ⟦ t ⟧C (ctr ρ p) ≡ ⟦ ctrC p t ⟧C ρ
+  -- proof omitted
+  \end{BVerbatim}
+  \caption{Konteksti ja termide kontraheerimine.}
+  \label{fig:contraction}
 \end{figure}
 
 

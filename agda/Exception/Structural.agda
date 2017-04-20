@@ -56,8 +56,7 @@ mutual
   wkC x (CCAST t p) = CCAST (wkC x t) p 
 
 
-drop : {Γ : Ctx} → ⟪ Γ ⟫X  → {σ : VType}  → (x : σ ∈ Γ) → 
-     ⟪ dropX Γ x ⟫X 
+drop : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (x : σ ∈ Γ) → ⟪ dropX Γ x ⟫X 
 drop (_ , ρ) (here' refl) = ρ
 drop (v , ρ) (there x) = v , drop ρ x
 
@@ -76,9 +75,9 @@ cong₃ f refl refl refl = refl
 
 mutual 
   lemma-wkV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
-           {σ : VType} (x : σ ∈ Γ) →
-           {τ : VType} (t : VTerm (dropX Γ x) τ) →
-           ⟦ wkV x t ⟧V ρ ≡ ⟦ t ⟧V (drop ρ x)
+              {σ : VType} (x : σ ∈ Γ) →
+              {τ : VType} (t : VTerm (dropX Γ x) τ) →
+              ⟦ wkV x t ⟧V ρ ≡ ⟦ t ⟧V (drop ρ x)
   lemma-wkV ρ x TT = refl
   lemma-wkV ρ x FF = refl
   lemma-wkV ρ x ZZ = refl
@@ -94,9 +93,9 @@ mutual
 
 
   lemma-wkC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
-           {σ : VType} (x : σ ∈ Γ) →
-           {τ : CType} (t : CTerm (dropX Γ x) τ) →
-           ⟦ wkC x t ⟧C ρ ≡ ⟦ t ⟧C (drop ρ x)
+              {σ : VType} (x : σ ∈ Γ) →
+              {τ : CType} (t : CTerm (dropX Γ x) τ) →
+              ⟦ wkC x t ⟧C ρ ≡ ⟦ t ⟧C (drop ρ x)
   lemma-wkC ρ x (VAL x') = cong η (lemma-wkV ρ x x')
   lemma-wkC ρ x (FAIL σ) = refl
   lemma-wkC ρ x (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemma-wkC ρ x t) (lemma-wkC ρ x t')
@@ -132,8 +131,8 @@ ctrvar (there p) (here' refl) = here' refl
 ctrvar (there p) (there q) = there (ctrvar p q)
 
 mutual
-  ctrV : {Γ : Ctx} {σ : VType} {τ : VType} →
-        (p : σ ∈ Γ) → VTerm (dupX p) τ → VTerm Γ τ
+  ctrV : {Γ : Ctx} {σ : VType} {τ : VType} (p : σ ∈ Γ) →
+         VTerm (dupX p) τ → VTerm Γ τ
   ctrV p TT = TT
   ctrV p FF = FF
   ctrV p ZZ = ZZ
@@ -145,8 +144,8 @@ mutual
   ctrV p (LAM σ t) = LAM σ (ctrC (there p) t)
   ctrV p (VCAST t q) = VCAST (ctrV p t) q
   
-  ctrC : {Γ : Ctx} {σ : VType} {τ : CType} →
-        (p : σ ∈ Γ) → CTerm (dupX p) τ → CTerm Γ τ
+  ctrC : {Γ : Ctx} {σ : VType} {τ : CType} (p : σ ∈ Γ) →
+         CTerm (dupX p) τ → CTerm Γ τ
   ctrC p (VAL x) = VAL (ctrV p x)
   ctrC p (FAIL σ) = FAIL σ
   ctrC p (TRY t WITH t') = TRY ctrC p t WITH ctrC p t'
@@ -156,9 +155,7 @@ mutual
   ctrC {Γ} p (LET t IN t') = LET ctrC p t IN ctrC (there p) t'
   ctrC p (CCAST t q) = CCAST (ctrC p t) q
 
-ctr : {Γ : Ctx} → ⟪ Γ ⟫X →
-      {σ : VType} → 
-      (p : σ ∈ Γ) → ⟪ dupX p ⟫X
+ctr : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ dupX p ⟫X
 ctr (w , ρ) (here' refl) = w , w , ρ
 ctr (w , ρ) (there p) = w , ctr ρ p
 
