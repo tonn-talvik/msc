@@ -39,8 +39,8 @@ BAD-ONE = ZZ $ TT
 infer-add = refine-vterm [] ADD
 infer-add-3-and-4 = refine-cterm [] ADD-3-and-4
 
-sem-add = ⟦ infer-add ⟧v tt
-sem-add-3-and-4 = ⟦ infer-add-3-and-4 ⟧c tt
+sem-add = ⟦ infer-add ⟧V tt
+sem-add-3-and-4 = ⟦ infer-add-3-and-4 ⟧C tt
 
 
 
@@ -54,21 +54,21 @@ ref1 = refine-cterm [] raw1
 ref2 = refine-cterm [ bool ] raw2
 ref3 = refine-cterm [] raw3
 
-sem1 = ⟦ ref1 ⟧c tt
-sem2 = ⟦ ref2 ⟧c (true , tt)
-sem3 = ⟦ ref3 ⟧c tt
+sem1 = ⟦ ref1 ⟧C tt
+sem2 = ⟦ ref2 ⟧C (true , tt)
+sem3 = ⟦ ref3 ⟧C tt
 
-ss = ⟦ VAL (SS ZZ) ⟧c tt
+ss = ⟦ VAL (SS ZZ) ⟧C tt
 
 p : sem3 ≡ ss
 p = refl
 
-pp : ⟦ ref3 ⟧c ≡ ⟦ VAL (SS ZZ) ⟧c
+pp : ⟦ ref3 ⟧C ≡ ⟦ VAL (SS ZZ) ⟧C
 pp = refl
 
-⟦_⟧' : (t : cTerm) (Γ : Ctx) {τ : CType} → {p : infer-ctype Γ t ≡ just τ} → ⟪ Γ ⟫x  → ⟪ τ ⟫c
+⟦_⟧' : (t : cTerm) (Γ : Ctx) {τ : CType} → {p : infer-ctype Γ t ≡ just τ} → ⟪ Γ ⟫X  → ⟪ τ ⟫C
 ⟦_⟧' t Γ {p = p} with infer-ctype Γ t | refine-cterm Γ t
-⟦_⟧' t Γ {p = refl} | just τ | t' = ⟦ t' ⟧c
+⟦_⟧' t Γ {p = refl} | just τ | t' = ⟦ t' ⟧C
 ⟦_⟧' t Γ {p = ()} | nothing | t'
 
 

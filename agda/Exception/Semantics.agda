@@ -22,18 +22,18 @@ open import Inference
 ----------------------------------------------------------------------
 
 mutual
-  ⟪_⟫v : VType → Set
-  ⟪ nat ⟫v = ℕ
-  ⟪ bool ⟫v = Bool
-  ⟪ σ ● σ' ⟫v = ⟪ σ ⟫v × ⟪ σ' ⟫v
-  ⟪ σ ⇒ τ ⟫v = ⟪ σ ⟫v → ⟪ τ ⟫c
+  ⟪_⟫V : VType → Set
+  ⟪ nat ⟫V = ℕ
+  ⟪ bool ⟫V = Bool
+  ⟪ σ ● σ' ⟫V = ⟪ σ ⟫V × ⟪ σ' ⟫V
+  ⟪ σ ⇒ τ ⟫V = ⟪ σ ⟫V → ⟪ τ ⟫C
 
-  ⟪_⟫c : CType → Set
-  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫v
+  ⟪_⟫C : CType → Set
+  ⟪ ε / σ ⟫C = T ε ⟪ σ ⟫V
 
-⟪_⟫x : Ctx → Set
-⟪ [] ⟫x = ⊤
-⟪ σ ∷ Γ ⟫x = ⟪ σ ⟫v × ⟪ Γ ⟫x
+⟪_⟫X : Ctx → Set
+⟪ [] ⟫X = ⊤
+⟪ σ ∷ Γ ⟫X = ⟪ σ ⟫V × ⟪ Γ ⟫X
 
 
 bool2nat : Bool → ℕ
@@ -41,18 +41,18 @@ bool2nat false = 0
 bool2nat true  = 1
 
 mutual
-  vcast : {σ σ' : VType} →  σ ≤V σ' → ⟪ σ ⟫v → ⟪ σ' ⟫v
+  vcast : {σ σ' : VType} →  σ ≤V σ' → ⟪ σ ⟫V → ⟪ σ' ⟫V
   vcast st-refl x = x
   vcast st-bn x = bool2nat x
   vcast (st-prod p q) (l , r) = vcast p l , vcast q r
   vcast (st-func p q) f = λ x → ccast q (f (vcast p x))
 
-  ccast : {τ τ' : CType} → τ ≤C τ' → ⟪ τ ⟫c → ⟪ τ' ⟫c
+  ccast : {τ τ' : CType} → τ ≤C τ' → ⟪ τ ⟫C → ⟪ τ' ⟫C
   ccast (st-comp {_} {e'} p q) c = T₁ {e'} (vcast q) (sub p c)
 
 
 
-proj : {Γ : Ctx} {σ : VType} → σ ∈ Γ → ⟪ Γ ⟫x → ⟪ σ ⟫v
+proj : {Γ : Ctx} {σ : VType} → σ ∈ Γ → ⟪ Γ ⟫X → ⟪ σ ⟫V
 proj (here' refl) ρ = proj₁ ρ
 proj (there x) ρ = proj x (proj₂ ρ)
 
@@ -74,32 +74,32 @@ or-else errok errok (just x) x' = just x
 or-else errok errok nothing x' = x'
 
 mutual
-  ⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫x → ⟪ σ ⟫v
-  ⟦ TT ⟧v ρ = true
-  ⟦ FF ⟧v ρ = false
-  ⟦ ZZ ⟧v ρ = zero
-  ⟦ SS t ⟧v ρ = suc (⟦ t ⟧v ρ)
-  ⟦ ⟨ t , t' ⟩ ⟧v ρ = ⟦ t ⟧v ρ , ⟦ t' ⟧v ρ
-  ⟦ FST t ⟧v ρ = proj₁ (⟦ t ⟧v ρ)
-  ⟦ SND t ⟧v ρ = proj₂ (⟦ t ⟧v ρ)
-  ⟦ VAR x ⟧v ρ = proj x ρ
-  ⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧c (x , ρ)
-  ⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)
+  ⟦_⟧V : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫X → ⟪ σ ⟫V
+  ⟦ TT ⟧V ρ = true
+  ⟦ FF ⟧V ρ = false
+  ⟦ ZZ ⟧V ρ = zero
+  ⟦ SS t ⟧V ρ = suc (⟦ t ⟧V ρ)
+  ⟦ ⟨ t , t' ⟩ ⟧V ρ = ⟦ t ⟧V ρ , ⟦ t' ⟧V ρ
+  ⟦ FST t ⟧V ρ = proj₁ (⟦ t ⟧V ρ)
+  ⟦ SND t ⟧V ρ = proj₂ (⟦ t ⟧V ρ)
+  ⟦ VAR x ⟧V ρ = proj x ρ
+  ⟦ LAM σ t ⟧V ρ = λ x → ⟦ t ⟧C (x , ρ)
+  ⟦ VCAST t p ⟧V ρ = vcast p (⟦ t ⟧V ρ)
   
 
-  ⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
-  ⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
-  ⟦ FAIL σ ⟧c ρ = tt
-  ⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = or-else e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
-  ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
-                                         then (sub (lub e e') (⟦ t ⟧c ρ))
-                                         else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
-  ⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ) (⟦ t ⟧c ρ)
-                                  ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
-  ⟦ f $ x ⟧c ρ = ⟦ f ⟧v ρ (⟦ x ⟧v ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ =
-      bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
-  ⟦ CCAST t p ⟧c ρ = ccast p (⟦ t ⟧c ρ)
+  ⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫C
+  ⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
+  ⟦ FAIL σ ⟧C ρ = tt
+  ⟦ TRY_WITH_ {e} {e'} t t' ⟧C ρ = or-else e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
+  ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ = if ⟦ x ⟧V ρ
+                                         then (sub (lub e e') (⟦ t ⟧C ρ))
+                                         else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
+  ⟦ PREC x t t' p ⟧C ρ = primrecT (⟦ x ⟧V ρ) (⟦ t ⟧C ρ)
+                                  ((λ i acc → ⟦ t' ⟧C (acc , i , ρ))) p
+  ⟦ f $ x ⟧C ρ = ⟦ f ⟧V ρ (⟦ x ⟧V ρ)
+  ⟦ LET_IN_ {e} {e'} m n ⟧C ρ =
+      bind {e} {e'} (λ x → ⟦ n ⟧C (x , ρ)) (⟦ m ⟧C ρ)
+  ⟦ CCAST t p ⟧C ρ = ccast p (⟦ t ⟧C ρ)
 
 
 

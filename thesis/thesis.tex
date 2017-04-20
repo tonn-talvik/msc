@@ -937,9 +937,9 @@ mutual
   ⟪_⟫c : CType → Set
   ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫v
 
-⟪_⟫x : Ctx → Set
-⟪ [] ⟫x = ⊤
-⟪ σ ∷ Γ ⟫x = ⟪ σ ⟫v × ⟪ Γ ⟫x
+⟪_⟫X : Ctx → Set
+⟪ [] ⟫X = ⊤
+⟪ σ ∷ Γ ⟫X = ⟪ σ ⟫v × ⟪ Γ ⟫X
   \end{BVerbatim}
   \caption{Väärtus-, arvutustüüpide ja konteksti semantika.}
   \label{fig:type-semantics}
@@ -958,17 +958,17 @@ Joonisel \ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtustermi int
 
 \begin{figure}
   \begin{BVerbatim}
-⟦_⟧v : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫x → ⟪ σ ⟫v
-⟦ TT ⟧v ρ = true
-⟦ FF ⟧v ρ = false
-⟦ ZZ ⟧v ρ = zero
-⟦ SS t ⟧v ρ = suc (⟦ t ⟧v ρ)
-⟦ ⟨ t , t' ⟩ ⟧v ρ = ⟦ t ⟧v ρ , ⟦ t' ⟧v ρ
-⟦ FST t ⟧v ρ = proj₁ (⟦ t ⟧v ρ)
-⟦ SND t ⟧v ρ = proj₂ (⟦ t ⟧v ρ)
-⟦ VAR x ⟧v ρ = proj x ρ
-⟦ LAM σ t ⟧v ρ = λ x → ⟦ t ⟧c (x , ρ)
-⟦ VCAST t p ⟧v ρ = vcast p (⟦ t ⟧v ρ)
+⟦_⟧V : {Γ : Ctx} {σ : VType} → VTerm Γ σ → ⟪ Γ ⟫X → ⟪ σ ⟫v
+⟦ TT ⟧V ρ = true
+⟦ FF ⟧V ρ = false
+⟦ ZZ ⟧V ρ = zero
+⟦ SS t ⟧V ρ = suc (⟦ t ⟧V ρ)
+⟦ ⟨ t , t' ⟩ ⟧V ρ = ⟦ t ⟧V ρ , ⟦ t' ⟧V ρ
+⟦ FST t ⟧V ρ = proj₁ (⟦ t ⟧V ρ)
+⟦ SND t ⟧V ρ = proj₂ (⟦ t ⟧V ρ)
+⟦ VAR x ⟧V ρ = proj x ρ
+⟦ LAM σ t ⟧V ρ = λ x → ⟦ t ⟧C (x , ρ)
+⟦ VCAST t p ⟧V ρ = vcast p (⟦ t ⟧V ρ)
   \end{BVerbatim}
   \caption{Eranditega keele väärtustermide semantika.}
   \label{fig:exc.vterm-semantics}
@@ -1003,19 +1003,19 @@ primrecT zero z s p = z
 primrecT {e} {e'} (suc n) z s p =
     sub p (bind {e} {e'} (s n) (primrecT n z s p))
 
-⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
-⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
-⟦ FAIL σ ⟧c ρ = tt
-⟦ TRY_WITH_ {e} {e'} t t' ⟧c ρ = or-else e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
-⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧c ρ = if ⟦ x ⟧v ρ
-                                      then (sub (lub e e') (⟦ t ⟧c ρ))
-                                      else (sub (lub-sym e' e) (⟦ t' ⟧c ρ))
-⟦ PREC x t t' p ⟧c ρ = primrecT (⟦ x ⟧v ρ) (⟦ t ⟧c ρ)
-                                ((λ i acc → ⟦ t' ⟧c (acc , i , ρ))) p
-⟦ f $ x ⟧c ρ = ⟦ f ⟧v ρ (⟦ x ⟧v ρ)
-⟦ LET_IN_ {e} {e'} m n ⟧c ρ =
-    bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
-⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
+⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫c
+⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
+⟦ FAIL σ ⟧C ρ = tt
+⟦ TRY_WITH_ {e} {e'} t t' ⟧C ρ = or-else e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
+⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ = if ⟦ x ⟧V ρ
+                                      then (sub (lub e e') (⟦ t ⟧C ρ))
+                                      else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
+⟦ PREC x t t' p ⟧C ρ = primrecT (⟦ x ⟧V ρ) (⟦ t ⟧C ρ)
+                                ((λ i acc → ⟦ t' ⟧C (acc , i , ρ))) p
+⟦ f $ x ⟧C ρ = ⟦ f ⟧V ρ (⟦ x ⟧V ρ)
+⟦ LET_IN_ {e} {e'} m n ⟧C ρ =
+    bind {e} {e'} (λ x → ⟦ n ⟧C (x , ρ)) (⟦ m ⟧C ρ)
+⟦ CCAST t o ⟧C ρ = ccast o (⟦ t ⟧C ρ)
   \end{BVerbatim}
   \caption{Eranditega keele arvutustermide semantika.}
   \label{fig:exc.cterm-semantics}
@@ -1027,7 +1027,7 @@ Etteantud konteksti saab laiendada lisades selle mingisse kohta kindla tüübi.
 Seda nimetatakse lõdvendamiseks {\tt wkT} (jn \ref{fig:weakening}).
 Samamoodi saab lõdvendada rafineeritud väärtusterme {\tt wkV} ja arvutusterme {\tt wkC}.
 Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt wk}.
-Lemmad {\tt lemmaV} ja {\tt lemmaC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon.
+Lemmad {\tt lemma-wkV} ja {\tt lemma-wkC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon.
 Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{BVerbatim}
@@ -1043,22 +1043,22 @@ mutual
         CTerm Γ τ → CTerm (wkT Γ σ x) τ
   -- proof omitted
 
-wk : {Γ : Ctx} → ⟪ Γ ⟫x →
+wk : {Γ : Ctx} → ⟪ Γ ⟫X →
      {σ : VType} → ⟪ σ ⟫v →
-     (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫x 
+     (x : Fin (suc (length Γ))) → ⟪ wkT Γ σ x ⟫X 
 -- proof omitted
 mutual
-  lemmaV : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
+  lemma-wkV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
            {σ : VType} (v : ⟪ σ ⟫v) →
            (x : Fin (suc (length Γ))) →
            {τ : VType} (t : VTerm Γ τ) →
-           ⟦ wkV x t ⟧v (wk ρ v x) ≡ ⟦ t ⟧v ρ
+           ⟦ wkV x t ⟧V (wk ρ v x) ≡ ⟦ t ⟧V ρ
   -- proof omitted
-  lemmaC : {Γ : Ctx} (ρ : ⟪ Γ ⟫x) →
+  lemma-wkC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
            {σ : VType} (v : ⟪ σ ⟫v) →
            (x : Fin (suc (length Γ))) →
            {τ : CType} (t : CTerm Γ τ) →
-           ⟦ wkC x t ⟧c (wk ρ v x) ≡ ⟦ t ⟧c ρ
+           ⟦ wkC x t ⟧C (wk ρ v x) ≡ ⟦ t ⟧C ρ
   -- proof omitted
 \end{BVerbatim}
   \caption{Konteksti ja termide lõdvendamine.}
@@ -1078,12 +1078,12 @@ Selle tõestus matkib arvutuse parandusoperaatori assotsiatiivsuse {\tt ⊹-ass}
 ⊹-itself ok = refl
 ⊹-itself errok = refl
 
-the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X : VType}
+the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
            (m : CTerm Γ (e / X)) →
-           sub-eq (⊹-itself e) (⟦ TRY m WITH m ⟧c ρ) ≡ ⟦ m ⟧c ρ
+           sub-eq (⊹-itself e) (⟦ TRY m WITH m ⟧C ρ) ≡ ⟦ m ⟧C ρ
 the-same {err} m = refl
 the-same {ok} m = refl
-the-same {errok} {ρ = ρ} m with ⟦ m ⟧c ρ
+the-same {errok} {ρ = ρ} m with ⟦ m ⟧C ρ
 ... | just _ = refl
 ... | nothing = refl
 
@@ -1097,21 +1097,21 @@ the-same {errok} {ρ = ρ} m with ⟦ m ⟧c ρ
 ⊹-ass errok errok ok = refl
 ⊹-ass errok errok errok = refl
 
-handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫x} {X : VType}
+handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
               (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
               (m₃ : CTerm Γ (e₃ / X)) →
               sub-eq (⊹-ass e₁ e₂ e₃)
-                     (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧c ρ)
-              ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧c ρ
+                     (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧C ρ)
+              ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧C ρ
 handler-ass {err} m₁ m₂ m₃ = refl
 handler-ass {ok} m₁ m₂ m₃ = refl
 handler-ass {errok} {err} m₁ m₂ m₃ = refl
 handler-ass {errok} {ok} m₁ m₂ m₃ = refl
 handler-ass {errok} {errok} {err} m₁ m₂ m₃ = refl
-handler-ass {errok} {errok} {ok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
+handler-ass {errok} {errok} {ok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C ρ
 ... | just _ = refl
 ... | nothing = refl
-handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧c ρ
+handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C ρ
 ... | just x = refl
 ... | nothing = refl
   \end{BVerbatim}
@@ -1123,21 +1123,21 @@ Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel \
 \begin{itemize}
 \item Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL X}.
   Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
-\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemmaC} rakendus.
+\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemma-wkC} rakendus.
 \end{itemize}
 
 \begin{figure}
   \begin{BVerbatim}
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
-          ⟦ m ⟧c ≡ ⟦ FAIL X ⟧c
+          ⟦ m ⟧C ≡ ⟦ FAIL X ⟧C
 failure m = refl
 
 
 dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
             (m : CTerm Γ (ok / σ)) (n : CTerm Γ (ε / τ ) ) →
-            (ρ : ⟪ Γ ⟫x) → 
-            ⟦ LET m IN (wkC zero n) ⟧c ρ ≡ ⟦ n ⟧c ρ
-dead-comp m n ρ = lemmaC ρ (⟦ m ⟧c ρ) zero n
+            (ρ : ⟪ Γ ⟫X) → 
+            ⟦ LET m IN (wkC zero n) ⟧C ρ ≡ ⟦ n ⟧C ρ
+dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
   \end{BVerbatim}
   \caption{Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid.}
   \label{fig:exc.opt2}
