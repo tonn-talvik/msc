@@ -1,21 +1,14 @@
 module NonDetBoundedVec where
 
-open import Function
---open import Data.List
+open import Data.Nat
+open import Data.Vec
 open import Relation.Nullary
-
-
 open import Relation.Binary.Core
 open import Relation.Binary.PropositionalEquality hiding ([_]; inspect)
 open ≡-Reasoning
 
 open import Finiteness
-open import OrderedMonoid
-open import GradedMonad
-
-open import Data.Nat
-open import Data.Vec
-
+open import Grading
 
 refl≤ : {m : ℕ} → m ≤ m
 refl≤ {zero} = z≤n
@@ -80,7 +73,7 @@ ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o})
             ; ass = λ {m n o} → ass* {m} {n} {o}
             }
 
-open OrderedMonoid.OrderedMonoid ℕ*
+open Grading.OrderedMonoid ℕ*
 
 
 data BVec (X : Set) : (n : ℕ) → Set where
@@ -409,7 +402,7 @@ NDBV : GradedMonad
 NDBV = record { OM = ℕ*
               ; T = TBV
               ; η = ηBV
-              ; lift = λ {e} {e'} → liftBV {e} {e'}
+              ; bind = λ {e} {e'} → liftBV {e} {e'}
               ; sub = subBV
               ; sub-mon = subBV-mon
               ; sub-refl = subBV-refl
@@ -419,3 +412,34 @@ NDBV = record { OM = ℕ*
               ; mlaw3 = blaw3
               }
 
+
+-- alias deciders, lub/glb etc.
+_≡E?_ = _≟_
+_⊑?_ = _≤?_
+
+⊔-sym : (m n : ℕ) → m ⊔ n ≡ n ⊔ m
+⊔-sym zero zero = refl
+⊔-sym zero (suc n) = refl
+⊔-sym (suc m) zero = refl
+⊔-sym (suc m) (suc n) = sym (cong suc (⊔-sym n m))
+
+⊓-sym : (m n : ℕ) → m ⊓ n ≡ n ⊓ m
+⊓-sym zero zero = refl
+⊓-sym zero (suc n) = refl
+⊓-sym (suc m) zero = refl
+⊓-sym (suc m) (suc n) = sym (cong suc (⊓-sym n m))
+
+_⊹_ = _+_
+
+lub : (m n : ℕ) → m ⊑ (m ⊔ n)
+lub zero n = z≤n
+lub (suc m) zero = s≤s refl≤
+lub (suc m) (suc n) = s≤s (lub m n)
+
+glb : (m n : ℕ) → (m ⊓ n) ⊑ m
+glb zero n = z≤n
+glb (suc m) zero = z≤n
+glb (suc m) (suc n) = s≤s (glb m n)
+
+lub-sym : (m n : ℕ) → m ⊑ (n ⊔ m)
+lub-sym m n rewrite ⊔-sym n m = lub m n

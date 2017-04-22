@@ -7,6 +7,7 @@ open import Relation.Nullary
 
 open import Raw
 open import Refined
+open import Types
 open import Finiteness
 
 

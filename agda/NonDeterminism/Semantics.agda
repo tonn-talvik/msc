@@ -7,16 +7,16 @@ open import Data.Nat hiding (_⊔_)
 open import Data.Product
 open import Data.Unit
 open import Data.Vec renaming ([] to []V) hiding (_∈_)
-open import Relation.Binary.Core
+open import Relation.Binary.PropositionalEquality
 
 open import Finiteness
-open import GradedMonad
-open import OrderedMonoid
+open import Grading
 open import NonDetBoundedVec
-open OrderedMonoid.OrderedMonoid ℕ*
-open GradedMonad.GradedMonad NDBV
+open Grading.OrderedMonoid ℕ*
+open Grading.GradedMonad NDBV
 open import Raw
 open import Refined
+open import Types
 open import Inference
 
 
@@ -26,8 +26,8 @@ mutual
   ⟪_⟫v : VType → Set
   ⟪ nat ⟫v = ℕ
   ⟪ bool ⟫v = Bool
-  ⟪ t ∏ u ⟫v = ⟪ t ⟫v × ⟪ u ⟫v
-  ⟪ t ⟹ c ⟫v = ⟪ t ⟫v → ⟪ c ⟫c
+  ⟪ t ● u ⟫v = ⟪ t ⟫v × ⟪ u ⟫v
+  ⟪ t ⇒ c ⟫v = ⟪ t ⟫v → ⟪ c ⟫c
 
   ⟪_⟫c : CType → Set
   ⟪ ε / t ⟫c = T ε ⟪ t ⟫v
@@ -60,13 +60,13 @@ proj (there x) ρ = proj x (proj₂ ρ)
 
 primrecT : {e e' : E} {X : Set} → ℕ → T e X → (ℕ → X → T e' X) → e · e' ⊑ e → T e X
 primrecT zero z s p = z
-primrecT {e} {e'} (suc n) z s p = sub p (lift {e} {e'} (s n) (primrecT n z s p)) 
+primrecT {e} {e'} (suc n) z s p = sub p (bind {e} {e'} (s n) (primrecT n z s p)) 
 
 
 sfail : {X : Set} → T 0 X
 sfail = bv []V z≤n
 
-sor : (e e' : E) {X : Set} → T e X → T e' X → T (e + e') X
+sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
 sor e e' = _++bv_
 
 mutual
@@ -94,7 +94,7 @@ mutual
                                   (⟦ t ⟧c ρ)
                                   ((λ i → λ acc → ⟦ t' ⟧c (acc , i , ρ))) p
   ⟦ t $ u ⟧c ρ = ⟦ t ⟧v ρ (⟦ u ⟧v ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = lift {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
+  ⟦ LET_IN_ {e} {e'} m n ⟧c ρ = bind {e} {e'} (λ x → ⟦ n ⟧c (x , ρ)) (⟦ m ⟧c ρ)
   ⟦ CCAST t o ⟧c ρ = ccast o (⟦ t ⟧c ρ)
 
 

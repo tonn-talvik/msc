@@ -5,13 +5,13 @@ open import Data.Unit
 open import Data.Vec
 open import Relation.Binary.PropositionalEquality
 
-open import GradedMonad
-open import OrderedMonoid
+open import Grading
 open import NonDetBoundedVec
-open OrderedMonoid.OrderedMonoid ℕ*
-open GradedMonad.GradedMonad NDBV
+open Grading.OrderedMonoid ℕ*
+open Grading.GradedMonad NDBV
 open import Raw
 open import Refined
+open import Types
 open import Inference
 
 fail : {X : Set} (m : T 0 X) → m ≡ bv [] z≤n
@@ -39,10 +39,10 @@ dead-comp m (bv (x ∷ x₁) x₂) = {!!}
 
 
 dup-comp : {e : E} {X Y : Set} → (m : T 1 X) → (n : X → X → T e Y) → 
-           sub-eq lu (lift {1} {1 · e}
-                           (λ x → lift {1} {e} (λ y → n y x) m)
+           sub-eq lu (bind {1} {1 · e}
+                           (λ x → bind {1} {e} (λ y → n y x) m)
                            m)
-           ≡ lift {1} {e} (λ x → n x x) m
+           ≡ bind {1} {e} (λ x → n x x) m
 dup-comp (bv [] z≤n) f = subeq-air ru+ []
 dup-comp (bv (x ∷ []) (s≤s z≤n)) f with f x x
 ... | bv ys p = ru++ (ys ++ []) (mon+ p z≤n)

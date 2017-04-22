@@ -3,7 +3,7 @@ module Examples where
 open import Data.Nat
 open import Data.Unit
 open import Data.Vec hiding (here)
-open import Relation.Binary.Core
+open import Relation.Binary.PropositionalEquality
 
 open import Finiteness
 open import NonDetBoundedVec
@@ -11,9 +11,10 @@ open import Raw
 open import Refined
 open import Semantics
 open import Sugar
+open import Types
 
 
-ADD : ∀ {Γ} → VTerm Γ (nat ⟹ 1 / (nat ⟹ 1 / nat))
+ADD : ∀ {Γ} → VTerm Γ (nat ⇒ 1 / (nat ⇒ 1 / nat))
 ADD = (LAM nat (
           VAL (LAM nat
                (PREC (varify 0)
@@ -21,7 +22,7 @@ ADD = (LAM nat (
                      (VAL (SS (varify 0)))
                      (s≤s z≤n)))))
                      
-DEC' : ∀ {Γ} → VTerm Γ (nat ⟹ 1 / (nat ∏ bool))
+DEC' : ∀ {Γ} → VTerm Γ (nat ⇒ 1 / (nat ● bool))
 DEC' = LAM nat (PREC (VAR here)
                      (VAL ⟨ ZZ , TT ⟩)
                      (IF (SND (VAR here)) THEN
@@ -32,15 +33,15 @@ DEC' = LAM nat (PREC (VAR here)
                      (s≤s z≤n))
 
 
---SUB' = (x - y) ∏ x <? y
-SUB' : ∀ {Γ} → VTerm Γ (nat ⟹ 1 / (nat ⟹ 1 / (nat ∏ bool)))
+--SUB' = (x - y) ● x <? y
+SUB' : ∀ {Γ} → VTerm Γ (nat ⇒ 1 / (nat ⇒ 1 / (nat ● bool)))
 SUB' = LAM nat (VAL (LAM nat (PREC (varify 0) -- y
                                    (VAL ⟨ varify 1 , FF ⟩) -- (x,f)
                                    (DEC' $ (FST (varify 0)))
                                    (s≤s z≤n))))
 
 
-LT GT : ∀ {Γ} → VTerm Γ (nat ⟹ 1 / (nat ⟹ 1 / bool))
+LT GT : ∀ {Γ} → VTerm Γ (nat ⇒ 1 / (nat ⇒ 1 / bool))
 LT = LAM nat (VAL (LAM nat (LET SUB' $ varify 1 IN (LET varify 0 $ varify 1 IN VAL (SND (varify 0))))))
 GT = LAM nat (VAL (LAM nat (LET SUB' $ varify 0 IN (LET varify 0 $ varify 2 IN VAL (SND (varify 0))))))
 -- EQ = {!!} -- AND (not LT) (not GT)
