@@ -172,13 +172,15 @@ Certification of effect-analysis based program~transformations}
 The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, \totalfigures\ figures, [tables] tables.
 \clearpage\vspace*{0pt}
 
+\addtocontents{toc}{\protect\setstretch{0}}
 \tableofcontents
+
 \clearpage\vspace*{0pt}
 
+\addtocontents{lof}{\protect\setstretch{0}}
 \listoffigures
+
 \clearpage\vspace*{0pt}
-
-
 
 \section{Sissejuhatus}
 
@@ -1168,17 +1170,27 @@ dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
 \clearpage\vspace*{0pt}
 
 
-\section{Mitte-deterministlik keel}
+\section{Mitte-determinim}
 
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
+\subsection{Mitte-deterministlik keel}
+
+\subsection{Mitte-determinismi gradeering}
+
+\subsection{Semantika}
+
+\subsection{Optimisatsioonid}
+
+
+
+\iffalse
 \clearpage\vspace*{0pt}
-
-
 \section{Võimalikud edasiarendused}
 
 - muteeritava oleku laiendused\\
 - mittedeterminismi teine gradeering nd0, 1, 01, 1+, N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
+\fi
 
 \clearpage\vspace*{0pt}
 
