@@ -230,7 +230,7 @@ Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teiste
 
 \clearpage\vspace*{0pt}
 
-\section{Erandid}
+\section{Erandid}\label{sec:exc}
 
 Selles peatükis vaadeldakse keele laiendust eranditega. 
 Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
@@ -432,7 +432,7 @@ Loomulikul viisil saab defineerida erandi hinnangu ülemise ja alumise raja ning
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid, aga mitte definitsioonid (jn~\ref{fig:exc.ord}).
 Kuna kahel hinnangul ei pruugi leiduda alumine raja, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
 
-\subsubsection{Eeljärjestatud monoid}
+\subsubsection{Eeljärjestatud monoid}\label{sssec:ordered-monoid}
 Hulk {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
 st {\tt i} on ühik korrutamise suhtes nii vasakult {\tt lu} kui ka paremalt {\tt ru},
 ning korrutamine on assotsiatiivne {\tt ass}, nimetatakse monoidiks.
@@ -474,7 +474,7 @@ Assotsiatiivsus tõestatakse sarnaselt kasutades juhtumite analüüsi ja korruta
 Kõik mainitud tõestused on toodud töö käigus valminud lähtekoodis.
 
 
-\subsubsection{Gradeeritud monaad}
+\subsubsection{Gradeeritud monaad}\label{sssec:graded-monad}
 
 Efektiga {\tt E} parametriseeritud tüübikonstruktor {\tt T} koos tagastamisega {\tt η} ja sidumisega {\tt bind}  moodustab monaadi.
 Neelduvus {\tt sub} on refleksiivne {\tt sub-refl}, transitiivne {\tt sub-trans} ja  sidumise suhtes monotoonne {\tt sub-mon}.
@@ -1176,9 +1176,153 @@ This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
 \subsection{Mitte-deterministlik keel}
 
-\subsection{Mitte-determinismi gradeering}
+Mitte-determistliku keele arvutused võivad omada tervet hulka erinevaid väärtuseid.
+Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel \ref{fig:nd.cterms}.
+Võrreldes eranditega keelega (ptk \ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud valikulise arvutusega {\tt CHOOSE}.
+Väärtustermid on mõlemal keelel ühised.
+Muutunud on arvutuste efekti hinnang {\tt E}, mis defineeritakse alapeatükis \ref{ssec:nd.grading}.
+Arvutuse õnnestumise rafineeritud arvutustermi {\tt VAL} efekti hinnanguks on {\tt 1} ja ebaõnnestumise arvutustermi {\tt FAIL} hinnanguks on {\tt 0}.
+
+\begin{figure}
+  \begin{BVerbatim}
+data cTerm : Set where
+  VAL : vTerm → cTerm
+  FAIL : VType → cTerm
+  CHOOSE : cTerm → cTerm → cTerm
+  IF_THEN_ELSE_ : vTerm → cTerm → cTerm → cTerm
+  _$_ : vTerm → vTerm → cTerm
+  PREC : vTerm → cTerm → cTerm → cTerm
+  LET_IN_ : cTerm → cTerm → cTerm
+
+data CTerm (Γ : Ctx) : CType → Set where
+  VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (1 / σ)
+  FAIL : (σ : VType) → CTerm Γ (0 / σ)
+  CHOOSE : {e e' : E} {σ : VType} → CTerm Γ (e / σ) →
+           CTerm Γ (e' / σ) → CTerm Γ ((e ⊹ e') / σ)
+  IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
+            CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ ((e ⊔ e') / σ)
+  _$_ : {σ : VType} {τ : CType} →
+        VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
+  PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
+         CTerm Γ (e / σ) → CTerm (σ ∷ nat ∷ Γ) (e' / σ) →
+         e · e' ⊑ e → CTerm Γ (e / σ)
+  LET_IN_ : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+            CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
+  CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+          e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
+
+  \end{BVerbatim}
+  \caption{Mitte-deterministliku keele arvutustermid.}
+  \label{fig:nd.cterms}
+\end{figure}
+
+
+\subsection{Mitte-determinismi gradeering}\label{ssec:nd.grading}
+
+Naturaalarvud {\tt ℕ}, nende korrutamine {\tt _*_} ja ühik {\tt 1} moodustavad monoidi.
+Naturaalarvude järjestusseos {\tt _≤_} on refleksiivne {\tt refl≤}, transitiivne {\tt trans≤} ja korrutamise suhtes monotoonne {\tt mon*}.
+Korrutamise vasakühiku {\tt lu*}, paremühiku {\tt ru*} ja assotsiatiivsuse {\tt ass*} ning järjestuse tõestused on toodud töö lähtekoodis.
+Sellega rahuldatakse eeljärjestatud monoidi tingimusi (alaptk \ref{sssec:ordered-monoid}) ja saab moodustada vastava instantsi {\tt ℕ*} (jn \ref{fig:nd.ordered-monoid}).
+\begin{figure}
+  \begin{BVerbatim}
+ℕ* : OrderedMonoid
+ℕ* = record { E = ℕ
+            ; _·_ = _*_
+            ; i = 1
+            ; lu = lu*
+            ; ru = ru*
+            ; ass = λ {m n o} → ass* {m} {n} {o}
+            ; _⊑_ = _≤_
+            ; ⊑-refl = refl≤
+            ; ⊑-trans = trans≤
+            ; mon = mon*
+            }
+  \end{BVerbatim}
+  \caption{Mitte-determinismi eeljärjestatud monoid.}
+  \label{fig:nd.ordered-monoid}
+\end{figure}
+
+
+Ülalt tõkestatud vektor {\tt BVec} (jn \ref{fig:nd.bvec}) mingi hulga {\tt X} jaoks on indekseeritud naturaalarvuga {\tt n}, mis näitab vektoris olevate elementide suurimat võimalikku arvu.
+Ainsaks konstruktoris on {\tt bv}, mis moodustab täpse pikkusega vektorist ja n-ö ``lõtku'' tõestusest, et selles vektoris ei ole rohkem elemente kui {\tt n}, uue ülalt {\tt n}-iga tõkestatud vektori.
+Ülalt tõkestatud vektori päisesse elemendi lisamine {\tt _∷bv_} lisab selle elemendi täpse pikkusega vektori päisesse ning suurendab võrratuse tõestust ühe võrra.
+Vektorite liitmisel liidetakse täpse pikkusega vektorid omavahel ja elementide lõtku tõestus koostatakse liitmise monotoonsusega kummagi vektori lõtkude tõestusest.
+
+\begin{figure}
+  \begin{BVerbatim}
+data BVec (X : Set) : (n : ℕ) → Set where
+  bv : {m n : ℕ} → Vec X m → m ≤ n → BVec X n
+
+_∷bv_ : {X : Set} {n : ℕ} → X → BVec X n → BVec X (suc n)
+x ∷bv (bv xs p) = bv (x ∷ xs) (s≤s p)
+
+_++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
+bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)    
+  \end{BVerbatim}
+  \caption{Ülalt tõkestatud vektor.}
+  \label{fig:nd.bvec}
+\end{figure}
+
+Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk \ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud, kuid ilma lõtkuta, vektori. Sidumine {\tt bindBV}...
+Vastav instants {\tt NDBV} on toodud joonisel \ref{fig:nd.graded-monad}.
+
+\begin{figure}
+  \begin{BVerbatim}
+TBV = λ e X → BVec X e
+
+ηBV : {X : Set} → X → BVec X i
+ηBV x = bv (x ∷ []) (s≤s z≤n)
+
+bindBV :  {m n : ℕ} {X Y : Set} →
+        (X → BVec Y n) → BVec X m → BVec Y (m · n)
+bindBV f (bv [] z≤n) = bv [] z≤n
+bindBV f (bv (x ∷ xs) (s≤s p)) = (f x) ++bv bindBV f (bv xs p)
+
+NDBV : GradedMonad
+NDBV = record { OM = ℕ*
+              ; T = TBV
+              ; η = ηBV
+              ; bind = λ {e} {e'} → bindBV {e} {e'}
+              ; sub = subBV
+              ; sub-mon = subBV-mon
+              ; sub-refl = subBV-refl
+              ; sub-trans = subBV-trans
+              ; mlaw1 = blaw1
+              ; mlaw2 = blaw2
+              ; mlaw3 = blaw3
+              }
+  \end{BVerbatim}
+  \caption{Mitte-determinismi gradeeritud monaad.}
+  \label{fig:nd.graded-monad}
+\end{figure}
+
 
 \subsection{Semantika}
+
+Joonisel \ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
+\begin{itemize}
+\item {\tt VAL x} korral tagastab {\tt η} väärtustermi {\tt x} interpretatsiooni.
+\item {\tt FAIL σ} korral koostatakse tühi ülalt tõkestatud vektor funktsiooniga {\tt sfail}. Selle vektori elementide tüüp on määratud väärtustüübi {\tt σ} interpretatsiooniga.
+\item {\tt CHOOSE t t'} interpretatsioon vastab mitte-determistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpretatsioonidega koostatud vektorite liitmisega.
+\item Ülejäänud arvutustermi konstruktorite semantika on nii nagu eranditega keeles.
+\end{itemize}
+\begin{figure}
+  \begin{BVerbatim}
+sfail : {X : Set} → T 0 X
+sfail = bv []V z≤n
+
+sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+sor e e' = _++bv_
+
+⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
+⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
+⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
+⟦ CHOOSE {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
+-- rest of definition omitted
+  \end{BVerbatim}
+  \caption{Mitte-deterministliku keele semantika.}
+  \label{fig:nd.semantics}
+\end{figure}
 
 \subsection{Optimisatsioonid}
 
@@ -1190,6 +1334,14 @@ This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 
 - muteeritava oleku laiendused\\
 - mittedeterminismi teine gradeering nd0, 1, 01, 1+, N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
+
+\begin{figure}
+  \begin{BVerbatim}
+  \end{BVerbatim}
+  \caption{}
+  \label{fig:nd.something}
+\end{figure}
+
 \fi
 
 \clearpage\vspace*{0pt}

@@ -62,22 +62,22 @@ ass* {suc m} {n} {o} = trans (dist+ {n} {m * n} {o})
 
 ℕ* : OrderedMonoid
 ℕ* = record { E = ℕ
-            ; _⊑_ = _≤_
-            ; ⊑-refl = refl≤
-            ; ⊑-trans = trans≤
-            ; i = 1
             ; _·_ = _*_
-            ; mon = mon*
+            ; i = 1
             ; lu = lu*
             ; ru = ru*
             ; ass = λ {m n o} → ass* {m} {n} {o}
+            ; _⊑_ = _≤_
+            ; ⊑-refl = refl≤
+            ; ⊑-trans = trans≤
+            ; mon = mon*
             }
 
 open Grading.OrderedMonoid ℕ*
 
 
 data BVec (X : Set) : (n : ℕ) → Set where
-  bv : {m n : ℕ} → Vec X m →  m ≤ n → BVec X n
+  bv : {m n : ℕ} → Vec X m → m ≤ n → BVec X n
 
 
 _∷bv_ : {X : Set} {n : ℕ} → X → BVec X n → BVec X (suc n)
@@ -93,10 +93,10 @@ bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)
 ηBV x = bv (x ∷ []) (s≤s z≤n)
 
 
-liftBV :  {m n : ℕ} {X Y : Set} →
+bindBV :  {m n : ℕ} {X Y : Set} →
         (X → BVec Y n) → BVec X m → BVec Y (m · n)
-liftBV f (bv [] z≤n) = bv [] z≤n
-liftBV f (bv (x ∷ xs) (s≤s p)) = (f x) ++bv liftBV f (bv xs p)
+bindBV f (bv [] z≤n) = bv [] z≤n
+bindBV f (bv (x ∷ xs) (s≤s p)) = (f x) ++bv bindBV f (bv xs p)
 
 
 subBV : {e e' : E} {X : Set} → e ⊑ e' → BVec X e → BVec X e'
@@ -119,17 +119,17 @@ lemma++ p p' (bv xs q) (bv xs' q') = cong (bv (xs ++ xs'))
 
 subBV-mon : {e e' e'' e''' : E} {X Y : Set} (p : e ⊑ e'') (q : e' ⊑ e''')
       (f : X → BVec Y e') (c : BVec X e) →
-      subBV (mon p q) (liftBV f c) ≡
-      liftBV (λ x → subBV q (f x)) (subBV p c)
+      subBV (mon p q) (bindBV f c) ≡
+      bindBV (λ x → subBV q (f x)) (subBV p c)
 subBV-mon p q f (bv [] z≤n) = refl
 subBV-mon {suc e} {e'} {suc e''} {e'''} (s≤s p) q f (bv (x ∷ xs) (s≤s r)) = 
   begin
-    subBV (mon+ q (mon* p q)) (f x ++bv liftBV f (bv xs r))
-  ≡⟨ lemma++ q (mon* p q) (f x) (liftBV f (bv xs r)) ⟩
-    subBV q (f x) ++bv subBV (mon* p q) (liftBV f (bv xs r))
+    subBV (mon+ q (mon* p q)) (f x ++bv bindBV f (bv xs r))
+  ≡⟨ lemma++ q (mon* p q) (f x) (bindBV f (bv xs r)) ⟩
+    subBV q (f x) ++bv subBV (mon* p q) (bindBV f (bv xs r))
   ≡⟨ cong (_++bv_ (subBV q (f x))) (subBV-mon p q f (bv xs r)) ⟩
     subBV q (f x) ++bv
-       liftBV (λ z → subBV q (f z)) (bv xs (trans≤ r p))
+       bindBV (λ z → subBV q (f z)) (bv xs (trans≤ r p))
   ∎
 
 
@@ -149,20 +149,20 @@ subBV-refl (bv xs p) = cong (bv xs) (⊑-trans-⊑-refl p)
 
 subBV-mon1 : {e e' e'' : E} {X Y : Set} (p : e ⊑ e'') 
       (f : X → BVec Y e') (c : BVec X e) →
-      subBV (mon* p refl≤) (liftBV f c) ≡
-      liftBV f (subBV p c)
+      subBV (mon* p refl≤) (bindBV f c) ≡
+      bindBV f (subBV p c)
 subBV-mon1 p f (bv [] z≤n) = refl
 subBV-mon1 {suc e} {e'} {suc e''} (s≤s p) f (bv (x ∷ xs) (s≤s r)) = let q = refl≤ {e'} in 
   begin
-    subBV (mon+ q (mon* p q)) (f x ++bv liftBV f (bv xs r))
-  ≡⟨ lemma++ q (mon* p q) (f x) (liftBV f (bv xs r)) ⟩
-    subBV q (f x) ++bv subBV (mon* p q) (liftBV f (bv xs r))
+    subBV (mon+ q (mon* p q)) (f x ++bv bindBV f (bv xs r))
+  ≡⟨ lemma++ q (mon* p q) (f x) (bindBV f (bv xs r)) ⟩
+    subBV q (f x) ++bv subBV (mon* p q) (bindBV f (bv xs r))
   ≡⟨ cong (_++bv_ (subBV q (f x))) (subBV-mon1 p f (bv xs r)) ⟩
     subBV q (f x) ++bv
-       liftBV f (bv xs (trans≤ r p))
+       bindBV f (bv xs (trans≤ r p))
    ≡⟨ cong₂ _++bv_ (subBV-refl (f x)) refl ⟩
     f x ++bv
-       liftBV f (bv xs (trans≤ r p))
+       bindBV f (bv xs (trans≤ r p))
   ∎
 
 
@@ -202,7 +202,7 @@ ru++ (x ∷ xs) (s≤s p) = subeq∷ ru+ (ru++ xs p)
 
 
 blaw1 : {e : E} {X Y : Set} (f : X → BVec Y e) (x : X) →
-        subeq {T = TBV} lu (liftBV f (ηBV x)) ≡ f x
+        subeq {T = TBV} lu (bindBV f (ηBV x)) ≡ f x
 blaw1 f x with f x
 ...       | bv xs p = ru++ xs p
 
@@ -212,7 +212,7 @@ head-bv : {X : Set} {n : ℕ} (x : X) (xs : BVec X n) →
 head-bv x (bv xs p) = refl
 
 
-blaw2 : {e : E} {X : Set} (c : TBV e X) → subeq {T = TBV} ru c ≡ liftBV ηBV c
+blaw2 : {e : E} {X : Set} (c : TBV e X) → subeq {T = TBV} ru c ≡ bindBV ηBV c
 blaw2 (bv [] (z≤n {n})) = subeq-air (ru {n}) []
 blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) = 
   begin
@@ -222,11 +222,11 @@ blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) =
   ≡⟨ subeq∷ {xs = bv xs p} ru refl ⟩
     x ∷bv (subeq {T = TBV} ru (bv xs p))
   ≡⟨ cong (_∷bv_ x) (blaw2 (bv xs p)) ⟩
-    x ∷bv (liftBV ηBV (bv xs p))
-  ≡⟨ head-bv x (liftBV ηBV (bv xs p)) ⟩
-    ηBV x ++bv liftBV ηBV (bv xs p)
+    x ∷bv (bindBV ηBV (bv xs p))
+  ≡⟨ head-bv x (bindBV ηBV (bv xs p)) ⟩
+    ηBV x ++bv bindBV ηBV (bv xs p)
   ≡⟨ refl ⟩
-    liftBV ηBV (bv (x ∷ xs) (s≤s p))
+    bindBV ηBV (bv (x ∷ xs) (s≤s p))
   ∎
 
 
@@ -266,33 +266,33 @@ lemma'-[] : {X : Set} {e e' : E} (p : zero ≤ e) (xs : BVec X e') → bv [] p +
 lemma'-[] p (bv xs q) = cong (bv xs) (ans (mon+ p q) (trans≤ q (mon+ p refl≤)))
 
 
-lemma-lift-[]++ : {e e' e'' : E} {X Y : Set}
+lemma-bind-[]++ : {e e' e'' : E} {X Y : Set}
                   (xs : BVec X e')
                   (f : X → BVec Y e'') →
-                  liftBV f (bv [] (z≤n {suc e}) ++bv xs) ≡
-                  (bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs))
+                  bindBV f (bv [] (z≤n {suc e}) ++bv xs) ≡
+                  (bv [] (z≤n {e''}) ++bv bindBV f (bv [] (z≤n {e}) ++bv xs))
 
-lemma-lift-[]++ {e} {e'} {e''} xs f = 
+lemma-bind-[]++ {e} {e'} {e''} xs f = 
     let 
       p = mon+ (z≤n {e}) (refl≤ {e'})
       q = ≤+1 (refl≤ {e + e'})
     in
     begin
-      liftBV f (bv [] (z≤n {suc e}) ++bv xs) 
-    ≡⟨ cong (liftBV f) (lemma'-[] (z≤n {suc e}) xs)   ⟩
-      liftBV f (subBV (mon+ (z≤n {suc e}) (refl≤ {e'})) xs) 
-    ≡⟨ cong (λ p → liftBV f (subBV p xs)) (ans _ (trans≤ p q)) ⟩
-     liftBV f (subBV (trans≤ p q) xs)
-    ≡⟨  cong (liftBV f) (sym (subBV-trans p q xs))  ⟩
-     liftBV f (subBV q (subBV p xs))
+      bindBV f (bv [] (z≤n {suc e}) ++bv xs) 
+    ≡⟨ cong (bindBV f) (lemma'-[] (z≤n {suc e}) xs)   ⟩
+      bindBV f (subBV (mon+ (z≤n {suc e}) (refl≤ {e'})) xs) 
+    ≡⟨ cong (λ p → bindBV f (subBV p xs)) (ans _ (trans≤ p q)) ⟩
+     bindBV f (subBV (trans≤ p q) xs)
+    ≡⟨  cong (bindBV f) (sym (subBV-trans p q xs))  ⟩
+     bindBV f (subBV q (subBV p xs))
     ≡⟨  sym (subBV-mon1 q f (subBV p xs))  ⟩
-     subBV (mon* q (refl≤ {e''})) (liftBV f (subBV p xs))
-    ≡⟨  cong (λ p' → subBV p' (liftBV f (subBV p xs))) (ans _ _) ⟩
-     subBV (mon+ (z≤n {e''}) (refl≤ {(e + e') * e''})) (liftBV f (subBV p xs))
+     subBV (mon* q (refl≤ {e''})) (bindBV f (subBV p xs))
+    ≡⟨  cong (λ p' → subBV p' (bindBV f (subBV p xs))) (ans _ _) ⟩
+     subBV (mon+ (z≤n {e''}) (refl≤ {(e + e') * e''})) (bindBV f (subBV p xs))
     ≡⟨  sym (lemma'-[]  (z≤n {e''}) _) ⟩
-      bv [] (z≤n {e''}) ++bv liftBV f (subBV p xs) 
-    ≡⟨  cong (λ ys → bv []  (z≤n {e''}) ++bv liftBV f ys) (sym (lemma'-[] (z≤n {e}) xs))  ⟩                 
-      bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs)
+      bv [] (z≤n {e''}) ++bv bindBV f (subBV p xs) 
+    ≡⟨  cong (λ ys → bv []  (z≤n {e''}) ++bv bindBV f ys) (sym (lemma'-[] (z≤n {e}) xs))  ⟩                 
+      bv [] (z≤n {e''}) ++bv bindBV f (bv [] (z≤n {e}) ++bv xs)
     ∎ 
 
 
@@ -300,9 +300,9 @@ lemma-dist : {e e' e'' : E} {X Y : Set}
              (xs : BVec X e)
              (xs' : BVec X e')
              (f : X → BVec Y e'') →
-             subeq {T = TBV} (dist+ {e} {e'} {e''}) (liftBV f (xs ++bv xs'))
-             ≡ liftBV f xs ++bv liftBV f xs'
-lemma-dist {zero} (bv [] z≤n) (bv xs' q) f with liftBV f (bv xs' q)
+             subeq {T = TBV} (dist+ {e} {e'} {e''}) (bindBV f (xs ++bv xs'))
+             ≡ bindBV f xs ++bv bindBV f xs'
+lemma-dist {zero} (bv [] z≤n) (bv xs' q) f with bindBV f (bv xs' q)
 ...                                        | bv ys r = refl
 lemma-dist {suc e} {e'} {e''} (bv [] z≤n) (bv [] z≤n) f =
            subeq-air (trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
@@ -311,98 +311,98 @@ lemma-dist {suc e} {e'} {e''} (bv [] z≤n) xs' f =
   begin
     subeq (trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
                  (+ass {e''} {e · e''} {e' · e''}))
-          (liftBV f (bv [] (z≤n {suc e}) ++bv xs'))
+          (bindBV f (bv [] (z≤n {suc e}) ++bv xs'))
   ≡⟨ cong (subeq (trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
                         (+ass {e''} {_·_ e e''} {_·_ e' e''})))
-          (lemma-lift-[]++ xs' f) ⟩
+          (lemma-bind-[]++ xs' f) ⟩
     subeq (trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
                  (+ass {e''} {e · e''} {e' · e''}))
-          (bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs'))
+          (bv [] (z≤n {e''}) ++bv bindBV f (bv [] (z≤n {e}) ++bv xs'))
   ≡⟨ sym (subeq-trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
                       (+ass {e''} {e · e''} {e' · e''}) _) ⟩
     subeq (+ass {e''} {e · e''} {e' · e''})
           (subeq {T = TBV} (cong (_+_ e'') (dist+ {e} {e'} {e''}))
-                 (bv [] (z≤n {e''}) ++bv liftBV f (bv [] (z≤n {e}) ++bv xs')))
+                 (bv [] (z≤n {e''}) ++bv bindBV f (bv [] (z≤n {e}) ++bv xs')))
   ≡⟨ cong (subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''}))
           (subeq-lemma (_+_ e'') (_++bv_ (bv [] (z≤n {e''}))) (dist+ {e} {e'} {e''})
-                       (liftBV f (bv [] (z≤n {e}) ++bv xs'))) ⟩
+                       (bindBV f (bv [] (z≤n {e}) ++bv xs'))) ⟩
     subeq (+ass {e''} {e · e''} {e' · e''})
       (bv [] (z≤n {e''}) ++bv subeq {T = TBV} (dist+ {e} {e'} {e''})
-                                    (liftBV f (bv [] (z≤n {e}) ++bv xs')))
+                                    (bindBV f (bv [] (z≤n {e}) ++bv xs')))
   ≡⟨ cong (λ ys → subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''})
                          (bv [] (z≤n {e''}) ++bv ys))
           (lemma-dist (bv [] (z≤n {e})) xs' f) ⟩
     subeq ((+ass {e''} {e · e''} {e' · e''}))
-          (bv [] (z≤n {e''}) ++bv (bv [] (z≤n {e · e''}) ++bv liftBV f xs'))
-  ≡⟨ lemma-ass++ (bv [] (z≤n {e''})) (bv [] (z≤n {e · e''})) (liftBV f xs') ⟩
-    (bv [] (z≤n {e''}) ++bv bv [] (z≤n {e · e''})) ++bv liftBV f xs'
-  ≡⟨ cong (λ xs → xs ++bv liftBV f xs') (lemma-[] e'') ⟩
-    bv [] (z≤n {suc e · e''}) ++bv liftBV f xs'
+          (bv [] (z≤n {e''}) ++bv (bv [] (z≤n {e · e''}) ++bv bindBV f xs'))
+  ≡⟨ lemma-ass++ (bv [] (z≤n {e''})) (bv [] (z≤n {e · e''})) (bindBV f xs') ⟩
+    (bv [] (z≤n {e''}) ++bv bv [] (z≤n {e · e''})) ++bv bindBV f xs'
+  ≡⟨ cong (λ xs → xs ++bv bindBV f xs') (lemma-[] e'') ⟩
+    bv [] (z≤n {suc e · e''}) ++bv bindBV f xs'
   ∎
 lemma-dist {suc e} {e'} {e''} (bv (x ∷ xs) (s≤s p)) (bv xs' p') f =
   begin
     subeq {T = TBV} (dist+ {suc e} {e'} {e''})
-          (liftBV f (bv (x ∷ xs ++ xs') (mon+ (s≤s p) p')))
+          (bindBV f (bv (x ∷ xs ++ xs') (mon+ (s≤s p) p')))
   ≡⟨ refl ⟩
     subeq {T = TBV} (dist+ {suc e} {e'} {e''})
-          (f x ++bv liftBV f (bv (xs ++ xs') (mon+ p p')))
+          (f x ++bv bindBV f (bv (xs ++ xs') (mon+ p p')))
   ≡⟨ sym (subeq-trans (cong (_+_ e'') (dist+ {e} {e'} {e''}))
                       (+ass {e''} {e · e''} {e' · e''}) _) ⟩
     subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''})
           (subeq {T = TBV} (cong (_+_ e'') (dist+ {e} {e'} {e''}))
-                 (f x ++bv liftBV f (bv (xs ++ xs') (mon+ p p'))))
+                 (f x ++bv bindBV f (bv (xs ++ xs') (mon+ p p'))))
   ≡⟨ cong (subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''}))
           (subeq-lemma (_+_ e'') (_++bv_ (f x)) (dist+ {e} {e'} {e''})
-                       (liftBV f (bv (xs ++ xs') (mon+ p p')))) ⟩
+                       (bindBV f (bv (xs ++ xs') (mon+ p p')))) ⟩
     subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''})
           (f x ++bv subeq {T = TBV} (dist+ {e} {e'} {e''})
-                          (liftBV f (bv (xs ++ xs') (mon+ p p'))))
+                          (bindBV f (bv (xs ++ xs') (mon+ p p'))))
   ≡⟨ cong (λ ys → subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''}) (f x ++bv ys))
           (lemma-dist {e} {e'} {e''} (bv xs p) (bv xs' p') f) ⟩
     subeq {T = TBV} (+ass {e''} {e · e''} {e' · e''})
-          (f x ++bv (liftBV f (bv xs p) ++bv liftBV f (bv xs' p')))
-  ≡⟨ lemma-ass++ (f x) (liftBV f (bv xs p)) (liftBV f (bv xs' p')) ⟩
-    (f x ++bv liftBV f (bv xs p)) ++bv liftBV f (bv xs' p')
+          (f x ++bv (bindBV f (bv xs p) ++bv bindBV f (bv xs' p')))
+  ≡⟨ lemma-ass++ (f x) (bindBV f (bv xs p)) (bindBV f (bv xs' p')) ⟩
+    (f x ++bv bindBV f (bv xs p)) ++bv bindBV f (bv xs' p')
   ≡⟨ refl ⟩
-    liftBV f (bv (x ∷ xs) (s≤s p)) ++bv liftBV f (bv xs' p')
+    bindBV f (bv (x ∷ xs) (s≤s p)) ++bv bindBV f (bv xs' p')
   ∎
 
 
 blaw3 : {e e' e'' : E} {X Y Z : Set} (f : X → TBV e' Y)
         (g : Y → TBV e'' Z) (c : TBV e X) →
-        subeq {T = TBV} (ass {e} {e'} {e''}) (liftBV g (liftBV f c)) ≡
-        liftBV (λ x → liftBV g (f x)) c
+        subeq {T = TBV} (ass {e} {e'} {e''}) (bindBV g (bindBV f c)) ≡
+        bindBV (λ x → bindBV g (f x)) c
 blaw3 {e} {e'} {e''} f g (bv [] z≤n) = subeq-air (ass {e} {e'} {e''}) []
 blaw3 {suc e} {e'} {e''} f g (bv (x ∷ xs) (s≤s p)) = 
   begin
-    subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (liftBV f (bv (x ∷ xs) (s≤s p))))
+    subeq {T = TBV} (ass {suc e} {e'} {e''}) (bindBV g (bindBV f (bv (x ∷ xs) (s≤s p))))
   ≡⟨ refl ⟩
-    subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (liftBV f (x ∷bv (bv xs p))))
+    subeq {T = TBV} (ass {suc e} {e'} {e''}) (bindBV g (bindBV f (x ∷bv (bv xs p))))
   ≡⟨ refl ⟩
-    subeq {T = TBV} (ass {suc e} {e'} {e''}) (liftBV g (f x ++bv liftBV f (bv xs p)))
+    subeq {T = TBV} (ass {suc e} {e'} {e''}) (bindBV g (f x ++bv bindBV f (bv xs p)))
   ≡⟨ sym (subeq-trans (dist+ {e'} {e · e'} {e''})
                       (cong (_+_ (e' · e'')) (ass {e} {e'} {e''})) _) ⟩
     subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''}))
                     (subeq {T = TBV} (dist+ {e'} {e · e'} {e''})
-                           (liftBV g (f x ++bv liftBV f (bv xs p))))
+                           (bindBV g (f x ++bv bindBV f (bv xs p))))
   ≡⟨ cong (subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''})))
-                 (lemma-dist (f x) (liftBV f (bv xs p)) g) ⟩
+                 (lemma-dist (f x) (bindBV f (bv xs p)) g) ⟩
     subeq {T = TBV} (cong (_+_ (e' · e'')) (ass {e} {e'} {e''}))
-          (liftBV g (f x) ++bv liftBV g (liftBV f (bv xs p)))
-  ≡⟨ subeq-lemma (_+_ (e' · e'')) (_++bv_ (liftBV g (f x))) (ass {e} {e'} {e''}) _ ⟩
-    liftBV g (f x) ++bv subeq {T = TBV} (ass {e} {e'} {e''})
-                                        (liftBV g (liftBV f (bv xs p)))
-  ≡⟨ cong (_++bv_ (liftBV g (f x))) (blaw3 f g (bv xs p)) ⟩
-    liftBV g (f x) ++bv liftBV (λ x → liftBV g (f x)) (bv xs p)
+          (bindBV g (f x) ++bv bindBV g (bindBV f (bv xs p)))
+  ≡⟨ subeq-lemma (_+_ (e' · e'')) (_++bv_ (bindBV g (f x))) (ass {e} {e'} {e''}) _ ⟩
+    bindBV g (f x) ++bv subeq {T = TBV} (ass {e} {e'} {e''})
+                                        (bindBV g (bindBV f (bv xs p)))
+  ≡⟨ cong (_++bv_ (bindBV g (f x))) (blaw3 f g (bv xs p)) ⟩
+    bindBV g (f x) ++bv bindBV (λ x → bindBV g (f x)) (bv xs p)
   ≡⟨ refl ⟩
-    liftBV (λ x → liftBV g (f x)) (bv (x ∷ xs) (s≤s p))
+    bindBV (λ x → bindBV g (f x)) (bv (x ∷ xs) (s≤s p))
   ∎
 
 NDBV : GradedMonad
 NDBV = record { OM = ℕ*
               ; T = TBV
               ; η = ηBV
-              ; bind = λ {e} {e'} → liftBV {e} {e'}
+              ; bind = λ {e} {e'} → bindBV {e} {e'}
               ; sub = subBV
               ; sub-mon = subBV-mon
               ; sub-refl = subBV-refl
