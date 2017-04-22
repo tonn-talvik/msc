@@ -5,7 +5,7 @@ open import Data.Fin
 open import Data.List
 open import Data.Maybe
 open import Data.Nat
-open import Data.Product
+open import Data.Product hiding (swap)
 open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
@@ -96,11 +96,24 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
 ·-comm errok errok = refl
 
 
-comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y Z : VType}
+comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {X Y Z : VType}
        (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) (o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
+       (ρ : ⟪ Γ ⟫X) →
        sub-eq (·-comm e₁ e₂)
-              (⟦ LET m IN LET wkC here n IN o ⟧C ρ) ≡ ⟦ LET n IN LET wkC here m IN swapC here o ⟧C ρ
-comm m n o = {!!}
+              (⟦ LET m IN LET wkC here n IN o ⟧C ρ)
+       ≡ ⟦ LET n IN LET wkC here m IN swapC here o ⟧C ρ
+comm {err} {err} m n o ρ = refl
+comm {err} {ok} m n o ρ = refl
+comm {err} {errok} m n o ρ = refl
+comm {ok} {err} m n o ρ = refl
+comm {ok} {ok} m n o ρ with ⟦ m ⟧C ρ | ⟦ n ⟧C ρ | inspect ⟦ m ⟧C ρ | inspect ⟦ n ⟧C ρ
+... | mm | nn | [ p ] | [ q ] rewrite lemma-wkC (nn , ρ) (here' refl) m | lemma-wkC (mm , ρ) (here' refl) n | p | q = lemma-swapC (nn , mm , ρ) (here' refl) o
+comm {ok} {errok} m n o ρ with ⟦ m ⟧C ρ | ⟦ n ⟧C ρ 
+... | mm | just nn rewrite lemma-wkC (mm , ρ) (here' refl) m = {!!}
+... | mm | nothing = {!!}
+comm {errok} {err} m n o ρ = refl
+comm {errok} {ok} m n o ρ = {!!}
+comm {errok} {errok} m n o ρ = {!!}
 
 
 -- distribution

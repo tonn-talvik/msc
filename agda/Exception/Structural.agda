@@ -5,7 +5,7 @@ open import Data.Fin
 open import Data.List hiding (drop)
 open import Data.Maybe
 open import Data.Nat
-open import Data.Product
+open import Data.Product hiding (swap)
 open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
@@ -182,9 +182,9 @@ mutual
   lemma-ctrV ρ p (FST t) = cong proj₁ (lemma-ctrV ρ p t)
   lemma-ctrV ρ p (SND t) = cong proj₂ (lemma-ctrV ρ p t)
   lemma-ctrV ρ p (VAR x) = lemma-ctr-var ρ p x
-  lemma-ctrV ρ p (LAM σ x) = funext (λ z → ⟦ x ⟧C (z , dup ρ p))
-                                      (λ z → ⟦ ctrC (there p) x ⟧C (z , ρ))
-                                      (λ z → lemma-ctrC (z , ρ) (there p) x)
+  lemma-ctrV ρ p (LAM σ t) = funext (λ z → ⟦ t ⟧C (z , dup ρ p))
+                                    (λ z → ⟦ ctrC (there p) t ⟧C (z , ρ))
+                                    (λ z → lemma-ctrC (z , ρ) (there p) t)
   lemma-ctrV ρ p (VCAST t q) = cong (vcast q) (lemma-ctrV ρ p t)
   
   lemma-ctrC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
@@ -229,6 +229,11 @@ swapvar {σ ∷ σ' ∷ Γ} (here' refl) (there (there x)) = there (there x)
 swapvar (there p) (here' x) = here' x
 swapvar (there p) (there x) = there (swapvar p x)
 
+swap : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ swapX p ⟫X
+swap {_ ∷ []} (σ , ρ) (here' refl) = σ , tt
+swap {_ ∷ _ ∷ _} (σ , σ' , ρ) (here' refl) = σ' , σ , ρ
+swap (σ , ρ) (there p) = σ , swap ρ p
+
 mutual
   swapV : {Γ : Ctx} {σ σ' : VType} (p : σ ∈ Γ) →
           VTerm Γ σ' → VTerm (swapX p) σ'
@@ -253,3 +258,32 @@ mutual
   swapC p (PREC x t t' q) = PREC (swapV p x) (swapC p t) (swapC (there (there p)) t') q
   swapC p (LET t IN t') = LET swapC p t IN swapC (there p) t'
   swapC p (CCAST t q) = CCAST (swapC p t) q
+
+lemma-swap-var : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
+                 {σ : VType} (p : σ ∈ Γ) →
+                 {τ : VType} (x : τ ∈ Γ) →
+                 proj x ρ ≡ proj (swapvar p x) (swap ρ p)
+lemma-swap-var ρ p x = {!!}
+
+mutual
+  lemma-swapV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
+                {σ : VType} (p : σ ∈ Γ) →
+                {τ : VType} (t : VTerm Γ τ) →
+                ⟦ t ⟧V ρ ≡ ⟦ swapV p t ⟧V (swap ρ p)
+  lemma-swapV ρ p TT = refl
+  lemma-swapV ρ p FF = refl
+  lemma-swapV ρ p ZZ = refl
+  lemma-swapV ρ p (SS t) = cong suc (lemma-swapV ρ p t)
+  lemma-swapV ρ p ⟨ t , t' ⟩ = cong₂ _,_ (lemma-swapV ρ p t) (lemma-swapV ρ p t')
+  lemma-swapV ρ p (FST t) = cong proj₁ (lemma-swapV ρ p t)
+  lemma-swapV ρ p (SND t) = cong proj₂ (lemma-swapV ρ p t)
+  lemma-swapV ρ p (VAR x) = lemma-swap-var ρ p x
+  lemma-swapV ρ p (LAM σ t) = funext (λ z → ⟦ t ⟧C (z , ρ)) (λ x → ⟦ swapC (there p) {!t!} ⟧C {!!}) (λ x → trans (lemma-swapC (x , ρ) (here' refl) t) {!!})
+  lemma-swapV ρ p (VCAST t q) = cong (vcast q) (lemma-swapV ρ p t)
+  
+  lemma-swapC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
+                {σ : VType} (p : σ ∈ Γ) →
+                {τ : CType} (t : CTerm Γ τ) →
+                ⟦ t ⟧C ρ ≡ ⟦ swapC p t ⟧C (swap ρ p)
+  lemma-swapC = {!!}
+  
