@@ -1172,11 +1172,16 @@ dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
 
 \section{Mitte-determinim}
 
-This is obvious \cite{Benton2016}. \cite{Katsumata2014}
+Selles peatükis vaadeldakse keele laiendust mitte-deterministliku valikuga.
+Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
+Kuna baaskeel on sama, mis peatükis \ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
+
 
 \subsection{Mitte-deterministlik keel}
 
 Mitte-determistliku keele arvutused võivad omada tervet hulka erinevaid väärtuseid.
+\todo{expand}
+
 Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel \ref{fig:nd.cterms}.
 Võrreldes eranditega keelega (ptk \ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud valikulise arvutusega {\tt CHOOSE}.
 Väärtustermid on mõlemal keelel ühised.
@@ -1263,8 +1268,8 @@ bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)
   \label{fig:nd.bvec}
 \end{figure}
 
-Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk \ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud, kuid ilma lõtkuta, vektori. Sidumine {\tt bindBV}...
-Vastav instants {\tt NDBV} on toodud joonisel \ref{fig:nd.graded-monad}.
+Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk \ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud ja ilma lõtkuta vektori. Sidumine {\tt bindBV}...
+Vastav gradeeritud monaadi instants {\tt NDBV} on toodud joonisel \ref{fig:nd.graded-monad}.
 
 \begin{figure}
   \begin{BVerbatim}
@@ -1296,12 +1301,49 @@ NDBV = record { OM = ℕ*
   \label{fig:nd.graded-monad}
 \end{figure}
 
+\subsection{Termide tüübituletus ja rafineerimine}
+
+\begin{figure}
+  \begin{BVerbatim}
+infer-ctype : (Γ : Ctx) → cTerm → Maybe CType
+infer-ctype Γ (VAL x) with infer-vtype Γ x
+... | just σ = just (1 / σ)
+... | _      = nothing
+infer-ctype Γ (FAIL σ) = just (0 / σ)
+infer-ctype Γ (CHOOSE t t') with infer-ctype Γ t | infer-ctype Γ t'
+... | just τ | just τ' = τ ⊹C τ'
+... | _      | _       = nothing
+-- rest of definition omitted
+
+refine-cterm : (Γ : Ctx) (t : cTerm) → refined-cterm Γ t
+refine-cterm Γ (VAL t) with infer-vtype Γ t | refine-vterm Γ t
+... | just _ | u = VAL u
+... | nothing | u = tt 
+refine-cterm Γ (FAIL σ) with infer-ctype Γ (FAIL σ)
+... | _ = FAIL σ
+refine-cterm Γ (CHOOSE t t')
+    with infer-ctype Γ t | refine-cterm Γ t |
+         infer-ctype Γ t' | refine-cterm Γ t'
+... | nothing | _ | _ | _ = tt
+... | just _ | _ | nothing | _ = tt
+... | just (e / σ) | u | just (e' / σ') | u'
+        with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
+...     | nothing | _ = tt
+...     | just _ | [ p ] =
+  CHOOSE (CCAST u (⊔V-subtype p))
+         (CCAST u' (⊔V-subtype-sym {σ} p))
+-- rest of definition omitted
+  \end{BVerbatim}
+  \caption{Mitte-determistliku keele tüübituletus ja rafineerimine.}
+  \label{fig:nd.refine}
+\end{figure}
+
 
 \subsection{Semantika}
 
 Joonisel \ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 \begin{itemize}
-\item {\tt VAL x} korral tagastab {\tt η} väärtustermi {\tt x} interpretatsiooni.
+\item {\tt VAL x} korral tagastab {\tt η}-ga väärtustermi {\tt x} interpretatsiooni.
 \item {\tt FAIL σ} korral koostatakse tühi ülalt tõkestatud vektor funktsiooniga {\tt sfail}. Selle vektori elementide tüüp on määratud väärtustüübi {\tt σ} interpretatsiooniga.
 \item {\tt CHOOSE t t'} interpretatsioon vastab mitte-determistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpretatsioonidega koostatud vektorite liitmisega.
 \item Ülejäänud arvutustermi konstruktorite semantika on nii nagu eranditega keeles.
@@ -1350,7 +1392,7 @@ sor e e' = _++bv_
 \section{Kokkuvõte}
 Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
 küsimustele, toob välja töö olulisemad tulemused ja järeldused.
-
+This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 \clearpage\vspace*{0pt}
 
 
