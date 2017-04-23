@@ -104,6 +104,11 @@
 \usepackage{flafter}
 
 \usepackage{tikz}
+\usepackage[nounderscore]{syntax}
+\setlength{\grammarindent}{3em}
+\let\syntleft\relax
+\let\syntright\relax
+\usepackage{changepage}
 
 \renewcommand{\labelitemi}{$\smblksquare$}
 
@@ -242,7 +247,19 @@ ning tuuakse mõned optimeerivate programmiteisenduste näited.
 
 \subsection{Eranditega keel}\label{ssec:exc.raw}
 
-Vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{fig:exc.types}.
+Näitekeele grammatika saab esitada Backus-Naur kujul (BNF) järgnevalt, kus {\tt t} on tüübid, {\tt v} on väärtused ja {\tt c} on arvutused:
+\begin{adjustwidth}{1em}{0pt}
+\begin{grammar}\tt
+<t> ::= nat | bool | t ● t | t ⇒ $e$ / t \hfill ($e \in$ E)
+  
+<v> ::= TT | FF | ZZ | SS v | ⟨ v , v ⟩ | FST v | SND v
+    \alt VAR $n$ | LAM t c \hfill ($n \in \mathbb N$)
+  
+<c> ::= VAL v | FAIL t | TRY c WITH c
+    \alt IF v THEN c ELSE c | v \$ v | PREC v c c | LET c IN c
+\end{grammar}
+\end{adjustwidth}
+Agdas vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{fig:exc.types}.
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
 Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
 \begin{figure}
@@ -264,7 +281,7 @@ mutual
 
 Vastastikku defineeritud väärtus- ja arvutustermid on toodud joonisel~\ref{fig:exc.raw}.
 % pragmatics
-Termidee konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standardfunktsioonidega.
+Termide konstruktorite nimetamisel on kasutatud suurtähti vältimaks võimalikke nimekonflikte Agda standardfunktsioonidega.
 Järgnevalt on selgitatud väärtustermi {\tt vTerm} konstruktorite tähendust.
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} koostavad vastavalt tõeväärtused tõene ja väär.
@@ -1174,17 +1191,28 @@ dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
 
 Selles peatükis vaadeldakse keele laiendust mitte-deterministliku valikuga.
 Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
-Kuna baaskeel on sama, mis peatükis \ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
+Kuna baaskeel on sama, mis peatükis \ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja ainult olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
 
 
 \subsection{Mitte-deterministlik keel}
 
-Mitte-determistliku keele arvutused võivad omada tervet hulka erinevaid väärtuseid.
-\todo{expand}
+Järgnev BNF esitab mitte-deterministliku keele grammatika.
+\begin{adjustwidth}{1em}{0pt}
+\begin{grammar}\tt
+<t> ::= nat | bool | t ● t | t ⇒ $e$ / t \hfill ($e \in$ E)
+  
+<v> ::= TT | FF | ZZ | SS v | ⟨ v , v ⟩ | FST v | SND v
+    \alt VAR $n$ | LAM t c \hfill ($n \in \mathbb N$)
+  
+<c> ::= VAL v | FAIL t | CHOOSE c c
+    \alt IF v THEN c ELSE c | v \$ v | PREC v c c | LET c IN c
+\end{grammar}
+\end{adjustwidth}
+
+Võrreldes eranditega keelega (ptk \ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud valikulise arvutusega {\tt CHOOSE}.
 
 Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel \ref{fig:nd.cterms}.
-Võrreldes eranditega keelega (ptk \ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud valikulise arvutusega {\tt CHOOSE}.
-Väärtustermid on mõlemal keelel ühised.
+Väärtustermid on mõlemal keelel defineeritud samamoodi.
 Muutunud on arvutuste efekti hinnang {\tt E}, mis defineeritakse alapeatükis \ref{ssec:nd.grading}.
 Arvutuse õnnestumise rafineeritud arvutustermi {\tt VAL} efekti hinnanguks on {\tt 1} ja ebaõnnestumise arvutustermi {\tt FAIL} hinnanguks on {\tt 0}.
 
@@ -1302,6 +1330,21 @@ NDBV = record { OM = ℕ*
 \end{figure}
 
 \subsection{Termide tüübituletus ja rafineerimine}
+
+Osa arvutustermide tüübituletusest on esitatud joonisel \ref{fig:nd.refine}.
+\begin{itemize}
+\item {\tt VAL x} on hästi tüübitud, kui väärtusterm {\tt x} on antud kontekstis tüübitud. Arvutuse efekt {\tt 1} tähistab ühte tulemust, mille tüüp {\tt σ} vastab väärtustermile tuletatud tüübile.
+\item {\tt FAIL σ} korral on efektiks {\tt 0}, kuna ühtki {\tt σ} tüüpi tulemust ei teki.
+\item {\tt CHOOSE t t'} on hästi tüübitud, kui mõlemad arvutustermid {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüüp on määratud vastavalt tuletatud tüüpide {\tt τ} ja {\tt τ'} kombinatsiooniga {\tt τ ⊹C τ'}: efektid liidetakse {\tt _⊹_}-ga ning väärtustüübiks on väärtustüüpide ülemine raja. Kui ülemine raja puudub, siis pole arvutus hästi tüübitud.
+\end{itemize}
+
+Rafineeritud arvutustermid on toodud joonisel \ref{fig:nd.cterms}.
+``Toorete'' arvutustermide rafineerimine on esitatud joonisel \ref{fig:nd.refine}.
+\begin{itemize}
+\item {\tt VAL t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud, ja rafineeritud arvutusterm koostatakse vastavast rafineeritud väärtustermist {\tt u}.
+\item {\tt FAIL σ} korral näidatakse, et selle arvutustermi tüübituletus õnnestub, ning koostatakse samasugune rafineeritud arvutusterm.
+\item {\tt CHOOSE t t'} puhul peavad mõlemad osaarvutused {\tt t} ja {\tt t'} olema hästi tüübitud. Kui neile tuletatud arvutustüüpide väärtustüüpidel on ülemine raja, siis rafineeritud arvutus koostatakse vastavate rafineeringutest {\tt u} ja {\tt u'}, suurendades neid vastavalt ülemise raja tõestusele {\tt p}.
+\end{itemize}
 
 \begin{figure}
   \begin{BVerbatim}
