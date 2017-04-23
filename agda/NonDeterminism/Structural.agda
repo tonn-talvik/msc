@@ -9,11 +9,11 @@ open import Data.Product hiding (swap)
 open import Data.Unit
 open import Relation.Binary.PropositionalEquality
 
-open import Exception
+open import NonDetBoundedVec
 open import Finiteness
 open import Grading
-open Grading.OrderedMonoid ExcEffOM
-open Grading.GradedMonad ExcEffGM
+open Grading.OrderedMonoid ℕ*
+open Grading.GradedMonad NDBV
 open import Raw
 open import Refined
 open import Semantics
@@ -48,7 +48,7 @@ mutual
         CTerm (dropX Γ x) τ → CTerm Γ τ
   wkC x (VAL y) = VAL (wkV x y) 
   wkC x (FAIL σ) = FAIL σ
-  wkC x (TRY t WITH t') = TRY (wkC x t) WITH (wkC x t')
+  wkC x (CHOOSE t t') = CHOOSE (wkC x t) (wkC x t')
   wkC x (IF b THEN t ELSE t') = IF (wkV x b) THEN (wkC x t) ELSE (wkC x t')
   wkC x (t $ u) = wkV x t $ wkV x u
   wkC x (PREC y t t' p) = PREC (wkV x y) (wkC x t) (wkC (there (there x)) t') p
@@ -98,7 +98,7 @@ mutual
               ⟦ wkC x t ⟧C ρ ≡ ⟦ t ⟧C (drop ρ x)
   lemma-wkC ρ x (VAL x') = cong η (lemma-wkV ρ x x')
   lemma-wkC ρ x (FAIL σ) = refl
-  lemma-wkC ρ x (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemma-wkC ρ x t) (lemma-wkC ρ x t')
+  lemma-wkC ρ x (CHOOSE {e} {e'} t t') = cong₂ (sor e e') (lemma-wkC ρ x t) (lemma-wkC ρ x t')
   lemma-wkC ρ x (IF_THEN_ELSE_ {e} {e'} b t t')
     rewrite lemma-wkV ρ x b | lemma-wkC ρ x t | lemma-wkC ρ x t' = refl
   lemma-wkC ρ x (f $ x') rewrite lemma-wkV ρ x f | lemma-wkV ρ x x' = refl
@@ -148,7 +148,7 @@ mutual
          CTerm (dupX p) τ → CTerm Γ τ
   ctrC p (VAL x) = VAL (ctrV p x)
   ctrC p (FAIL σ) = FAIL σ
-  ctrC p (TRY t WITH t') = TRY ctrC p t WITH ctrC p t'
+  ctrC p (CHOOSE t t') = CHOOSE (ctrC p t) (ctrC p t')
   ctrC p (IF x THEN t ELSE t') = IF ctrV p x THEN ctrC p t ELSE ctrC p t'
   ctrC p (f $ x) = ctrV p f $ ctrV p x
   ctrC p (PREC x t t' q) = PREC (ctrV p x) (ctrC p t) (ctrC (there (there p)) t') q
@@ -193,7 +193,7 @@ mutual
                ⟦ t ⟧C (dup ρ p) ≡ ⟦ ctrC p t ⟧C ρ
   lemma-ctrC ρ p (VAL x) = cong η (lemma-ctrV ρ p x)
   lemma-ctrC ρ p (FAIL σ) = refl
-  lemma-ctrC ρ p (TRY_WITH_ {e} {e'} t t') = cong₂ (or-else e e') (lemma-ctrC ρ p t) (lemma-ctrC ρ p t')
+  lemma-ctrC ρ p (CHOOSE {e} {e'} t t') = cong₂ (sor e e') (lemma-ctrC ρ p t) (lemma-ctrC ρ p t')
   lemma-ctrC ρ p (IF x THEN t ELSE t') rewrite lemma-ctrV ρ p x | lemma-ctrC ρ p t | lemma-ctrC ρ p t' = refl
   lemma-ctrC ρ p (f $ x) rewrite lemma-ctrV ρ p f | lemma-ctrV ρ p x = refl
   lemma-ctrC ρ p (PREC x t t' q) = 

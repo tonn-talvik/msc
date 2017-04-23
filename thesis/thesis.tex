@@ -549,10 +549,10 @@ record GradedMonad : Set where
 
 Saab näidata, et erandite järjestatud monoidil saab põhineda gradeeritud monaad.
 
-\subsection{Tüübi- ja efektituletus} \label{ssec:exc.inference}
+\subsection{Tüübi- ja efektituletus}\label{ssec:exc.inference}
 
-\subsubsection{Alamtüübid}
-Väärtus- ja arvutustüüpide osaline järjestatus on vastastikku defineeritud (jn~\ref{fig:exc.subtypes}).
+\subsubsection{Alamtüübid}\label{ssec:exc.subtypes}
+Väärtus- ja arvutustüüpide osaline järjestus on vastastikku defineeritud (jn~\ref{fig:exc.subtypes}).
 Konstruktoriga {\tt st-bn} loetakse tõeväärtused naturaalarvude alamtüübiks.
 Kehtib väärtustüüpide refleksiivsus {\tt st-refl}.
 Üks väärtustüübi paar on teise alamtüüp {\tt st-prod}, kui paaride vastavad projektsioonid on omakorda alamtüübid.
@@ -1296,8 +1296,9 @@ bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)
   \label{fig:nd.bvec}
 \end{figure}
 
-Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk \ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud ja ilma lõtkuta vektori. Sidumine {\tt bindBV}...
+Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk \ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud ja ilma lõtkuta vektori. Sidumine {\tt bindBV} rakendab antud funktsiooni igale vektori elemendile ja liidab saadud ülalt tõkestatud vektorid.
 Vastav gradeeritud monaadi instants {\tt NDBV} on toodud joonisel \ref{fig:nd.graded-monad}.
+
 
 \begin{figure}
   \begin{BVerbatim}
@@ -1330,6 +1331,9 @@ NDBV = record { OM = ℕ*
 \end{figure}
 
 \subsection{Termide tüübituletus ja rafineerimine}
+
+Efektide järjestus võimaldab defineerida alamtüübid.
+Kuna see definitsioon on sama, mis eranditega keele puhul (alaptk \ref{ssec:exc.subtypes}), siis pole seda siinkohal toodud mitte-deterministliku keele jaoks.
 
 Osa arvutustermide tüübituletusest on esitatud joonisel \ref{fig:nd.refine}.
 \begin{itemize}
@@ -1384,6 +1388,7 @@ refine-cterm Γ (CHOOSE t t')
 
 \subsection{Semantika}
 
+Väärtustermide semantika on antud samamoodi nagu eranditega keeles (alaptk \ref{ssec:exc.semantics}).
 Joonisel \ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 \begin{itemize}
 \item {\tt VAL x} korral tagastab {\tt η}-ga väärtustermi {\tt x} interpretatsiooni.
@@ -1399,10 +1404,10 @@ sfail = bv []V z≤n
 sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
 sor e e' = _++bv_
 
-⟦_⟧c : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫x → ⟪ τ ⟫c
-⟦ VAL x ⟧c ρ = η (⟦ x ⟧v ρ)
-⟦ FAIL σ ⟧c ρ = sfail {⟪ σ ⟫v}
-⟦ CHOOSE {e} {e'} t t' ⟧c ρ = sor e e' (⟦ t ⟧c ρ) ( (⟦ t' ⟧c ρ))
+⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫C
+⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
+⟦ FAIL σ ⟧C ρ = sfail {⟪ σ ⟫V}
+⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
 -- rest of definition omitted
   \end{BVerbatim}
   \caption{Mitte-deterministliku keele semantika.}
