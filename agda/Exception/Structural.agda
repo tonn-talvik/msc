@@ -259,6 +259,7 @@ mutual
   swapC p (LET t IN t') = LET swapC p t IN swapC (there p) t'
   swapC p (CCAST t q) = CCAST (swapC p t) q
 
+{-
 lemma-swap-var : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                  {σ : VType} (p : σ ∈ Γ) →
                  {τ : VType} (x : τ ∈ Γ) →
@@ -287,3 +288,4 @@ mutual
                 ⟦ t ⟧C ρ ≡ ⟦ swapC p t ⟧C (swap ρ p)
   lemma-swapC = {!!}
   
+-}

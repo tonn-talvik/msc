@@ -1,5 +1,6 @@
 module Optimization where
 
+open import Data.List renaming (_∷_ to _∷l_) hiding (_++_)
 open import Data.Nat
 open import Data.Product
 open import Data.Unit
@@ -19,21 +20,50 @@ open import Inference
 open import Semantics
 open import Structural
 
+------------------------------------------------------------------
+-- monad-specific, effect-independent equivalences
 
-dup-comp' : {e : E} {X Y : Set} → (m : T 1 X) → (n : X → X → T e Y) → 
-            sub-eq lu (bind {1} {1 · e}
-                            (λ x → bind {1} {e} (λ y → n y x) m)
-                            m)
-            ≡ bind {1} {e} (λ x → n x x) m
-dup-comp' (bv [] z≤n) f = subeq-air ru+ []
-dup-comp' (bv (x ∷ []) (s≤s z≤n)) f with f x x
-... | bv ys p = ru++ (ys ++ []) (mon+ p z≤n)
+-- choice 1, 2: works on sets, not on vecs
 
+-- choice 3
+fail-or-m : {Γ : Ctx} {X : VType} {e : ℕ} (m : CTerm Γ (e / X)) →
+            (ρ : ⟪ Γ ⟫X) → 
+            ⟦ CHOOSE (FAIL X) m ⟧C ρ ≡ ⟦ m ⟧C ρ
+fail-or-m m ρ with ⟦ m ⟧C ρ
+... | bv xs p = refl
 
+-- choice 4
+choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {X : VType}
+             (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
+             (m₃ : CTerm Γ (e₃ / X)) (ρ : ⟪ Γ ⟫X) →
+             sub-eq (+ass {e₁} {e₂} {e₃})
+                    (⟦ CHOOSE m₁ (CHOOSE m₂ m₃) ⟧C ρ)
+             ≡ ⟦ CHOOSE (CHOOSE m₁ m₂) m₃ ⟧C ρ
+choose-ass m₁ m₂ m₃ ρ with ⟦ m₁ ⟧C ρ | ⟦ m₂ ⟧C ρ | ⟦ m₃ ⟧C ρ
+... | bv₁ | bv₂ | bv₃ = lemma-ass++ bv₁ bv₂ bv₃
 
+-- commutativity?
 
+-- distribution?
 
+fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
+                (m : CTerm (X ∷l Γ) (e / Y)) →
+                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
+fails-earlier m = refl
 
+err-anyway : (n : ℕ) → n · 0 ≡ 0
+err-anyway zero = refl
+err-anyway (suc n) = err-anyway n
+
+fails-later : {e : ℕ} {Γ : Ctx} {X Y : VType}
+              (m : CTerm Γ (e / X)) (ρ : ⟪ Γ ⟫X) →
+              sub-eq (err-anyway e) (⟦ LET m IN FAIL Y ⟧C ρ) ≡ ⟦ FAIL Y ⟧C ρ
+fails-later m ρ with ⟦ m ⟧C ρ
+fails-later m ρ | bv [] p = {!!}
+fails-later m ρ | bv (x ∷ xs) p = {!!}
+
+------------------------------------------------------------------
+-- effect-dependent equivalences
 
 
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
@@ -44,6 +74,7 @@ failure m ρ with ⟦ m ⟧C ρ
 
 
 {-
+-- requires ND1+
 dead-comp : {Γ : Ctx} {σ σ' : VType} {e : ℕ}
             (m : CTerm Γ (1+ / σ)) (n : CTerm Γ (e / σ')) →
             (ρ : ⟪ Γ ⟫X) → 
@@ -94,3 +125,8 @@ dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType}
 dup-comp m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
 dup-comp {e} m n ρ | bv [] z≤n | _ = subeq-air (sym (trans (+ass {e}) refl)) []
 dup-comp m n ρ | bv (x ∷ []) (s≤s z≤n) | [ p ] rewrite lemma-wkC (x , ρ) here m | p | lemma-ctrC (x , ρ) here n = something (⟦ ctrC (here' refl) n ⟧C (x , ρ))
+
+
+{-
+pure lambda hoist requires ND1
+-}

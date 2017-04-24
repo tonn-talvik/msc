@@ -95,7 +95,7 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
 ·-comm errok ok = refl
 ·-comm errok errok = refl
 
-
+{-
 comm : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {X Y Z : VType}
        (m : CTerm Γ (e₁ / Y)) (n : CTerm Γ (e₂ / X)) (o : CTerm (X ∷ Y ∷ Γ) (e₃ / Z)) →
        (ρ : ⟪ Γ ⟫X) →
@@ -114,13 +114,13 @@ comm {ok} {errok} m n o ρ with ⟦ m ⟧C ρ | ⟦ n ⟧C ρ
 comm {errok} {err} m n o ρ = refl
 comm {errok} {ok} m n o ρ = {!!}
 comm {errok} {errok} m n o ρ = {!!}
-
+-}
 
 -- distribution
 
 fails-earlier : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
                 (m : CTerm (X ∷ Γ) (e / Y)) →
-                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL X ⟧C ρ
+                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
 fails-earlier m = refl
 
 

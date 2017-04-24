@@ -1407,7 +1407,7 @@ sor e e' = _++bv_
 ⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫C
 ⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
 ⟦ FAIL σ ⟧C ρ = sfail {⟪ σ ⟫V}
-⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
+⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) (⟦ t' ⟧C ρ)
 -- rest of definition omitted
   \end{BVerbatim}
   \caption{Mitte-deterministliku keele semantika.}
@@ -1418,7 +1418,41 @@ sor e e' = _++bv_
 
 Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mitte-deterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis \ref{ssec:exc.optimizations} joonistel \ref{fig:weakening} ja \ref{fig:contraction} esitatud.
 
-Joonisel \ref{fig:nd.opt1} on toodud mitte-determinismi efekti spetsiifilised teisendused. Lihtsustus {\tt failure} näitab, et iga arvutuse {\tt m}, mille arvutuse tulemusena ei teki mitte ühtegi väärtust (teisisõnu: arvutusel on ülimalt {\tt 0} väärtust), võib samaväärsena asendada arvutuse ebaõnnestumise konstruktsiooniga {\tt FAIL}. Kuna arvutustermi {\tt m} interpretatsioon antud konteksti interpretatsioonis {\tt ρ} on tühi ülalt {\tt 0}-ga tõkestatud vektor, siis tõestus on triviaalne.
+Mitte-determinismi monaadi spetsiifilised, kuid konkreetsest efektist sõltumatud optimisatsioonid on toodud joonisel \ref{fig:nd.opt1}.
+Lihtsustus {\tt fail-or-m} näitab, et valides mitte-determistlikult arvutuste {\tt FAIL X} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
+
+Mitte-deterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel \ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivusel, mis on tõestatud töö lähtekoodis.
+
+Lihtsustus {\tt fails-earlier} (jn \ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestunuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL X} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
+\begin{figure}
+  \begin{BVerbatim}
+fail-or-m : {Γ : Ctx} {X : VType} {e : ℕ} (m : CTerm Γ (e / X)) →
+            (ρ : ⟪ Γ ⟫X) → 
+            ⟦ CHOOSE (FAIL X) m ⟧C ρ ≡ ⟦ m ⟧C ρ
+fail-or-m m ρ with ⟦ m ⟧C ρ
+... | bv xs p = refl
+
+choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {X : VType}
+             (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
+             (m₃ : CTerm Γ (e₃ / X)) (ρ : ⟪ Γ ⟫X) →
+             sub-eq (+ass {e₁} {e₂} {e₃})
+                    (⟦ CHOOSE m₁ (CHOOSE m₂ m₃) ⟧C ρ)
+             ≡ ⟦ CHOOSE (CHOOSE m₁ m₂) m₃ ⟧C ρ
+choose-ass m₁ m₂ m₃ ρ with ⟦ m₁ ⟧C ρ | ⟦ m₂ ⟧C ρ | ⟦ m₃ ⟧C ρ
+... | bv₁ | bv₂ | bv₃ = lemma-ass++ bv₁ bv₂ bv₃
+
+fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
+                (m : CTerm (X ∷l Γ) (e / Y)) →
+                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
+fails-earlier m = refl
+  \end{BVerbatim}
+  \caption{Mitte-determinismi monaadi spetsiifilised, efektist sõltumatud teisendused.}
+  \label{fig:nd.opt1}
+\end{figure}
+
+Joonisel \ref{fig:nd.opt2} on toodud mitte-determinismi efekti spetsiifilised teisendused. Lihtsustus {\tt failure} näitab, et iga arvutuse {\tt m}, mille arvutuse tulemusena ei teki mitte ühtegi väärtust (teisisõnu: arvutusel on ülimalt {\tt 0} väärtust), võib samaväärsena asendada arvutuse ebaõnnestumise konstruktsiooniga {\tt FAIL}. Kuna arvutustermi {\tt m} interpretatsioon antud konteksti interpretatsioonis {\tt ρ} on tühi ülalt {\tt 0}-ga tõkestatud vektor, siis tõestus on triviaalne.
+
+Samaväärsus {\tt dup-comp} (jn \ref{fig:nd.opt2}) näitab, et iga arvutust {\tt m}, mille efekt on ülimalt {\tt 1}, pole vaja topelt arvutada. Põhjendus on järgnev: kui {\tt m} tulemuseks on täpselt üks väärtus, siis {\tt LET_IN_} sidumisel {\tt m}-iga ei teki väärtuseid juurde ja võib kohe selle väärtuse siduda {\tt n}-iga; kui {\tt m} arvutuse tulemusel ühtegi väärtust ei teki, siis pole ka järgnevatesse arvutustesse midagi siduda. Tõestus on antud töö lähtekoodis.
 \begin{figure}
   \begin{BVerbatim}
 failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
@@ -1426,9 +1460,17 @@ failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
           ⟦ m ⟧C ρ ≡ ⟦ FAIL X ⟧C ρ
 failure m ρ with ⟦ m ⟧C ρ
 ... | bv [] z≤n = refl
+
+dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType} 
+           (m : CTerm Γ (1 / X)) (n : CTerm (dupX here) (e / Y)) →
+           (ρ : ⟪ Γ ⟫X) → 
+           sub-eq (errok-seq e)
+                  (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
+           ≡ ⟦ LET m IN ctrC here n ⟧C ρ
+-- proof omitted
   \end{BVerbatim}
-  \caption{Mitte-determinismi efekti spetsiifilises optimisatsioonid.}
-  \label{fig:nd.opt1}
+  \caption{Mitte-determinismi efekti spetsiifilised optimisatsioonid.}
+  \label{fig:nd.opt2}
 \end{figure}
 
 \iffalse

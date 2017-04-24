@@ -86,7 +86,7 @@ mutual
   ⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫C
   ⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
   ⟦ FAIL σ ⟧C ρ = sfail {⟪ σ ⟫V}
-  ⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
+  ⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) (⟦ t' ⟧C ρ)
   ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ = if ⟦ x ⟧V ρ
                                          then (sub (lub e e') (⟦ t ⟧C ρ))
                                          else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
