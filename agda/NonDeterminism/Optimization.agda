@@ -1,9 +1,11 @@
 module Optimization where
 
 open import Data.Nat
+open import Data.Product
 open import Data.Unit
 open import Data.Vec hiding (here)
 open import Relation.Binary.PropositionalEquality
+open ≡-Reasoning
 
 open import Finiteness
 open import Grading
@@ -16,29 +18,6 @@ open import Types
 open import Inference
 open import Semantics
 open import Structural
-
-fail : {X : Set} (m : T 0 X) → m ≡ bv [] z≤n
-fail (bv [] z≤n) = refl
-
-{-
--- Incomplete pattern matching ?
-dead-comp : {e : E} {X Y : Set} → (m : T 1 X) → (n : T e Y) →
-            sub-eq lu (lift {1} {e} (λ _ → n) m) ≡ n
-dead-comp (bv [] z≤n) (bv [] z≤n) = {!!}
-dead-comp (bv (x ∷ []) (s≤s z≤n)) (bv [] z≤n) = ?
---                  \__ this was given by Agda case-distinction
-dead-comp m (bv (x ∷ x₁) x₂) = {!!}
--}
-
-{-
--- should be M : T₁₊X instead of T₁X
-dead-comp : {e : E} {X Y : Set} → (m : T 1 X) → (n : T e Y) →
-            sub-eq lu (lift {1} {e} (λ _ → n) m) ≡ n
-dead-comp (bv [] z≤n) (bv [] z≤n) = subeq-air ru+ []
-dead-comp (bv (x ∷ []) (s≤s z≤n)) (bv [] z≤n) = subeq-air ru+ []
-dead-comp (bv (x ∷ x' ∷ xs) (s≤s ())) (bv [] z≤n)
-dead-comp m (bv (x ∷ x₁) x₂) = {!!}
--}
 
 
 dup-comp' : {e : E} {X Y : Set} → (m : T 1 X) → (n : X → X → T e Y) → 
@@ -76,12 +55,42 @@ errok-seq : (e : ℕ) → 1 · (1 · e) ≡ 1 · e
 errok-seq e = sym (ass {1} {1} {e})
 
 
+lemma2 : {m n : ℕ} (p : m ≡ n) →
+         sym (trans (cong suc p) refl) ≡ cong suc (sym (trans p refl))
+lemma2 refl = refl
+
+lemma : (n : ℕ) → sym (trans (+ass {n} {0} {0}) refl) ≡ ru+
+lemma zero = refl
+lemma (suc n) =
+  begin
+    sym (trans (cong suc (+ass {n} {0} {0})) refl)
+  ≡⟨ lemma2 (+ass {n}) ⟩ 
+    cong suc (sym (trans (+ass {n} {0} {0}) refl))
+  ≡⟨ cong (cong suc) (lemma n) ⟩ 
+    cong suc ru+
+  ∎
+something : {X : Set} {n : ℕ} (xs : BVec X n) → 
+            sub-eq (sym (trans (+ass {n} {0} {0}) refl))
+                  ((xs ++bv (bv [] z≤n)) ++bv (bv [] z≤n))
+            ≡ xs ++bv (bv [] z≤n)
+something {n = n} (bv xs p) =
+  begin
+    sub-eq (sym (trans (+ass {n}) refl))
+      (bv ((xs ++ []) ++ []) (mon+ (mon+ p z≤n) z≤n))
+  ≡⟨ cong (λ q → sub-eq q (bv ((xs ++ []) ++ [])
+                               (mon+ (mon+ p z≤n) z≤n)))
+          (lemma n) ⟩
+    sub-eq ru+ (bv ((xs ++ []) ++ []) (mon+ (mon+ p z≤n) z≤n))
+  ≡⟨ ru++ (xs ++ []) (mon+ p z≤n) ⟩
+    bv (xs ++ []) (mon+ p z≤n)
+  ∎
+
 dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType} 
            (m : CTerm Γ (1 / X)) (n : CTerm (dupX here) (e / Y)) →
            (ρ : ⟪ Γ ⟫X) → 
            sub-eq (errok-seq e)
                   (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
            ≡ ⟦ LET m IN ctrC here n ⟧C ρ
-dup-comp m n ρ with ⟦ m ⟧C ρ
-dup-comp {e} m n ρ | bv [] z≤n = subeq-air (sym (trans (+ass {e}) refl)) []
-dup-comp m n ρ | bv (x ∷ []) (s≤s z≤n) = {!!}
+dup-comp m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
+dup-comp {e} m n ρ | bv [] z≤n | _ = subeq-air (sym (trans (+ass {e}) refl)) []
+dup-comp m n ρ | bv (x ∷ []) (s≤s z≤n) | [ p ] rewrite lemma-wkC (x , ρ) here m | p | lemma-ctrC (x , ρ) here n = something (⟦ ctrC (here' refl) n ⟧C (x , ρ))

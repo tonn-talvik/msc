@@ -1416,7 +1416,20 @@ sor e e' = _++bv_
 
 \subsection{Optimisatsioonid}
 
+Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mitte-deterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis \ref{ssec:exc.optimizations} joonistel \ref{fig:weakening} ja \ref{fig:contraction} esitatud.
 
+Joonisel \ref{fig:nd.opt1} on toodud mitte-determinismi efekti spetsiifilised teisendused. Lihtsustus {\tt failure} näitab, et iga arvutuse {\tt m}, mille arvutuse tulemusena ei teki mitte ühtegi väärtust (teisisõnu: arvutusel on ülimalt {\tt 0} väärtust), võib samaväärsena asendada arvutuse ebaõnnestumise konstruktsiooniga {\tt FAIL}. Kuna arvutustermi {\tt m} interpretatsioon antud konteksti interpretatsioonis {\tt ρ} on tühi ülalt {\tt 0}-ga tõkestatud vektor, siis tõestus on triviaalne.
+\begin{figure}
+  \begin{BVerbatim}
+failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
+          (ρ : ⟪ Γ ⟫X) → 
+          ⟦ m ⟧C ρ ≡ ⟦ FAIL X ⟧C ρ
+failure m ρ with ⟦ m ⟧C ρ
+... | bv [] z≤n = refl
+  \end{BVerbatim}
+  \caption{Mitte-determinismi efekti spetsiifilises optimisatsioonid.}
+  \label{fig:nd.opt1}
+\end{figure}
 
 \iffalse
 \clearpage\vspace*{0pt}
