@@ -490,11 +490,29 @@ Kõik mainitud tõestused on toodud töö käigus valminud lähtekoodis.
 
 \subsubsection{Gradeeritud monaad}\label{sssec:graded-monad}
 
-Efektiga {\tt E} parametriseeritud tüübikonstruktor {\tt T} koos tagastamisega {\tt η} ja sidumisega {\tt bind}  moodustab monaadi.
-Neelduvus {\tt sub} on refleksiivne {\tt sub-refl}, transitiivne {\tt sub-trans} ja  sidumise suhtes monotoonne {\tt sub-mon}.
-Täidetud on monaadi seadused {\tt mlaw1}, {\tt mlaw2} ja {\tt mlaw3}.
+Monaad on järgnev kolmik: tüübikonstruktor {\tt T}, tagastus {\tt η} ja sidumine {\tt bind}\footnote{Antud töös on {\tt bind}-i argumentide järjekord vahetunud võrreldes tavapärase käsitlusega.}.
+\begin{equation*}
+\begin{BVerbatim}
+T : Set → Set
+η : {X : Set} → X → T X
+bind : {X Y : Set} → (X → T Y) → (T X → T Y)
+\end{BVerbatim}
+\end{equation*}
+Seejuures peavad olema täidetud kolm monaadi seadust: vasakühik {\tt mlaw1}, paremühik {\tt mlaw2} ja assotsiatiivsus {\tt mlaw3}.
+\begin{equation*}
+\begin{BVerbatim}
+mlaw1 : {X Y : Set} → (f : X → T Y) → (x : X) → bind f (η x) ≡ f x
+mlaw2 : {X : Set} → (c : T X) → c ≡ bind η c
+mlaw3 : {X Y Z : Set} → (f : X → T Y) → (g : Y → T Z) → (c : T X) →
+        bind g (bind f c) ≡ bind (bind g ∘ f) c
+\end{BVerbatim}
+\end{equation*}
 
-Joonisel~\ref{fig:graded-monad} on toodud gradeeritud monaadi kirje tüüp Agdas.
+Joonisel~\ref{fig:graded-monad} on toodud eeljärjestatud monoidiga {\tt OM} gradeeritud monaadi kirje tüüp Agdas.
+Efektiga {\tt E} parametriseeritud tüübikonstruktor {\tt T} koos tagastamisega {\tt η} ja sidumisega {\tt bind}  moodustab monaadi.
+Neelduvusega {\tt sub} saab efektide järjestuse tõestusele tuginedes luua mingist monaadilisest väärtusest vastavalt suurema efektiga monaadilise väärtuse.
+Neelduvus {\tt sub} peab olema refleksiivne {\tt sub-refl}, transitiivne {\tt sub-trans} ja  sidumise suhtes monotoonne {\tt sub-mon}.
+Samuti peavad olema täidetud monaadi seadused {\tt mlaw1}, {\tt mlaw2} ja {\tt mlaw3}. Viimaste juures on kasutatud neelduvuse erijuhtu {\tt sub-eq} efektide võrdsuse korral pääsemaks mööda Agda tüübisüsteemist: ekvivalentsust ei saa tõestada eri tüüpi elementidele.
 
 \begin{figure}
   \begin{BVerbatim}
@@ -544,7 +562,42 @@ record GradedMonad : Set where
   \label{fig:graded-monad}
 \end{figure}
 
-Saab näidata, et erandite järjestatud monoidil saab põhineda gradeeritud monaad.
+Erandite järjestatud monoidi jaoks saab defineerida gradeeritud monaadi instantsi. Joonisel~\ref{fig:exc.graded-monad} on toodud olulisemad definitsioonid.
+Tüübikonstruktor {\tt T} on defineeritud erandi hinnangu argumendi kuju järgi: veale {\tt err} vastab tipp-tüüp {\tt ⊤}, õnnestumisele {\tt ok} parameetriga antud tüüp {\tt X} ja hinnangule {\tt errok} vastab {\tt Maybe} monaad.
+Ühikuks {\tt η} on identsusfunktsioon.
+Sidumise {\tt bind} definitsioonil on analüüsitud kummagi efekti kuju ning vajadusel ka monaadilise väärtuse kuju.
+Neelduvus {\tt sub} annab efektide refleksiivsuse {\tt ⊑-refl} korral monaadilise väärtuse {\tt c} enda.
+Kui järjestuse tõestuse esimeseks efektis on {\tt err}, siis vastavalt tüübikonstruktori definitsioonile saab argument olla tipp-tüübi ainus element {\tt tt}, millele pannakse vastavusse {\tt nothing}.
+Kui aga efektiks on {\tt ok}, siis vastav väärtus {\tt x} mähitakse {\tt Maybe} monaadi.
+
+\begin{figure}
+  \begin{BVerbatim}
+T : Exc → Set → Set
+T err X = ⊤
+T ok X = X
+T errok X = Maybe X
+
+η : {X : Set} → X → T ok X
+η x = x
+  
+bind : {e e' : Exc} {X Y : Set} →
+       (X → T e' Y) → T e X → T (e · e') Y
+bind {err} f x = tt
+bind {ok} f x = f x
+bind {errok} {err} f x = tt
+bind {errok} {ok} f (just x) = just (f x)
+bind {errok} {ok} f nothing = nothing
+bind {errok} {errok} f (just x) = f x
+bind {errok} {errok} f nothing = nothing
+
+sub : {e e' : Exc} {X : Set} → e ⊑ e' → T e X → T e' X
+sub ⊑-refl c = c
+sub err⊑errok tt = nothing
+sub ok⊑errok x = just x
+  \end{BVerbatim}
+  \caption{Osa erandite gradeeritud monaadi definitsioonist.}
+  \label{fig:exc.graded-monad}
+\end{figure}
 
 \subsection{Tüübi- ja efektituletus}\label{ssec:exc.inference}
 

@@ -113,7 +113,7 @@ private
 
   sub : {e e' : Exc} {X : Set} → e ⊑ e' → T e X → T e' X
   sub ⊑-refl c = c
-  sub err⊑errok c = nothing
+  sub err⊑errok tt = nothing
   sub ok⊑errok x = just x
 
 
