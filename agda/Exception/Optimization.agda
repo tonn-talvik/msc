@@ -154,7 +154,6 @@ dead-comp m n ρ = lemma-wkC (⟦ m ⟧C ρ , ρ) here n
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})
 
-
 dup-comp : {e : Exc} {Γ : Ctx} {X Y : VType} 
            (m : CTerm Γ (errok / X)) (n : CTerm (dupX here) (e / Y)) →
            (ρ : ⟪ Γ ⟫X) → 
@@ -163,9 +162,11 @@ dup-comp : {e : Exc} {Γ : Ctx} {X Y : VType}
            ≡ ⟦ LET m IN ctrC here n ⟧C ρ
 dup-comp {err} m n ρ = refl
 dup-comp {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
-... | just x | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq = cong just (lemma-ctrC (x , ρ) here n)
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = cong just (lemma-ctrC (x , ρ) here n)
 ... | nothing | _ = refl
 dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
-... | just x | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq = lemma-ctrC (x , ρ) here n
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = lemma-ctrC (x , ρ) here n
 ... | nothing | _ = refl
 

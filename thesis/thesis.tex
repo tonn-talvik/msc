@@ -112,9 +112,6 @@
 
 \renewcommand{\labelitemi}{$\smblksquare$}
 
-\usepackage{xcolor}
-\usepackage[colorinlistoftodos]{todonotes}
-
 \usepackage{setspace}
 
 \begin{document}
@@ -219,7 +216,7 @@ Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korre
 Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne.
 Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaevaga, kui õppimisele kuluv aeg maha arvata.
 
-Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toimivad keele juures, mis toetab andmetüüpe, milleks antud töös on naturaalarvud. \todo{???}
+Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toimivad keele juures, mis toetab andmetüüpe, milleks antud töös on naturaalarvud.
 
 Teises peatükis realiseeritakse näitekeel, mille efektiks on erandid.
 Järgmiseks defineeritakse selliste efektide hindamine.
@@ -1164,10 +1161,16 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
 \end{figure}
 
 Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid on toodud joonisel~\ref{fig:exc.opt2}.
+Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL X}.
+Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
+
+Lihtsustus {\tt dead-comp} (jn~\ref{fig:exc.opt2}) näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemma-wkC} rakendus.
+
+Lihtsustus {\tt dup-comp} (jn~\ref{fig:exc.opt2}) võimaldab arvutuse {\tt m} topelt arvutamise asendada ühekordse arvutamisega. Tõestusel analüüsitakse kõige pealt arvutuse {\tt n} efekti kuju.
 \begin{itemize}
-\item Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL X}.
-  Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
-\item Ekvivalents {\tt dead-comp} näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemma-wkC} rakendus.
+\item Kui see arvutus ebaõnnestub, siis kogu arvutuse interpretatsioon on paratamatult tipp-tüübi element {\tt tt} ja seega tõestus on triviaalne.
+\item Kui arvutuse {\tt n} efektiks on {\tt ok}, siis analüüsitakse arvutuse {\tt m} interpretatsiooni. Õnnestunud arvutuse {\tt just x} korral näidatakse ülesande tüüpi nõrgendamise {\tt lemma-wkC} ja {\tt m}-i uuritud interpretatsooni {\tt eq}-ga ringi kirjutades, et tulemus on kongruentne {\tt m}-i väärtuse {\tt x} kontraheerimise {\tt lemma-ctrC} tõttu. Ebaõnnestunud arvutuse korral pole arvutusse {\tt n} ühtegi väärtust siduda ja kogu arvutuse interpretatsiooniks on {\tt nothing}.
+\item Kui efektiks on {\tt errok}, siis on tõestus analoogne efekti {\tt ok} juhtumiga, v.a. asjaolu, et arvutuse {\tt n} interpretatsioon on {\tt Maybe} tüüpi ja seega pole vaja näidata kongruentsust.
 \end{itemize}
 
 \begin{figure}
@@ -1182,6 +1185,26 @@ dead-comp : {Γ : Ctx} {σ τ : VType} {ε : Exc}
             (ρ : ⟪ Γ ⟫X) → 
             ⟦ LET m IN (wkC zero n) ⟧C ρ ≡ ⟦ n ⟧C ρ
 dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
+
+
+errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
+errok-seq e = sym (ass {errok} {errok} {e})
+
+dup-comp : {e : Exc} {Γ : Ctx} {X Y : VType} 
+           (m : CTerm Γ (errok / X)) (n : CTerm (dupX here) (e / Y)) →
+           (ρ : ⟪ Γ ⟫X) → 
+           sub-eq (errok-seq e)
+                  (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
+           ≡ ⟦ LET m IN ctrC here n ⟧C ρ
+dup-comp {err} m n ρ = refl
+dup-comp {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = cong just (lemma-ctrC (x , ρ) here n)
+... | nothing | _ = refl
+dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = lemma-ctrC (x , ρ) here n
+... | nothing | _ = refl
   \end{BVerbatim}
   \caption{Monaadi spetsiifilised, efektist sõltuvad optimisatsioonid.}
   \label{fig:exc.opt2}
@@ -1190,7 +1213,7 @@ dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
 \clearpage\vspace*{0pt}
 
 
-\section{Mitte-determinim}
+\section{Mitte-determinism}
 
 Selles peatükis vaadeldakse keele laiendust mitte-deterministliku valikuga.
 Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
@@ -1212,7 +1235,7 @@ Järgnev BNF esitab mitte-deterministliku keele grammatika.
 \end{grammar}
 \end{adjustwidth}
 
-Võrreldes eranditega keelega (ptk~\ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud valikulise arvutusega {\tt CHOOSE}.
+Võrreldes eranditega keelega (ptk~\ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud arvutusega {\tt CHOOSE}, mis valib mitte-deterministlikult, kumba osaarvutust täita.
 
 Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel~\ref{fig:nd.cterms}.
 Väärtustermid on mõlemal keelel defineeritud samamoodi.
@@ -1282,7 +1305,7 @@ Sellega rahuldatakse eeljärjestatud monoidi tingimusi (alaptk~\ref{sssec:ordere
 Ülalt tõkestatud vektor {\tt BVec} (jn~\ref{fig:nd.bvec}) mingi hulga {\tt X} jaoks on indekseeritud naturaalarvuga {\tt n}, mis näitab vektoris olevate elementide suurimat võimalikku arvu.
 Ainsaks konstruktoris on {\tt bv}, mis moodustab täpse pikkusega vektorist ja n-ö ``lõtku'' tõestusest, et selles vektoris ei ole rohkem elemente kui {\tt n}, uue ülalt {\tt n}-iga tõkestatud vektori.
 Ülalt tõkestatud vektori päisesse elemendi lisamine {\tt _∷bv_} lisab selle elemendi täpse pikkusega vektori päisesse ning suurendab võrratuse tõestust ühe võrra.
-Vektorite liitmisel liidetakse täpse pikkusega vektorid omavahel ja elementide lõtku tõestus koostatakse liitmise monotoonsusega kummagi vektori lõtkude tõestusest.
+Vektorite liitmisel {\tt _++bv_} liidetakse täpse pikkusega vektorid omavahel ja elementide lõtku tõestus koostatakse liitmise monotoonsusega kummagi vektori lõtkude tõestusest.
 
 \begin{figure}
   \begin{BVerbatim}
