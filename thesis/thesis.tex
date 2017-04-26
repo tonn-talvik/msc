@@ -60,6 +60,7 @@
 \addto\captionsestonian{
   \renewcommand*\contentsname{\centering Sisukord}
   \renewcommand*\listfigurename{\centering Jooniste loetelu}
+  \renewcommand*\refname{Kasutatud kirjandus}
 }
 
 %\usepackage{biblatex}
@@ -186,11 +187,9 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 
 \section{Sissejuhatus}
 
-% background and motivation?
-Motivatsioon. Taust: efektid ja monaadid. Moggi, Benton, Katsumata.
-
 Efektisüsteemid on staatilised programmi analüüsid, mis hindavad arvutuste võimalikke efekte.
 See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
+
 % https://courses.cs.ttu.ee/pages/Problem_Statement
 
 % Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
@@ -223,7 +222,7 @@ Järgmiseks defineeritakse selliste efektide hindamine.
 Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt lisades selle arvutustele efektid ja tüübid.
 Edasi antakse rafineeritud keele semantika ning tuuakse mõningased programmiteisendused, näidates, et semantiliselt on tulemus sama.
 
-Kolmandaks peatükis tuuakse efektianalüüs ja optimeerimise näited mitte-determinismi toetava keele kohta.
+Kolmandas peatükis tuuakse efektianalüüs ja optimeerimise näited mitte-determinismi toetava keele kohta.
 
 % Reproducibility
 Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
@@ -478,7 +477,7 @@ record OrderedMonoid : Set where
   \label{fig:ordered-monoid}
 \end{figure}
 
-Saab näidata, et erandite hinnag {\tt Exc},
+Saab näidata, et erandite efekti hinnag {\tt Exc},
 korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
 ja osaline järjestusseos {\tt _⊑_} moodustavad eeljärjestatud monoidi instantsi.
 Vasakühiku tõestus tuleneb vahetult korrutamise definitsioonist.
@@ -554,9 +553,6 @@ record GradedMonad : Set where
     mlaw3 : {e e' e'' : E} → {X Y Z : Set} →
             (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
             sub-eq ass (bind g (bind f c)) ≡ bind (bind g ∘ f) c 
-
-  T₁ : {e : E} {X Y : Set} → (X → Y) → T e X → T e Y
-  T₁ f = sub-eq (sym ru) ∘ bind (η ∘ f)
   \end{BVerbatim}
   \caption{Gradeeritud monaad.}
   \label{fig:graded-monad}
@@ -897,7 +893,7 @@ Arvutustermide rafineerimine on toodud joonistel~\ref{fig:exc.refine-cterm1} ja~
 \item {\tt TRY t WITH t'} korral kontrollitakse, et mõlemad osaarvutused on hästi tüübitud ja tuletatud väärtustüüpidel leidub ülemine raja. Rafineeritud arvutuse konstrueerimiseks suurendatakse rafineeritud osaarvutuste {\tt u} ja {\tt u'} tüüpi ülemise rajani vastavalt alamtüübi tõestusele {\tt p}.
 \item {\tt IF x THEN t ELSE t'} korral peab väärtusterm {\tt x} olema tõeväärtustüüpi ning arvutustermid {\tt t} ja {\tt t'} peavad olema hästi tüübitud. Kui harude arvutuste väärtustüüpidel leidub ülemine raja, siis rafineeritud tingimuslause tingimus on rafineeritud väärtusterm {\tt x'} ja tingimuslause harudes suurendatakse rafineeritud arvutuste {\tt u} ja {\tt u'} tüüpi vastavalt alamtüübi tõestusele {\tt p}. Ülejäänud juhtudel koostatakse tipp-tüübi element {\tt tt}.
 \item {\tt f \$ x} korral peab väärtusterm {\tt f} olema funktsiooniruumi tüüpi ja seejuures peab argumendile {\tt x} tuletatud tüüp olema mainitud funktsiooniruumi parameetri alamtüüp. Rafineeritud funktsiooni {\tt f'} rakendamise koostamisel on rafineeritud argumendi {\tt x'} tüüpi suurendatud vastavalt alamtüübi tõestusele {\tt p}.
-\item {\tt PREC x t t'} korral kontrollitakse, et väärtusterm {\tt x} on tõeväärtustüüpi ning baasile vastav arvutus {\tt t} hästi tüübitud. Seejärel, et sammule vastav arvutus {\tt t'} on hästi tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ning baasi väärtustüübile vastav akumulaator. Viimaks kontrollitakse, et baasi ja sammu efektide korrutamine ei ületaks baasi efekti ning et baasile ja sammule vastavad väärtustüübid langevad kokku. Rafineeritud primitiivse rekursiooni term koostatakse vastavatest rafineeritud termidest {\tt x'}, {\tt u}, {\tt u'} ja efektide püsipunkti tõestusest {\tt p}.
+\item {\tt PREC x t t'} korral kontrollitakse, et väärtusterm {\tt x} on naturaalarvu tüüpi ning baasile vastav arvutus {\tt t} hästi tüübitud. Seejärel, et sammule vastav arvutus {\tt t'} on hästi tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ning baasi väärtustüübile vastav akumulaator. Viimaks kontrollitakse, et baasi ja sammu efektide korrutamine ei ületaks baasi efekti ning et baasile ja sammule vastavad väärtustüübid langevad kokku. Rafineeritud primitiivse rekursiooni term koostatakse vastavatest rafineeritud termidest {\tt x'}, {\tt u}, {\tt u'} ja efektide püsipunkti tõestusest {\tt p}.
 \item {\tt LET t IN t'} puhul peab osaarvutus {\tt t} olema hästi tüübitud antud kontekstis ja osaarvutus {\tt t'} tüübitud kontekstis, kuhu on lisatud {\tt t}-le tuletatud tüüp {\tt σ}. Rafineeritud arvutuste sidumine koostatakse rafineeritud osaarvutustest {\tt u} ja {\tt u'}.
 \end{itemize}
 \begin{figure}
@@ -1051,7 +1047,7 @@ Rafineeritud arvutustermi semantiline interpretatsioon etteantud konteksti inter
 \item {\tt VAL x} interpreteerib väärtustermi {\tt x} antud kontekstis ja tagastab selle gradeeritud monaadis.
 \item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
 \item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. Semantiline erandikäsitlus {\tt or-else} käitub järgnevalt. Kui esimese osaarvutuse efektiks on ebaõnnestumine {\tt err}, siis kogu arvutus on määratud erandikäsitlejaga. Kui esimene arvutus õnnestub efektiga {\tt ok}, siis kogu arvutuseks ongi esimene arvutus. Kui esimese arvutuse õnnestumine pole teada, st efektiks on {\tt errok}, siis analüüsitakse ka erandikäsitleja efekti. Kui erandikäsitleja efekt on {\tt err}, siis on kogu arvutus määratud põhiarvutusega. Ülejäänud juhtudel analüüsitakse esimese arvutuse tulemuse kuju: kui esimene arvutus ikkagi õnnestus (konstruktor {\tt just}), siis saab sealt ka kogu arvutuse tulemuse; vastasel korral on kogu arvutuse tulemuseks erandikäsitleja tulemus.
-\item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
+\item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus ja harud tingimuslauses, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
 \item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtustermi {\tt x} interpretatsioon, baas on arvutustermi {\tt t} interpretatsioon ja sammuks on arvutustermi {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. Semantiline primitiivne rekursioon {\tt primrecT} on defineeritud induktsiooniga sammude arvul. Nulli korral on tulemuseks baasile vastav arvutus {\tt z}. Sammu korral rakendatakse sammule vastavat funktsiooni {\tt s} sammuloendurile {\tt n} ja saadud funktsioon seotakse {\tt bind}-iga rekursiive väljakutsega. Tulemuse efekt neeldub efektide püsipunkti tõestuse {\tt p} tõttu baasarvutuse efektis.
 \item {\tt f \$ x} korral rakendatakse väärtustermi {\tt f} interpretatsiooni väärtustermi {\tt x} interpretatsioonile.
 \item {\tt LET_IN_} seob osaarvutused: esimese osarvutuse interpretatsioon lisatakse teise osaarvutuse interpreteerimise konteksti.
@@ -1095,12 +1091,19 @@ primrecT {e} {e'} (suc n) z s p =
 
 \subsection{Optimisatsioonid}\label{ssec:exc.optimizations}
 
-Etteantud konteksti saab laiendada lisades selle mingisse kohta kindla tüübi.
-Seda nimetatakse lõdvendamiseks {\tt dropX} (jn~\ref{fig:weakening}).
-Samamoodi saab lõdvendada rafineeritud väärtusterme {\tt wkV} ja arvutusterme {\tt wkC}.
-Teades konteksti ja sinna lisatava tüübi interpretatsiooni, saab koostada lõdvendatud konteksti interpretatsiooni {\tt drop}.
-Lemmad {\tt lemma-wkV} ja {\tt lemma-wkC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon.
-Lihtsuse huvides pole mainitud definitsioone ja tõestusi siinkohal toodud.
+Etteantud kontekstist saab jätta välja selle mingis kohas oleva tüübi, eeldusel, et sellele vastavat muutujat pole üheski termis tarvis.
+Seda nimetatakse konteksti lõdvendamiseks {\tt dropX} (jn~\ref{fig:weakening}).
+Samamoodi saab lõdvendada rafineeritud väärtusterme {\tt wkV} ja arvutusterme {\tt wkC}, nihutades vajadusel muutujaid välja jäetud elemendi võrra.
+Teades konteksti interpretatsiooni ja väljajäetava muutuja asukohta, saab koostada lõdvendatud konteksti interpretatsiooni {\tt drop}.
+Lemmad {\tt lemma-wkV} ja {\tt lemma-wkC} näitavad, et lõdventatud termi interpretatsioon lõdventatud kontekstis on sama, mis selle termi interpretatsioon algses kontekstis.
+
+Etteantud konteksti saab laiendada dubleerides {\tt dupX} selle mingit elementi (jn~\ref{fig:contraction}).
+Termi kontraheerimine, funktsioonid {\tt ctrV} ja {\tt ctrC}, seisneb selle kontekstis olevate muutujate koondamises, eeldusel, et koondatavad on võrdsed (teisisõnu: dubleeritud).
+Vajadusel saab nihutada muutujaid ühe elemendi võrra.
+Konteksti interpretatsioonis saab dubleerida mingile muutujale vastava väärtuse funktsiooniga {\tt dup}.
+Lemmad {\tt lemma-ctrV} ja {\tt lemma-ctrC} näitavad, et algse termi interpretatsioon algses kontekstis on sama, mis kontraheeritud termi interpretatsioon kontraheeritud kontekstis.
+
+Lihtsuse huvides pole mainitud lõdvendamise ja kontraheerimise definitsioone ja tõestusi siinkohal toodud.
 \begin{figure}
   \begin{BVerbatim}
 dropX : (Γ : Ctx) {σ : VType} (x : σ ∈ Γ) → Ctx
@@ -1576,7 +1579,6 @@ Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstita
 küsimustele, toob välja töö olulisemad tulemused ja järeldused.
 This is obvious \cite{Benton2016}. \cite{Katsumata2014}
 \clearpage\vspace*{0pt}
-
 
 \renewcommand{\baselinestretch}{1.15}
 \small
