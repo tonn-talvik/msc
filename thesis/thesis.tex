@@ -63,11 +63,7 @@
   \renewcommand*\refname{Kasutatud kirjandus}
 }
 
-%\usepackage{biblatex}
-%\bibliography{thesis}
-
 \usepackage{hyperref}
-
 
 \usepackage[figure,table]{totalcount}
 
@@ -78,18 +74,16 @@
 \setlength{\parskip}{12pt}
 
 \usepackage{titlesec}
-
 % http://tex.stackexchange.com/questions/299969/titlesec-loss-of-section-numbering-with-the-new-update-2016-03-15
 \usepackage{etoolbox}
 \makeatletter
 \patchcmd{\ttlh@hang}{\parindent\z@}{\parindent\z@\leavevmode}{}{}
 \patchcmd{\ttlh@hang}{\noindent}{}{}{}
 \makeatother
-
 %\titleformat{\section}[block]{\color{blue}\Large\bfseries\filcenter}{}{1em}{}
 \titlespacing*{\section}{0pt}{60pt}{18pt}
 \titlespacing*{\subsection}{0pt}{24pt}{12pt}
-% III tase: kiri 14pt, lõiguvahe enne ja pärast 12pt
+\titlespacing*{\subsubsection}{0pt}{12pt}{12pt}
 
 \usepackage{float}
 %\floatstyle{boxed} 
@@ -102,7 +96,7 @@
 \g@addto@macro\@floatboxreset\centering
 \makeatother
 
-\usepackage{flafter}
+%\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow
 
 \usepackage{tikz}
 \usepackage[nounderscore]{syntax}
@@ -163,16 +157,38 @@ Autor: Tõnn Talvik
 \clearpage\vspace*{0pt}
 
 \section*{\centering Annotatsioon}
-[tekst]
-         
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti [lehekülgede arv töö põhiosas] leheküljel, [peatükkide arv] peatükki, \totalfigures\ joonist, [tabelite arv] tabelit.
+
+Selle töö eesmärgiks on luua sõltuvate tüüpidega programmeerimiskeeles Agda idee tõestuse raamistu efektide analüüsiks ja nendel põhinevateks programmiteisendusteks.
+
+Töös vaadeldakse näitekeelena tüübitud lambda arvutust, mida on laiendatud eranditega.
+
+Teise näitena kasutatakse mitte-determistliku keelt.
+
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 38 leheküljel, 21 peatükki, \totalfigures\ joonist.
 \clearpage\vspace*{0pt}
 
 \section*{\centering Abstract\\
 Certification of effect-analysis based program~transformations}
 
-[text]
-The thesis is in Estonian and contains [pages] pages of text, [chapters] chapters, \totalfigures\ figures, [tables] tables.
+The goal of this thesis is to give a proof-of-concept framework for effect-analysis based program transformations.
+The work is carried out in a dependently typed functional programming language called Agda.
+
+The first example language considered is a typed lambda calculus extended with exceptions.
+Starting point is raw terms to which their computation types and effects are inferred.
+Subtypes and subeffects are defined using a graded monad instance specifically adapted to capture exception effects.
+Language semantics are given for already refined terms.
+Structural transformations, i.e. weakening and contraction, are described next.
+Using those, a few optimizations, e.g. dead computation and duplicate computation removal, are performed.
+All mentioned transformations are proved to be correct using Agda as metalanguage.
+
+The second example considers a language which supports non-deterministic choice.
+Again, starting from raw terms, their types and effects can be inferred.
+An upper bounded vector is defined to define the semantics of non-deterministic language.
+Matching instance of graded monad is also defined.
+Proven optimizing transformations include failed computation and duplicate computation removal.
+Since the base language is the same as for exceptions, much of the already developed framework can be reused.
+
+The thesis is in Estonian and contains 38 pages of text, 21 chapters, \totalfigures\ figures.
 \clearpage\vspace*{0pt}
 
 \addtocontents{toc}{\protect\setstretch{0}}
@@ -189,6 +205,7 @@ The thesis is in Estonian and contains [pages] pages of text, [chapters] chapter
 
 Efektisüsteemid on staatilised programmi analüüsid, mis hindavad arvutuste võimalikke efekte.
 See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
+Näiteks saab jälgida, milliseid mälupesasi loetakse ja kirjutatakse, ning selle teadmisega eemaldada ``surnud'' (\emph{dead computation}) või liigsed arvutused (\emph{duplicated computation}) \cite{Benton2006}.
 
 % https://courses.cs.ttu.ee/pages/Problem_Statement
 
@@ -210,7 +227,7 @@ Selles kirjutatud programm on tõlgendatav ja automaatselt kontrollitav kui mate
 % Goal
 Selle töö eesmärgiks on realiseerida programmeerimiskeeles Agda idee tõendamise
 raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
-Samas raamistus peab saama näidata, et need analüüsid ja teisendused on korrektsed.
+Samas raamistus peab saama näidata, et need \iffalse analüüsid ja \fi teisendused on korrektsed.
 
 Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne.
 Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaevaga, kui õppimisele kuluv aeg maha arvata.
@@ -222,7 +239,7 @@ Järgmiseks defineeritakse selliste efektide hindamine.
 Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt lisades selle arvutustele efektid ja tüübid.
 Edasi antakse rafineeritud keele semantika ning tuuakse mõningased programmiteisendused, näidates, et semantiliselt on tulemus sama.
 
-Kolmandas peatükis tuuakse efektianalüüs ja optimeerimise näited mitte-determinismi toetava keele kohta.
+Kolmandas peatükis tuuakse efektianalüüs ja optimeerimise näited mitte-determinismi toetava keele kohta, kasutades ära teises peatükis arendatud raamistut.
 
 % Reproducibility
 Töö käigus valminud lähtekood on tulemuste reprodutseerimiseks allalaetav aadressilt \url{https://github.com/tonn-talvik/msc}.
@@ -239,7 +256,7 @@ Järgnevates alapeatükkides defineeritakse selline keel Agdas,
 viiakse läbi tüübituletus koos efektianalüüsiga,
 määratakse hästi tüübitud avaldiste semantika
 ning tuuakse mõned optimeerivate programmiteisenduste näited.
-Ühtlasi näidatakse analüüsi ja teisenduste korrektsust.
+Ühtlasi näidatakse \iffalse analüüsi ja\fi teisenduste korrektsust.
 
 \subsection{Eranditega keel}\label{ssec:exc.raw}
 
@@ -1555,6 +1572,10 @@ dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType}
   \label{fig:nd.opt2}
 \end{figure}
 
+Antud töös on mitte-determistliku keele semantika antud ülalt tõkestatud vektoriga,
+kuid seda võib teha ka hulkadel, kus pole tulemuste kordsus ja järjekord olulised.
+Kui hinnata tulemuste hulga kardinaalsust ka alt (nt {\tt 0} - ebaõnnestumine, {\tt 1} - deterministlik, {\tt 01} - pooldeterministlik, {\tt 1+} - mitmikdeterministlik, {\tt N} - mitte-deterministlik), siis saab tõestada surnud arvutuse eemaldamise (\emph{dead computation}) ja arvutuse väljatõstmise (\emph{pure lambda hoist}) lihtsustused \cite{Benton2016}.
+
 \iffalse
 \clearpage\vspace*{0pt}
 \section{Võimalikud edasiarendused}
@@ -1575,15 +1596,31 @@ dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType}
 
 
 \section{Kokkuvõte}
-Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
-küsimustele, toob välja töö olulisemad tulemused ja järeldused.
-This is obvious \cite{Benton2016}. \cite{Katsumata2014}
+%Kokkuvõttes esitab autor töö põhieesmärgi, vastused sissejuhatuses püstitatud
+%küsimustele, toob välja töö olulisemad tulemused ja järeldused.
+
+Käesoleva töö eesmärgiks oli realiseerida sõltuvate tüüpidega programmeerimiskeeles Agda efektianalüüside ja neil põhinevate programmiteisenduste raamistu.
+
+Esitati erandeid toetav näitekeel.
+Seejärel defineeriti erandite efektide hindamine, tuues sisse gradeeritud monaadi mõiste.
+Gradeeringu abil määrati alamtüübid ja -efektid, millele tugines keele rafineerimine.
+Keele semantika defineeriti juba rafineeritud keelele.
+Töö käigus valmisid programmiteisendused, mh ``surnud'' arvutuse ja korduva arvutuse eemaldamise optimisatsioonid.
+Ühtlasi näidati, et need teisendused on korrektsed.
+
+Töö teises pooles kasutati mitte-determinismi toetavat näitekeelt.
+Keele semantika andmiseks loodi ülalt tõkestatud vektori andmestruktuur.
+Sellega koos anti naturaalarvude korrutamise jaoks gradeeritud monaadi instants.
+Defineeriti termide tüübituletus ja keele rafineerimine.
+Esitati ebaõnnestunud arvutuse ja korduva arvutuse eemaldamise optimisatsioonid ning näidati selliste teisenduste korrektsust.
+
+Sertifitseeritud programmeerimine on mahukas ettevõtmine, kuna arutelu isegi intuitiivselt õige aritmeetika üle võib osutuda ajakulukaks.
+Kõigele vaatamata õnnestus efektianalüüside ja programmiteisenduste raamistu realiseerimine.
+
 \clearpage\vspace*{0pt}
 
 \renewcommand{\baselinestretch}{1.15}
 \small
-%\printbibliography[title={\vskip 60pt\centering Kasutatud kirjandus}]
-
 \bibliographystyle{unsrt}
 \bibliography{thesis}
 \end{document}
