@@ -158,17 +158,29 @@ Autor: Tõnn Talvik
 
 \section*{\centering Annotatsioon}
 
+Tüübi- ja efektisüsteemid võimaldavad programmide dünaamilist käitumist analüüsida staatiliste tehnikatega. Analüüsi tulemust saab kasutada näiteks programmi optimeerimiseks.
+
 Selle töö eesmärgiks on luua sõltuvate tüüpidega programmeerimiskeeles Agda idee tõestuse raamistu efektide analüüsiks ja nendel põhinevateks programmiteisendusteks.
 
-Töös vaadeldakse näitekeelena tüübitud lambda arvutust, mida on laiendatud eranditega.
+Töös vaadeldakse esimese näitekeelena tüübitud lambda arvutust, mida on laiendatud eranditega.
+Keele termidele tuletatakse tüübid ning hinnatakse nende võimalikku efekti.
+Viimaste võrdlemiseks näidatakse, et hinnangud rahuldavad gradeeritud monaadi omadusi.
+Defineeritakse keele semantika ning tuuakse mõned programmilihtsustused tõestades, et need teisendused ei muuda programmi semantilist interpretatsiooni.
 
 Teise näitena kasutatakse mitte-determistliku keelt.
+Efektina hinnatakse programmi võimalike tulemuste arvu.
+Defineeritakse vastav gradeeritud monaad ja viiakse läbi tüübi- ja efektituletus.
+Näitekeelele antakse semantika ning tuuakse programmiteisenduste näited, ühtlasi tõestades viimaste korrektsust.
 
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 38 leheküljel, 21 peatükki, \totalfigures\ joonist.
+
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 38 leheküljel, 21 peatükki, \totalfigures~joonist.
 \clearpage\vspace*{0pt}
 
 \section*{\centering Abstract\\
 Certification of effect-analysis based program~transformations}
+
+Type-and-effect systems are used to statically analyze program dynamic behaviour.
+This allows to perform program optimizations.
 
 The goal of this thesis is to give a proof-of-concept framework for effect-analysis based program transformations.
 The work is carried out in a dependently typed functional programming language called Agda.
@@ -188,7 +200,7 @@ Matching instance of graded monad is also defined.
 Proven optimizing transformations include failed computation and duplicate computation removal.
 Since the base language is the same as for exceptions, much of the already developed framework can be reused.
 
-The thesis is in Estonian and contains 38 pages of text, 21 chapters, \totalfigures\ figures.
+The thesis is in Estonian and contains 38 pages of text, 21 chapters, \totalfigures~figures.
 \clearpage\vspace*{0pt}
 
 \addtocontents{toc}{\protect\setstretch{0}}
