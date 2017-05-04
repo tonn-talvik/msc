@@ -96,7 +96,7 @@
 \g@addto@macro\@floatboxreset\centering
 \makeatother
 
-%\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow
+\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow.. sometimes
 
 \usepackage{tikz}
 \usepackage[nounderscore]{syntax}
@@ -239,7 +239,7 @@ Selles kirjutatud programm on tõlgendatav ja automaatselt kontrollitav kui mate
 % Goal
 Selle töö eesmärgiks on realiseerida programmeerimiskeeles Agda idee tõendamise (\emph{proof-of-concept}) 
 raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
-Samas raamistus peab saama näidata, et need \iffalse analüüsid ja \fi teisendused on korrektsed.
+Samas raamistus peab saama näidata, et need teisendused on korrektsed.
 
 Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne.
 Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaevaga, kui õppimisele kuluv aeg maha arvata.
@@ -269,7 +269,7 @@ Järgnevates alapeatükkides defineeritakse selline keel Agdas,
 konstrueeritakse tüübituletus koos efektianalüüsiga,
 määratletakse hästi tüübitud avaldiste semantika
 ning tuuakse mõned optimeerivate programmiteisenduste näited.
-Ühtlasi näidatakse \iffalse analüüsi ja\fi teisenduste korrektsust.
+Ühtlasi näidatakse teisenduste korrektsust.
 
 \subsection{Eranditega keel}\label{ssec:exc.raw}
 
@@ -286,7 +286,7 @@ Näitekeele grammatika saab esitada Backus-Naur kujul (BNF) järgnevalt, kus {\t
 \end{grammar}
 \end{adjustwidth}
 Agdas vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{fig:exc.types}.
-Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambda-arvutused.
+Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja tüübitud lambdaarvutused.
 Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
 \begin{figure}
   \begin{BVerbatim}
@@ -315,7 +315,7 @@ Järgnevalt on selgitatud väärtustermi {\tt vTerm} konstruktorite tähendust.
 \item {\tt ⟨_,_⟩} koostab oma argumentide paari.
 \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
 \item {\tt VAR} koostab de~Bruijn'i indeksiga määratud muutuja.
-\item {\tt LAM} on funktsiooniabstraktsiooni konstruktor, seejuures funktsiooni parameetri väärtustüüp on eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm üle täiendava muutujaga laiendatud skoobi.
+\item {\tt LAM} on funktsiooniabstraktsiooni konstruktor, seejuures on funktsiooni parameetri väärtustüüp eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm üle täiendava muutujaga laiendatud skoobi.
 \end{itemize}
 \begin{figure}
   \begin{BVerbatim}
@@ -473,7 +473,7 @@ lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
 \end{figure}
 Loomulikul viisil saab defineerida kahe erandi hinnangu ülemise ja alumise raja ning näidata nende sümmeetrilisust.
 Lihtsuse huvides on toodud ainult vastavad tüübisignatuurid, aga mitte definitsioonid (jn~\ref{fig:exc.ord}).
-Kuna kahel hinnangul ei pruugi alumist raja leiduda, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} monaadi.
+Kuna kahel hinnangul ei pruugi alumist raja leiduda, siis on {\tt _⊓_} tulemus mähitud {\tt Maybe} andmetüüpi.
 
 \subsubsection{Eeljärjestatud monoid}\label{sssec:ordered-monoid}
 Hulka {\tt E}, millel on defineeritud korrutamine {\tt _·_} ja ühikelement {\tt i},
@@ -713,7 +713,7 @@ mutual
    TRY_WITH_ : {e e' : E} {σ : VType} → CTerm Γ (e / σ) →
                CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
    IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
-                CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+               CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
    _$_ : {σ : VType} {τ : CType} →
          VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
    PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
@@ -868,7 +868,7 @@ refined-cterm Γ t with infer-ctype Γ t
 Väärtustermide rafineerimine etteantud kontekstis (jn~\ref{fig:exc.refine-vterm}) matkib väärtustermide tüübituletust (alaptk~\ref{sssec:exc.infer-type}).
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} korral konstrueeritakse vastav rafineeritud väärtusterm.
-\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusterm null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud naturaalarvu järglane {\tt SS} koostatakse alamväärtuse {\tt t} rafineeringust {\tt u}. Kui väärtustermi {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks on tüübi {\tt ⊤} ainus element {\tt tt}.
+\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusterm null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud järgarv {\tt SS} koostatakse termi {\tt t} rafineeringust {\tt u}. Kui väärtustermi {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks on tüübi {\tt ⊤} ainus element {\tt tt}.
 \item {\tt ⟨ t , t' ⟩} korral kontrollitakse, et mõlemad väärtustermid {\tt t} ja {\tt t'} on kontekstis hästi tüübitud ja rafineeritud paar koostatakse rafineeritud termidest {\tt u} ja {\tt u'}.
 \item {\tt FST t} puhul peab väärtustermile {\tt t} tuletatud tüüp olema korrutistüüp. Rafineeritud projektsiooni saab koostada {\tt t} rafineeringust {\tt u}. {\tt SND t} juhtum on analoogne.
 \item {\tt VAR x} korral koostatakse tõestusest {\tt p}, mis näitab, et naturaalarv {\tt x} on väiksem kui konteksti {\tt Γ} pikkus, rafineeritud muutuja tõestusega, et {\tt x}-ile määratud kohal kontekstis {\tt Γ} on {\tt VAR x} jaoks tuletatud tüüp.
@@ -1020,7 +1020,7 @@ Joonisel~\ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- 
 \item {\tt nat} interpreteeritakse kui naturaalarvud {\tt ℕ} ja {\tt bool} kui tõeväärtused {\tt Bool}.
 \item {\tt σ ● σ'} korral tehakse rekursiivsed väljakutsed korrutatavatele ning tulemused korrutatakse Agdas {\tt _×_}.
 \item {\tt σ ⇒ τ} interpretatsioon vastab Agda funktsiooniruumile, mille parameetri ja tulemuse tüüp on interpreteeritud vastavalt väärtustüübist {\tt σ} ja arvutustüübist {\tt τ}.
-\item Arvutustüübi {\tt ε / σ} interpreteerimiseks rakendatakse gradeeritud monaadi tüübikonstruktorit {\tt T} efektile {\tt ε} ja väärtustüübi {\tt σ} interpretatsioonile.
+\item Arvutustüübi {\tt e / σ} interpreteerimiseks rakendatakse gradeeritud monaadi tüübikonstruktorit {\tt T} efektile {\tt e} ja väärtustüübi {\tt σ} interpretatsioonile.
 \item Tühi kontekst vastab üheelemendilisele tüübile {\tt ⊤}. Mitte-tühja konteksti pea interpreteeritakse ja korrutatakse rekursiivselt interpreteeritud sabaga.
 \end{itemize}
 
@@ -1034,7 +1034,7 @@ mutual
   ⟪ σ ⇒ τ ⟫V = ⟪ σ ⟫V → ⟪ τ ⟫c
 
   ⟪_⟫c : CType → Set
-  ⟪ ε / σ ⟫c = T ε ⟪ σ ⟫V
+  ⟪ e / σ ⟫c = T e ⟪ σ ⟫V
 
 ⟪_⟫X : Ctx → Set
 ⟪ [] ⟫X = ⊤
@@ -1081,7 +1081,7 @@ Rafineeritud arvutustermi semantiline interpretatsioon etteantud konteksti inter
 \item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus ja harud tingimuslauses, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
 \item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtustermi {\tt x} interpretatsioon, baas on arvutustermi {\tt t} interpretatsioon ja sammuks on arvutustermi {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. Semantiline primitiivne rekursioon {\tt primrecT} on defineeritud induktsiooniga sammude arvul. Nulli korral on tulemuseks baasile vastav arvutus {\tt z}. Sammu korral rakendatakse sammule vastavat funktsiooni {\tt s} sammuloendurile {\tt n} ja saadud funktsioon seotakse rekursiive väljakutsega gradeeritud monaadi {\tt bind}-tehte abil. Tulemuse efekt neeldub efektide püsipunkti tõestuse {\tt p} tõttu baasarvutuse efektis.
 \item {\tt f \$ x} korral rakendatakse väärtustermi {\tt f} interpretatsiooni väärtustermi {\tt x} interpretatsioonile.
-\item {\tt LET_IN_} seob osaarvutuste interpretatsioonid, kasutades gradeeritud monaadi {\tt bind}-tehet.
+\item {\tt LET_IN_} seob arvutuste interpretatsioonid, kasutades gradeeritud monaadi {\tt bind}-tehet.
 \item {\tt CCAST t p} puhul interpreteeritakse arvutusterm {\tt t} ja konverteeritakse see vastavalt alamtüüpimise tõestusele {\tt p}.
 \end{itemize}
 
@@ -1106,14 +1106,15 @@ primrecT {e} {e'} (suc n) z s p =
 ⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
 ⟦ FAIL σ ⟧C ρ = tt
 ⟦ TRY_WITH_ {e} {e'} t t' ⟧C ρ = or-else e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
-⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ = if ⟦ x ⟧V ρ
-                                      then (sub (lub e e') (⟦ t ⟧C ρ))
-                                      else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
+⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ =
+    if ⟦ x ⟧V ρ
+    then (sub (lub e e') (⟦ t ⟧C ρ))
+    else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
 ⟦ PREC x t t' p ⟧C ρ = primrecT (⟦ x ⟧V ρ) (⟦ t ⟧C ρ)
                                 ((λ i acc → ⟦ t' ⟧C (acc , i , ρ))) p
 ⟦ f $ x ⟧C ρ = ⟦ f ⟧V ρ (⟦ x ⟧V ρ)
-⟦ LET_IN_ {e} {e'} m n ⟧C ρ =
-    bind {e} {e'} (λ x → ⟦ n ⟧C (x , ρ)) (⟦ m ⟧C ρ)
+⟦ LET_IN_ {e} {e'} t t' ⟧C ρ =
+    bind {e} {e'} (λ x → ⟦ t' ⟧C (x , ρ)) (⟦ t ⟧C ρ)
 ⟦ CCAST t o ⟧C ρ = ccast o (⟦ t ⟧C ρ)
   \end{BVerbatim}
   \caption{Eranditega keele arvutustermide semantika.}
@@ -1140,8 +1141,8 @@ Lihtsuse huvides pole mainitud lõdvendamise ja kontraheerimise definitsioone ja
 dropX : (Γ : Ctx) {σ : VType} (x : σ ∈ Γ) → Ctx
 -- proof omitted
 mutual
-  wkV : {Γ : Ctx} {σ τ : VType} (x : σ ∈ Γ) →
-        VTerm (dropX Γ x) τ → VTerm Γ τ
+  wkV : {Γ : Ctx} {σ σ' : VType} (x : σ ∈ Γ) →
+        VTerm (dropX Γ x) σ' → VTerm Γ σ'
   -- proof omitted
   wkC : {Γ : Ctx} {σ : VType} {τ : CType} (x : σ ∈ Γ) →
         CTerm (dropX Γ x) τ → CTerm Γ τ
@@ -1151,7 +1152,7 @@ drop : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (x : σ ∈ Γ) → ⟪ d
 mutual
   lemma-wkV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
               {σ : VType} (x : σ ∈ Γ) →
-              {τ : VType} (t : VTerm (dropX Γ x) τ) →
+              {σ' : VType} (t : VTerm (dropX Γ x) σ') →
               ⟦ wkV x t ⟧V ρ ≡ ⟦ t ⟧V (drop ρ x)
   -- proof omitted
   lemma-wkC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
@@ -1169,8 +1170,8 @@ mutual
 dupX : {Γ : Ctx} {σ : VType} → σ ∈ Γ → Ctx
 -- proof omitted
 mutual
-  ctrV : {Γ : Ctx} {σ : VType} {τ : VType} (p : σ ∈ Γ) →
-         VTerm (dupX p) τ → VTerm Γ τ
+  ctrV : {Γ : Ctx} {σ σ' : VType} (p : σ ∈ Γ) →
+         VTerm (dupX p) σ' → VTerm Γ σ'
   -- proof omitted
   ctrC : {Γ : Ctx} {σ : VType} {τ : CType} (p : σ ∈ Γ) →
          CTerm (dupX p) τ → CTerm Γ τ
@@ -1180,7 +1181,7 @@ dup : {Γ : Ctx} → ⟪ Γ ⟫X → {σ : VType} → (p : σ ∈ Γ) → ⟪ du
 mutual
   lemma-ctrV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                {σ : VType} (p : σ ∈ Γ) →
-               {τ : VType} (t : VTerm (dupX p) τ) →
+               {σ' : VType} (t : VTerm (dupX p) σ') →
                ⟦ t ⟧V (ctr ρ p) ≡ ⟦ ctrV p t ⟧V ρ
   -- proof omitted
   lemma-ctrC : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
@@ -1196,7 +1197,7 @@ mutual
 
 Mõned erandite monaadi jaoks spetsiifilised, efektide suhtes geneerilised optimisatsioonid on toodud joonisel~\ref{fig:exc.opt1}.
 {\tt the-same} näitab, et arvutust {\tt m} ei saa parandada, lisades sellele erandikäsitlejana sama arvutuse.
-Erandikäsitlejate assotsiatiivsus on näidatud {\tt handler-ass}'iga.
+Erandikäsitlejate assotsiatiivsus on näidatud teisendusega {\tt handler-ass}.
 Selle tõestus matkib arvutuse parandusoperaatori assotsiatiivsuse {\tt ⊹-ass} tõestust, milles efektide juhte läbi vaadatakse.
 
 \begin{figure}
@@ -1267,8 +1268,8 @@ failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (err / σ)) →
 failure m = refl
 
 
-dead-comp : {Γ : Ctx} {σ σ' : VType} {ε : Exc}
-            (m : CTerm Γ (ok / σ)) (n : CTerm Γ (ε / σ' ) ) →
+dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
+            (m : CTerm Γ (ok / σ)) (n : CTerm Γ (e / σ' ) ) →
             (ρ : ⟪ Γ ⟫X) → 
             ⟦ LET m IN (wkC zero n) ⟧C ρ ≡ ⟦ n ⟧C ρ
 dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
@@ -1307,9 +1308,9 @@ Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja
 Kuna baaskeel on sama, mis peatükis~\ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja ainult olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
 
 
-\subsection{Mitte-deterministlik keel}
+\subsection{Mittedeterministlik keel}
 
-Järgnev BNF esitab mitte-deterministliku keele grammatika.
+Järgnev BNF esitab mittedeterministliku keele grammatika.
 \begin{adjustwidth}{1em}{0pt}
 \begin{grammar}\tt
 <t> ::= nat | bool | t ● t | t ⇒ $e$ / t \hfill ($e \in$ E)
@@ -1363,7 +1364,7 @@ data CTerm (Γ : Ctx) : CType → Set where
 \end{figure}
 
 
-\subsection{Mitte-determinismi gradeering}\label{ssec:nd.grading}
+\subsection{Mittedeterminismi gradeering}\label{ssec:nd.grading}
 
 Naturaalarvud {\tt ℕ}, nende korrutamine {\tt _*_} ja ühik {\tt 1} moodustavad monoidi.
 Naturaalarvude järjestusseos {\tt _≤_} on refleksiivne {\tt refl≤}, transitiivne {\tt trans≤}. Korrutamine on selle seose suhtes monotoonne {\tt mon*}.
@@ -1384,7 +1385,7 @@ Sellega rahuldatakse alaptk~\ref{sssec:ordered-monoid} toodud tingimusi ja saab 
             ; mon = mon*
             }
   \end{BVerbatim}
-  \caption{Mitte-determinismi eeljärjestatud monoid.}
+  \caption{Mittedeterminismi eeljärjestatud monoid.}
   \label{fig:nd.ordered-monoid}
 \end{figure}
 
@@ -1439,14 +1440,14 @@ NDBV = record { OM = ℕ*
               ; mlaw3 = blaw3
               }
   \end{BVerbatim}
-  \caption{Mitte-determinismi gradeeritud monaad.}
+  \caption{Mittedeterminismi gradeeritud monaad.}
   \label{fig:nd.graded-monad}
 \end{figure}
 
 \subsection{Termide tüübituletus ja rafineerimine}
 
 Efektide järjestus võimaldab defineerida alamtüübid.
-Kuna see definitsioon on sama, mis eranditega keele puhul (alaptk~\ref{ssec:exc.subtypes}), siis pole seda siinkohal toodud mitte-deterministliku keele jaoks.
+Kuna see definitsioon on sama, mis eranditega keele puhul (alaptk~\ref{ssec:exc.subtypes}), siis pole seda siinkohal toodud mittedeterministliku keele jaoks.
 
 Osa arvutustermide tüübituletusest on esitatud joonisel~\ref{fig:nd.refine}.
 \begin{itemize}
@@ -1494,7 +1495,7 @@ refine-cterm Γ (CHOOSE t t')
          (CCAST u' (⊔V-subtype-sym {σ} p))
 -- rest of definition omitted
   \end{BVerbatim}
-  \caption{Mitte-determistliku keele tüübituletus ja rafineerimine.}
+  \caption{Mittedetermistliku keele tüübituletus ja rafineerimine.}
   \label{fig:nd.refine}
 \end{figure}
 
@@ -1506,7 +1507,7 @@ Joonisel~\ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 \begin{itemize}
 \item {\tt VAL x} korral rakendatatakse väärtustermi {\tt x} interpretatsioonile ühikut {\tt η} ehk moodustatakse temast lõtkuta vektor pikkusega {\tt 1}.
 \item {\tt FAIL σ} korral koostatakse tühi ülalt tõkestatud vektor funktsiooniga {\tt sfail}. Selle vektori elementide tüüp on määratud väärtustüübi {\tt σ} interpretatsiooniga.
-\item {\tt CHOOSE t t'} interpretatsioon vastab mitte-determistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpreteerimisel saadud vektorite liitmisega.
+\item {\tt CHOOSE t t'} interpretatsioon vastab mittedetermistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpreteerimisel saadud vektorite liitmisega.
 \item Ülejäänud arvutustermi konstruktorite semantika on nii nagu eranditega keeles.
 \end{itemize}
 \begin{figure}
@@ -1523,43 +1524,43 @@ sor e e' = _++bv_
 ⟦ CHOOSE {e} {e'} t t' ⟧C ρ = sor e e' (⟦ t ⟧C ρ) (⟦ t' ⟧C ρ)
 -- rest of definition omitted
   \end{BVerbatim}
-  \caption{Mitte-deterministliku keele semantika.}
+  \caption{Mittedeterministliku keele semantika.}
   \label{fig:nd.semantics}
 \end{figure}
 
 \subsection{Optimisatsioonid}
 
-Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mitte-deterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis~\ref{ssec:exc.optimizations} joonistel~\ref{fig:weakening} ja~\ref{fig:contraction} esitatud.
+Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mittedeterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis~\ref{ssec:exc.optimizations} joonistel~\ref{fig:weakening} ja~\ref{fig:contraction} esitatud.
 
 Näited mittedeterminismi monaadi jaoks spetsiifilistest, kuid efekti-geneerilistest optimisatsioonidest on toodud joonisel~\ref{fig:nd.opt1}.
-Lihtsustus {\tt fail-or-m} näitab, et valides mitte-determistlikult arvutuste {\tt FAIL X} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
+Lihtsustus {\tt fail-or-m} näitab, et valides mittedetermistlikult arvutuste {\tt FAIL σ} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
 
-Mitte-deterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel~\ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivusel, mis on tõestatud töö lähtekoodis.
+Mittedeterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel~\ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivusel, mis on tõestatud töö lähtekoodis.
 
-Lihtsustus {\tt fails-earlier} (jn~\ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL X} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
+Lihtsustus {\tt fails-earlier} (jn~\ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL σ} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
 \begin{figure}
   \begin{BVerbatim}
-fail-or-m : {Γ : Ctx} {X : VType} {e : ℕ} (m : CTerm Γ (e / X)) →
+fail-or-m : {Γ : Ctx} {σ : VType} {e : ℕ} (m : CTerm Γ (e / σ)) →
             (ρ : ⟪ Γ ⟫X) → 
-            ⟦ CHOOSE (FAIL X) m ⟧C ρ ≡ ⟦ m ⟧C ρ
+            ⟦ CHOOSE (FAIL σ) m ⟧C ρ ≡ ⟦ m ⟧C ρ
 fail-or-m m ρ with ⟦ m ⟧C ρ
 ... | bv xs p = refl
 
-choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {X : VType}
-             (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
-             (m₃ : CTerm Γ (e₃ / X)) (ρ : ⟪ Γ ⟫X) →
+choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {σ : VType}
+             (m₁ : CTerm Γ (e₁ / σ)) (m₂ : CTerm Γ (e₂ / σ))
+             (m₃ : CTerm Γ (e₃ / σ)) (ρ : ⟪ Γ ⟫X) →
              sub-eq (+ass {e₁} {e₂} {e₃})
                     (⟦ CHOOSE m₁ (CHOOSE m₂ m₃) ⟧C ρ)
              ≡ ⟦ CHOOSE (CHOOSE m₁ m₂) m₃ ⟧C ρ
 choose-ass m₁ m₂ m₃ ρ with ⟦ m₁ ⟧C ρ | ⟦ m₂ ⟧C ρ | ⟦ m₃ ⟧C ρ
 ... | bv₁ | bv₂ | bv₃ = lemma-ass++ bv₁ bv₂ bv₃
 
-fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
-                (m : CTerm (X ∷l Γ) (e / Y)) →
-                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
+fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ σ' : VType}
+                (m : CTerm (σ ∷l Γ) (e / σ')) →
+                ⟦ LET FAIL σ IN m ⟧C ρ ≡ ⟦ FAIL σ' ⟧C ρ
 fails-earlier m = refl
   \end{BVerbatim}
-  \caption{Mitte-determinismi monaadi spetsiifilised, efektist sõltumatud teisendused.}
+  \caption{Mittedeterminismi monaadi spetsiifilised, efektist sõltumatud teisendused.}
   \label{fig:nd.opt1}
 \end{figure}
 
@@ -1568,43 +1569,28 @@ Joonisel~\ref{fig:nd.opt2} on toodud mõned mittedeterminismi efekti-spetsiifili
 Samaväärsus {\tt dup-comp} (jn~\ref{fig:nd.opt2}) näitab, et iga arvutust {\tt m}, mille efekt on ülimalt {\tt 1}, pole vaja topelt arvutada. Põhjendus on järgnev: kui {\tt m} tulemuseks on täpselt üks väärtus, siis {\tt LET_IN_} sidumisel {\tt m}-iga ei teki väärtuseid juurde ja võib kohe selle väärtuse siduda {\tt n}-iga; kui {\tt m} arvutuse tulemusel ühtegi väärtust ei teki, siis pole ka järgnevatesse arvutustesse midagi siduda. Tõestus on antud töö lähtekoodis.
 \begin{figure}
   \begin{BVerbatim}
-failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
+failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (0 / σ)) →
           (ρ : ⟪ Γ ⟫X) → 
-          ⟦ m ⟧C ρ ≡ ⟦ FAIL X ⟧C ρ
+          ⟦ m ⟧C ρ ≡ ⟦ FAIL σ ⟧C ρ
 failure m ρ with ⟦ m ⟧C ρ
 ... | bv [] z≤n = refl
 
-dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType} 
-           (m : CTerm Γ (1 / X)) (n : CTerm (dupX here) (e / Y)) →
+dup-comp : {e : ℕ} {Γ : Ctx} {σ σ' : VType} 
+           (m : CTerm Γ (1 / σ)) (n : CTerm (dupX here) (e / σ')) →
            (ρ : ⟪ Γ ⟫X) → 
            sub-eq (errok-seq e)
                   (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
            ≡ ⟦ LET m IN ctrC here n ⟧C ρ
 -- proof omitted
   \end{BVerbatim}
-  \caption{Mitte-determinismi efekti spetsiifilised optimisatsioonid.}
+  \caption{Mittedeterminismi efekti spetsiifilised optimisatsioonid.}
   \label{fig:nd.opt2}
 \end{figure}
 
-Antud töös on mitte-determistliku keele semantika antud ülalt tõkestatud vektoriga,
-kuid seda võib teha ka hulkadel, kus pole tulemuste kordsus ja järjekord olulised.
-Kui hinnata tulemuste hulga kardinaalsust ka alt (nt {\tt 0} - ebaõnnestumine, {\tt 1} - deterministlik, {\tt 01} - pooldeterministlik, {\tt 1+} - mitmikdeterministlik, {\tt N} - mitte-deterministlik), siis saab tõestada surnud arvutuse eemaldamise (\emph{dead computation}) ja arvutuse väljatõstmise (\emph{pure lambda hoist}) lihtsustused \cite{Benton2016}.
-
-\iffalse
-\clearpage\vspace*{0pt}
-\section{Võimalikud edasiarendused}
-
-- muteeritava oleku laiendused\\
-- mittedeterminismi teine gradeering nd0, 1, 01, 1+, N ja selle optimisatsioonid (pure-lambda-hoist, dead-computation)
-
-\begin{figure}
-  \begin{BVerbatim}
-  \end{BVerbatim}
-  \caption{}
-  \label{fig:nd.something}
-\end{figure}
-
-\fi
+Antud töös on mittedetermistliku keele semantika antud ülalt tõkestatud vektoriga,
+kuid seda võib teha ka multihulkadel, kus pole tulemuste järjekord oluline.
+Lisada võib ka nt alumised tõkked, st hinnata listi või mulithulka intervalliga.
+Minnes pisut ebatäpsemaks, võib multihulgad asendada ka hulkadega (nt {\tt 0} -- ebaõnnestumine, {\tt 1} -- deterministlik, {\tt 01} -- pooldeterministlik, {\tt 1+} -- mitmikdeterministlik, {\tt N} -- mittedeterministlik), siis saab tõestada surnud arvutuse eemaldamise (\emph{dead computation}) ja arvutuse väljatõstmise (\emph{pure lambda hoist}) lihtsustused \cite{Benton2016}.
 
 \clearpage\vspace*{0pt}
 
@@ -1622,7 +1608,7 @@ Keele semantika defineeriti juba rafineeritud keelele.
 Töö käigus valmisid programmiteisendused, mh ``surnud'' arvutuse ja korduva arvutuse eemaldamise optimisatsioonid.
 Ühtlasi näidati, et need teisendused on korrektsed.
 
-Töö teises pooles kasutati mitte-determinismi toetavat näitekeelt.
+Töö teises pooles kasutati mittedeterminismi toetavat näitekeelt.
 Keele semantika andmiseks loodi ülalt tõkestatud vektori andmestruktuur.
 Sellega koos anti naturaalarvude korrutamise jaoks gradeeritud monaadi instants.
 Defineeriti termide tüübituletus ja keele rafineerimine.

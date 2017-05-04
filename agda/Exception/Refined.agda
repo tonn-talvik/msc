@@ -33,12 +33,18 @@ mutual -- value and computation terms
   data CTerm (Γ : Ctx) : CType → Set where
     VAL : {σ : VType} → VTerm Γ σ → CTerm Γ (ok / σ)
     FAIL : (σ : VType) → CTerm Γ (err / σ)
-    TRY_WITH_ : {e e' : E} {σ : VType} → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
-    IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool → CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
-    _$_ : {σ : VType} {τ : CType} → VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
-    PREC : {e e' : E} {σ : VType} → VTerm Γ nat → CTerm Γ (e / σ) →
-           CTerm (σ ∷ nat ∷ Γ) (e' / σ) → e · e' ⊑ e → CTerm Γ (e / σ)
-    LET_IN_ : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) → CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
-    CCAST :  {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) → e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
+    TRY_WITH_ : {e e' : E} {σ : VType} → CTerm Γ (e / σ) →
+                CTerm Γ (e' / σ) → CTerm Γ (e ⊹ e' / σ)
+    IF_THEN_ELSE_ : {e e' : E} {σ : VType} → VTerm Γ bool →
+                 CTerm Γ (e / σ) → CTerm Γ (e' / σ) → CTerm Γ (e ⊔ e' / σ)
+    _$_ : {σ : VType} {τ : CType} →
+          VTerm Γ (σ ⇒ τ) → VTerm Γ σ → CTerm Γ τ
+    PREC : {e e' : E} {σ : VType} → VTerm Γ nat →
+           CTerm Γ (e / σ) → CTerm (σ ∷ nat ∷ Γ) (e' / σ) →
+           e · e' ⊑ e → CTerm Γ (e / σ)
+    LET_IN_ : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+              CTerm (σ ∷ Γ) (e' / σ') → CTerm Γ (e · e' / σ')
+    CCAST : {e e' : E} {σ σ' : VType} → CTerm Γ (e / σ) →
+            e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
 
 

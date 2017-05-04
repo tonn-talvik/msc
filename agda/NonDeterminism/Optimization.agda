@@ -26,16 +26,16 @@ open import Structural
 -- choice 1, 2: works on sets, not on vecs
 
 -- choice 3
-fail-or-m : {Γ : Ctx} {X : VType} {e : ℕ} (m : CTerm Γ (e / X)) →
+fail-or-m : {Γ : Ctx} {σ : VType} {e : ℕ} (m : CTerm Γ (e / σ)) →
             (ρ : ⟪ Γ ⟫X) → 
-            ⟦ CHOOSE (FAIL X) m ⟧C ρ ≡ ⟦ m ⟧C ρ
+            ⟦ CHOOSE (FAIL σ) m ⟧C ρ ≡ ⟦ m ⟧C ρ
 fail-or-m m ρ with ⟦ m ⟧C ρ
 ... | bv xs p = refl
 
 -- choice 4
-choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {X : VType}
-             (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
-             (m₃ : CTerm Γ (e₃ / X)) (ρ : ⟪ Γ ⟫X) →
+choose-ass : {e₁ e₂ e₃ : ℕ} {Γ : Ctx} {σ : VType}
+             (m₁ : CTerm Γ (e₁ / σ)) (m₂ : CTerm Γ (e₂ / σ))
+             (m₃ : CTerm Γ (e₃ / σ)) (ρ : ⟪ Γ ⟫X) →
              sub-eq (+ass {e₁} {e₂} {e₃})
                     (⟦ CHOOSE m₁ (CHOOSE m₂ m₃) ⟧C ρ)
              ≡ ⟦ CHOOSE (CHOOSE m₁ m₂) m₃ ⟧C ρ
@@ -46,18 +46,18 @@ choose-ass m₁ m₂ m₃ ρ with ⟦ m₁ ⟧C ρ | ⟦ m₂ ⟧C ρ | ⟦ m₃
 
 -- distribution?
 
-fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
-                (m : CTerm (X ∷l Γ) (e / Y)) →
-                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
+fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ σ' : VType}
+                (m : CTerm (σ ∷l Γ) (e / σ')) →
+                ⟦ LET FAIL σ IN m ⟧C ρ ≡ ⟦ FAIL σ' ⟧C ρ
 fails-earlier m = refl
 
 err-anyway : (n : ℕ) → n · 0 ≡ 0
 err-anyway zero = refl
 err-anyway (suc n) = err-anyway n
 
-fails-later : {e : ℕ} {Γ : Ctx} {X Y : VType}
-              (m : CTerm Γ (e / X)) (ρ : ⟪ Γ ⟫X) →
-              sub-eq (err-anyway e) (⟦ LET m IN FAIL Y ⟧C ρ) ≡ ⟦ FAIL Y ⟧C ρ
+fails-later : {e : ℕ} {Γ : Ctx} {σ σ' : VType}
+              (m : CTerm Γ (e / σ)) (ρ : ⟪ Γ ⟫X) →
+              sub-eq (err-anyway e) (⟦ LET m IN FAIL σ' ⟧C ρ) ≡ ⟦ FAIL σ' ⟧C ρ
 fails-later m ρ with ⟦ m ⟧C ρ
 fails-later m ρ | bv [] p = {!!}
 fails-later m ρ | bv (x ∷ xs) p = {!!}
@@ -66,9 +66,9 @@ fails-later m ρ | bv (x ∷ xs) p = {!!}
 -- effect-dependent equivalences
 
 
-failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (0 / X)) →
+failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (0 / σ)) →
           (ρ : ⟪ Γ ⟫X) → 
-          ⟦ m ⟧C ρ ≡ ⟦ FAIL X ⟧C ρ
+          ⟦ m ⟧C ρ ≡ ⟦ FAIL σ ⟧C ρ
 failure m ρ with ⟦ m ⟧C ρ
 ... | bv [] z≤n = refl
 
@@ -116,8 +116,8 @@ something {n = n} (bv xs p) =
     bv (xs ++ []) (mon+ p z≤n)
   ∎
 
-dup-comp : {e : ℕ} {Γ : Ctx} {X Y : VType} 
-           (m : CTerm Γ (1 / X)) (n : CTerm (dupX here) (e / Y)) →
+dup-comp : {e : ℕ} {Γ : Ctx} {σ σ' : VType} 
+           (m : CTerm Γ (1 / σ)) (n : CTerm (dupX here) (e / σ')) →
            (ρ : ⟪ Γ ⟫X) → 
            sub-eq (errok-seq e)
                   (⟦ LET m IN LET wkC here m IN n ⟧C ρ)

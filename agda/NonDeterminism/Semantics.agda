@@ -30,7 +30,7 @@ mutual
   ⟪ t ⇒ c ⟫V = ⟪ t ⟫V → ⟪ c ⟫C
 
   ⟪_⟫C : CType → Set
-  ⟪ ε / t ⟫C = T ε ⟪ t ⟫V
+  ⟪ e / t ⟫C = T e ⟪ t ⟫V
 
 ⟪_⟫X : Ctx → Set
 ⟪ [] ⟫X = ⊤
@@ -94,7 +94,7 @@ mutual
                                   (⟦ t ⟧C ρ)
                                   ((λ i → λ acc → ⟦ t' ⟧C (acc , i , ρ))) p
   ⟦ t $ u ⟧C ρ = ⟦ t ⟧V ρ (⟦ u ⟧V ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧C ρ = bind {e} {e'} (λ x → ⟦ n ⟧C (x , ρ)) (⟦ m ⟧C ρ)
+  ⟦ LET_IN_ {e} {e'} t t' ⟧C ρ = bind {e} {e'} (λ x → ⟦ t' ⟧C (x , ρ)) (⟦ t ⟧C ρ)
   ⟦ CCAST t o ⟧C ρ = ccast o (⟦ t ⟧C ρ)
 
 

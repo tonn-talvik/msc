@@ -23,15 +23,15 @@ dropX : (Γ : Ctx) {σ : VType} (x : σ ∈ Γ) → Ctx
 dropX .(x' ∷ xs) (here' {x'} {xs} x) = xs
 dropX .(x' ∷ xs) (there {x'} {xs} x) = x' ∷ dropX xs x
 
-wkvar : {Γ : Ctx} {σ : VType} (x : σ ∈ Γ) {τ : VType} → τ ∈ dropX Γ x → τ ∈ Γ
+wkvar : {Γ : Ctx} {σ : VType} (x : σ ∈ Γ) {σ' : VType} → σ' ∈ dropX Γ x → σ' ∈ Γ
 wkvar (here' refl) y = there y
 wkvar (there x) (here' refl) = here' refl
 wkvar (there x) (there y) = there (wkvar x y)
 
 
 mutual
-  wkV : {Γ : Ctx} {σ τ : VType} (x : σ ∈ Γ) →
-        VTerm (dropX Γ x) τ → VTerm Γ τ
+  wkV : {Γ : Ctx} {σ σ' : VType} (x : σ ∈ Γ) →
+        VTerm (dropX Γ x) σ' → VTerm Γ σ'
   wkV x TT = TT
   wkV x FF = FF
   wkV x ZZ = ZZ
@@ -62,7 +62,7 @@ drop (v , ρ) (there x) = v , drop ρ x
 
 lemmaVar : {Γ : Ctx} → (ρ : ⟪ Γ ⟫X) → {σ : VType} 
   → (x : σ ∈ Γ) 
-  → {τ : VType} → (y : τ ∈ dropX Γ x) → proj (wkvar x y) ρ ≡ proj y (drop ρ x)
+  → {σ' : VType} → (y : σ' ∈ dropX Γ x) → proj (wkvar x y) ρ ≡ proj y (drop ρ x)
 lemmaVar ρ (here' refl) y = refl
 lemmaVar ρ (there x) (here' refl) = refl
 lemmaVar {_ ∷ Γ} (_ , ρ) (there x) (there y) = lemmaVar ρ x y
@@ -76,7 +76,7 @@ cong₃ f refl refl refl = refl
 mutual 
   lemma-wkV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
               {σ : VType} (x : σ ∈ Γ) →
-              {τ : VType} (t : VTerm (dropX Γ x) τ) →
+              {σ' : VType} (t : VTerm (dropX Γ x) σ') →
               ⟦ wkV x t ⟧V ρ ≡ ⟦ t ⟧V (drop ρ x)
   lemma-wkV ρ x TT = refl
   lemma-wkV ρ x FF = refl
@@ -123,16 +123,16 @@ dupX : {Γ : Ctx} {σ : VType} → σ ∈ Γ → Ctx
 dupX {σ ∷ Γ} (here' refl) = σ ∷ σ ∷ Γ
 dupX {σ ∷ Γ} (there p) = σ ∷ dupX p
 
-ctrvar : {Γ : Ctx} {σ τ : VType} →
-        (p : σ ∈ Γ) → τ ∈ dupX p → τ ∈ Γ
+ctrvar : {Γ : Ctx} {σ σ' : VType} →
+        (p : σ ∈ Γ) → σ' ∈ dupX p → σ' ∈ Γ
 ctrvar (here' refl) (here' refl) = here' refl
 ctrvar (here' refl) (there q) = q
 ctrvar (there p) (here' refl) = here' refl
 ctrvar (there p) (there q) = there (ctrvar p q)
 
 mutual
-  ctrV : {Γ : Ctx} {σ : VType} {τ : VType} (p : σ ∈ Γ) →
-         VTerm (dupX p) τ → VTerm Γ τ
+  ctrV : {Γ : Ctx} {σ σ' : VType} (p : σ ∈ Γ) →
+         VTerm (dupX p) σ' → VTerm Γ σ'
   ctrV p TT = TT
   ctrV p FF = FF
   ctrV p ZZ = ZZ
@@ -162,7 +162,7 @@ dup (w , ρ) (there p) = w , dup ρ p
 
 lemma-ctr-var : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                 {σ : VType} (p : σ ∈ Γ) →
-                {τ : VType} (x : τ ∈ dupX p) →
+                {σ' : VType} (x : σ' ∈ dupX p) →
                 proj x (dup ρ p) ≡ proj (ctrvar p x) ρ
 lemma-ctr-var ρ (here' refl) (here' refl) = refl
 lemma-ctr-var ρ (here' refl) (there x) = refl
@@ -172,7 +172,7 @@ lemma-ctr-var (w , ρ) (there p) (there x) = lemma-ctr-var ρ p x
 mutual
   lemma-ctrV : {Γ : Ctx} (ρ : ⟪ Γ ⟫X) →
                {σ : VType} (p : σ ∈ Γ) →
-               {τ : VType} (t : VTerm (dupX p) τ) →
+               {σ' : VType} (t : VTerm (dupX p) σ') →
                ⟦ t ⟧V (dup ρ p) ≡ ⟦ ctrV p t ⟧V ρ
   lemma-ctrV ρ p TT = refl
   lemma-ctrV ρ p FF = refl

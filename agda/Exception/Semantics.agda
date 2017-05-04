@@ -29,7 +29,7 @@ mutual
   ⟪ σ ⇒ τ ⟫V = ⟪ σ ⟫V → ⟪ τ ⟫C
 
   ⟪_⟫C : CType → Set
-  ⟪ ε / σ ⟫C = T ε ⟪ σ ⟫V
+  ⟪ e / σ ⟫C = T e ⟪ σ ⟫V
 
 ⟪_⟫X : Ctx → Set
 ⟪ [] ⟫X = ⊤
@@ -91,14 +91,15 @@ mutual
   ⟦ VAL x ⟧C ρ = η (⟦ x ⟧V ρ)
   ⟦ FAIL σ ⟧C ρ = tt
   ⟦ TRY_WITH_ {e} {e'} t t' ⟧C ρ = or-else e e' (⟦ t ⟧C ρ) ( (⟦ t' ⟧C ρ))
-  ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ = if ⟦ x ⟧V ρ
-                                         then (sub (lub e e') (⟦ t ⟧C ρ))
-                                         else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
+  ⟦ IF_THEN_ELSE_ {e} {e'} x t t' ⟧C ρ =
+      if ⟦ x ⟧V ρ
+      then (sub (lub e e') (⟦ t ⟧C ρ))
+      else (sub (lub-sym e' e) (⟦ t' ⟧C ρ))
   ⟦ PREC x t t' p ⟧C ρ = primrecT (⟦ x ⟧V ρ) (⟦ t ⟧C ρ)
                                   ((λ i acc → ⟦ t' ⟧C (acc , i , ρ))) p
   ⟦ f $ x ⟧C ρ = ⟦ f ⟧V ρ (⟦ x ⟧V ρ)
-  ⟦ LET_IN_ {e} {e'} m n ⟧C ρ =
-      bind {e} {e'} (λ x → ⟦ n ⟧C (x , ρ)) (⟦ m ⟧C ρ)
+  ⟦ LET_IN_ {e} {e'} t t' ⟧C ρ =
+      bind {e} {e'} (λ x → ⟦ t' ⟧C (x , ρ)) (⟦ t ⟧C ρ)
   ⟦ CCAST t p ⟧C ρ = ccast p (⟦ t ⟧C ρ)
 
 
