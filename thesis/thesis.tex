@@ -314,8 +314,8 @@ Järgnevalt on selgitatud väärtustermi {\tt vTerm} konstruktorite tähendust.
 \item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
 \item {\tt ⟨_,_⟩} koostab oma argumentide paari.
 \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
-\item {\tt VAR} koostab de~Bruijn'i indeksiga määratud muutuja.
-\item {\tt LAM} on funktsiooniabstraktsiooni konstruktor, seejuures on funktsiooni parameetri väärtustüüp eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm üle täiendava muutujaga laiendatud skoobi.
+\item {\tt VAR} koostab de~Bruijn'i indeksiga määratud muutuja. Iga selline indeks on naturaalarv, mis näitab seestpoolt mitmendale lambda-sidumisele antud muutuja viitab. Antud töös loendatakse sidumisi alates nullist.
+\item {\tt LAM} on funktsiooniabstraktsiooni konstruktor, seejuures on funktsiooni parameetri väärtustüüp eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm üle täiendava muutujaga laiendatud skoobi. St lambda seob funktsiooni kehas funktsiooni parameetrile vastava muutuja.
 \end{itemize}
 \begin{figure}
   \begin{BVerbatim}
@@ -378,6 +378,15 @@ ning naturaalarvude 3 ja 4 liitmine arvutustermina {\tt ADD-3-and-4}.
 Lisaks on toodud näide arvutustermist {\tt BAD-ONE}, mida annab konstrueerida,
 kuid mis ei oma sisu: naturaalarvu null ei saa rakendada tõeväärtusele tõene.
 Sellised halvasti tüübitud termid tuvastatakse tüübituletusega (alaptk~\ref{ssec:exc.inference}).
+Harilikus tüübitud lambdaarvutuses, kus de~Bruijn'i indeksite asemel kasutatakse nimesid, saab need termid esitada järgnevalt:
+\begin{equation*}
+\begin{split}
+  \text{ADD} &:= \lambda x^\mathbb{N}.\text{val}~(\lambda y^\mathbb{N}.\text{prec}~y~ (\text{val}~x)~((acc,i).\text{val}~(\text{succ}~acc)))\\
+  \text{ADD-3-and-4} &:= \text{let}~f=\text{ADD}~3~\text{in}~f~4\\
+  \text{BAD-ONE} &:= 0~\text{true}
+\end{split}
+\end{equation*}
+
 
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
@@ -466,7 +475,6 @@ _⊓_ : Exc → Exc → Maybe Exc
 
 lub : (e e' : Exc) → e ⊑ (e ⊔ e')
 glb : (e e' : Exc) {e'' : Exc} → e ⊓ e' ≡ just e'' → e'' ⊑ e
-lub-sym : (e e' : Exc) → e ⊑ (e' ⊔ e)
   \end{BVerbatim}
   \caption{Erandite efektide järjestus.}
   \label{fig:exc.ord}
