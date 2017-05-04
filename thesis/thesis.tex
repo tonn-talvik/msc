@@ -300,7 +300,7 @@ mutual
   data CType : Set where
     _/_ : E → VType → CType
   \end{BVerbatim}
-  \caption{Eranditega keele tüübid.}
+  \caption{Näitekeele tüübid.}
   \label{fig:exc.types}
 \end{figure}
 
@@ -1257,7 +1257,7 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
 ... | just x = refl
 ... | nothing = refl
   \end{BVerbatim}
-  \caption{Erandite monaadi spetsiifilised, efekti suhtes geneerilised optimisatsioonid.}
+  \caption{Erandite monaadi spetsiifilised, efekti suhtes geneerilised teisendused.}
   \label{fig:exc.opt1}
 \end{figure}
 
@@ -1307,7 +1307,7 @@ dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ
                   = lemma-ctrC (x , ρ) here n
 ... | nothing | _ = refl
   \end{BVerbatim}
-  \caption{Monaadi spetsiifilised, efekti-spetsiifilised optimisatsioonid.}
+  \caption{Erandite monaadi efekti-spetsiifilised optimisatsioonid.}
   \label{fig:exc.opt2}
 \end{figure}
 
@@ -1573,7 +1573,7 @@ fails-earlier : {e : ℕ} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ σ' : VType}
                 ⟦ LET FAIL σ IN m ⟧C ρ ≡ ⟦ FAIL σ' ⟧C ρ
 fails-earlier m = refl
   \end{BVerbatim}
-  \caption{Mittedeterminismi monaadi spetsiifilised, efektist sõltumatud teisendused.}
+  \caption{Mittedeterminismi spetsiifilised, efekti suhtes geneerilised teisendused.}
   \label{fig:nd.opt1}
 \end{figure}
 
@@ -1596,7 +1596,7 @@ dup-comp : {e : ℕ} {Γ : Ctx} {σ σ' : VType}
            ≡ ⟦ LET m IN ctrC here n ⟧C ρ
 -- proof omitted
   \end{BVerbatim}
-  \caption{Mittedeterminismi efekti spetsiifilised optimisatsioonid.}
+  \caption{Mittedeterminismi monaadi efekti-spetsiifilised optimisatsioonid.}
   \label{fig:nd.opt2}
 \end{figure}
 
