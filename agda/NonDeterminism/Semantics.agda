@@ -66,7 +66,7 @@ primrecT {e} {e'} (suc n) z s p = sub p (bind {e} {e'} (s n) (primrecT n z s p))
 sfail : {X : Set} → T 0 X
 sfail = bv []V z≤n
 
-sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+sor : (e e' : ℕ) {X : Set} → T e X → T e' X → T (e + e') X
 sor e e' = _++bv_
 
 mutual

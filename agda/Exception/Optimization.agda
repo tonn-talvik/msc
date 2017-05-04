@@ -31,8 +31,8 @@ open import Structural
 ⊹-itself ok = refl
 ⊹-itself errok = refl
 
-the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
-           (m : CTerm Γ (e / X)) →
+the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ : VType}
+           (m : CTerm Γ (e / σ)) →
            sub-eq (⊹-itself e) (⟦ TRY m WITH m ⟧C ρ) ≡ ⟦ m ⟧C ρ
 the-same {err} m = refl
 the-same {ok} m = refl
@@ -46,9 +46,9 @@ the-same {errok} {ρ = ρ} m with ⟦ m ⟧C ρ
 ⊹-err ok = refl
 ⊹-err errok = refl
 
-handler-fails : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
-               (m : CTerm Γ (e / X)) →
-               sub-eq (⊹-err e) (⟦ TRY m WITH FAIL X ⟧C ρ) ≡ ⟦ m ⟧C ρ
+handler-fails : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ : VType}
+               (m : CTerm Γ (e / σ)) →
+               sub-eq (⊹-err e) (⟦ TRY m WITH FAIL σ ⟧C ρ) ≡ ⟦ m ⟧C ρ
 handler-fails {err} m = refl
 handler-fails {ok} m = refl
 handler-fails {errok} m = refl
@@ -63,9 +63,9 @@ handler-fails {errok} m = refl
 ⊹-ass errok errok ok = refl
 ⊹-ass errok errok errok = refl
 
-handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X : VType}
-              (m₁ : CTerm Γ (e₁ / X)) (m₂ : CTerm Γ (e₂ / X))
-              (m₃ : CTerm Γ (e₃ / X)) →
+handler-ass : {e₁ e₂ e₃ : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ : VType}
+              (m₁ : CTerm Γ (e₁ / σ)) (m₂ : CTerm Γ (e₂ / σ))
+              (m₃ : CTerm Γ (e₃ / σ)) →
               sub-eq (⊹-ass e₁ e₂ e₃)
                      (⟦ TRY m₁ WITH (TRY m₂ WITH m₃) ⟧C ρ)
               ≡ ⟦ TRY (TRY m₁ WITH m₂) WITH m₃ ⟧C ρ
@@ -118,9 +118,9 @@ comm {errok} {errok} m n o ρ = {!!}
 
 -- distribution
 
-fails-earlier : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
-                (m : CTerm (X ∷ Γ) (e / Y)) →
-                ⟦ LET FAIL X IN m ⟧C ρ ≡ ⟦ FAIL Y ⟧C ρ
+fails-earlier : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ σ' : VType}
+                (m : CTerm (σ ∷ Γ) (e / σ')) →
+                ⟦ LET FAIL σ IN m ⟧C ρ ≡ ⟦ FAIL σ' ⟧C ρ
 fails-earlier m = refl
 
 
@@ -129,9 +129,9 @@ err-anyway err = refl
 err-anyway ok = refl
 err-anyway errok = refl
 
-fails-later : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {X Y : VType}
-              (m : CTerm Γ (e / X)) →
-              sub-eq (err-anyway e) (⟦ LET m IN FAIL Y ⟧C ρ) ≡ ⟦ FAIL Y ⟧C ρ
+fails-later : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ σ' : VType}
+              (m : CTerm Γ (e / σ)) →
+              sub-eq (err-anyway e) (⟦ LET m IN FAIL σ' ⟧C ρ) ≡ ⟦ FAIL σ ⟧C ρ
 fails-later m = refl
 
 
@@ -139,8 +139,8 @@ fails-later m = refl
 ---------------------------------------------------------------
 --effect-dependent equivalences
 
-failure : {Γ : Ctx} {X : VType} (m : CTerm Γ (err / X)) →
-          ⟦ m ⟧C ≡ ⟦ FAIL X ⟧C
+failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (err / σ)) →
+          ⟦ m ⟧C ≡ ⟦ FAIL σ ⟧C
 failure m = refl
 
 
@@ -154,8 +154,8 @@ dead-comp m n ρ = lemma-wkC (⟦ m ⟧C ρ , ρ) here n
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})
 
-dup-comp : {e : Exc} {Γ : Ctx} {X Y : VType} 
-           (m : CTerm Γ (errok / X)) (n : CTerm (dupX here) (e / Y)) →
+dup-comp : {e : Exc} {Γ : Ctx} {σ σ' : VType} 
+           (m : CTerm Γ (errok / σ)) (n : CTerm (dupX here) (e / σ')) →
            (ρ : ⟪ Γ ⟫X) → 
            sub-eq (errok-seq e)
                   (⟦ LET m IN LET wkC here m IN n ⟧C ρ)

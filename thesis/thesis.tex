@@ -1300,10 +1300,10 @@ dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ
 \clearpage\vspace*{0pt}
 
 
-\section{Mitte-determinism}
+\section{Mittedeterminism}
 
-Selles peatükis vaadeldakse keele laiendust mitte-deterministliku valikuga.
-Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja korrutistega.
+Selles peatükis vaadeldakse keele laiendust mittedeterministliku valikuga.
+Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja paaridega.
 Kuna baaskeel on sama, mis peatükis~\ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja ainult olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
 
 
@@ -1322,12 +1322,12 @@ Järgnev BNF esitab mitte-deterministliku keele grammatika.
 \end{grammar}
 \end{adjustwidth}
 
-Võrreldes eranditega keelega (ptk~\ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud arvutusega {\tt CHOOSE}, mis valib mitte-deterministlikult, kumba osaarvutust täita.
+Võrreldes eranditega keelega (ptk~\ref{sec:exc}) on erandikäsitlusega arvutus {\tt TRY_WITH_} asendunud arvutusega {\tt CHOOSE}, mis valib mittedeterministlikult, kumba osaarvutust täita.
 
 Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel~\ref{fig:nd.cterms}.
 Väärtustermid on mõlemal keelel defineeritud samamoodi.
-Muutunud on arvutuste efekti hinnang {\tt E}, mis defineeritakse alapeatükis~\ref{ssec:nd.grading}.
-Arvutuse õnnestumise rafineeritud arvutustermi {\tt VAL} efekti hinnanguks on {\tt 1} ja ebaõnnestumise arvutustermi {\tt FAIL} hinnanguks on {\tt 0}.
+Muutunud on arvutuste efektide tüüp {\tt E}, mis defineeritakse alapeatükis~\ref{ssec:nd.grading}.
+Deterministliku rafineeritud arvutustermi {\tt VAL v}, millel on täpselt üks tulemus, efekti hinnanguks on {\tt 1} ja tulemuseta arvutustermi {\tt FAIL} hinnanguks on {\tt 0}.
 
 \begin{figure}
   \begin{BVerbatim}
@@ -1358,7 +1358,7 @@ data CTerm (Γ : Ctx) : CType → Set where
           e / σ ≤C e' / σ' → CTerm Γ (e' / σ')
 
   \end{BVerbatim}
-  \caption{Mitte-deterministliku keele arvutustermid.}
+  \caption{Mittedeterministliku keele arvutustermid.}
   \label{fig:nd.cterms}
 \end{figure}
 
@@ -1366,9 +1366,9 @@ data CTerm (Γ : Ctx) : CType → Set where
 \subsection{Mitte-determinismi gradeering}\label{ssec:nd.grading}
 
 Naturaalarvud {\tt ℕ}, nende korrutamine {\tt _*_} ja ühik {\tt 1} moodustavad monoidi.
-Naturaalarvude järjestusseos {\tt _≤_} on refleksiivne {\tt refl≤}, transitiivne {\tt trans≤} ja korrutamise suhtes monotoonne {\tt mon*}.
-Korrutamise vasakühiku {\tt lu*}, paremühiku {\tt ru*} ja assotsiatiivsuse {\tt ass*} ning järjestuse tõestused on toodud töö lähtekoodis.
-Sellega rahuldatakse eeljärjestatud monoidi tingimusi (alaptk~\ref{sssec:ordered-monoid}) ja saab moodustada vastava instantsi {\tt ℕ*} (jn~\ref{fig:nd.ordered-monoid}).
+Naturaalarvude järjestusseos {\tt _≤_} on refleksiivne {\tt refl≤}, transitiivne {\tt trans≤}. Korrutamine on selle seose suhtes monotoonne {\tt mon*}.
+Korrutamise vasakühiku {\tt lu*}, paremühiku {\tt ru*} ja assotsiatiivsuse {\tt ass*} ning monotoonsuse tõestused on toodud töö lähtekoodis.
+Sellega rahuldatakse alaptk~\ref{sssec:ordered-monoid} toodud tingimusi ja saab moodustada eeljärjestatud monoidi {\tt ℕ*} (jn~\ref{fig:nd.ordered-monoid}).
 \begin{figure}
   \begin{BVerbatim}
 ℕ* : OrderedMonoid
@@ -1389,9 +1389,9 @@ Sellega rahuldatakse eeljärjestatud monoidi tingimusi (alaptk~\ref{sssec:ordere
 \end{figure}
 
 
-Ülalt tõkestatud vektor {\tt BVec} (jn~\ref{fig:nd.bvec}) mingi hulga {\tt X} jaoks on indekseeritud naturaalarvuga {\tt n}, mis näitab vektoris olevate elementide suurimat võimalikku arvu.
+Ülalt tõkestatud pikkusega vektorite tüüp {\tt BVec X} (jn~\ref{fig:nd.bvec}) mingi hulga {\tt X} jaoks on indekseeritud naturaalarvuga {\tt n}, mis näitab vektoris olevate elementide suurimat võimalikku arvu.
 Ainsaks konstruktoris on {\tt bv}, mis moodustab täpse pikkusega vektorist ja n-ö ``lõtku'' tõestusest, et selles vektoris ei ole rohkem elemente kui {\tt n}, uue ülalt {\tt n}-iga tõkestatud vektori.
-Ülalt tõkestatud vektori päisesse elemendi lisamine {\tt _∷bv_} lisab selle elemendi täpse pikkusega vektori päisesse ning suurendab võrratuse tõestust ühe võrra.
+Ülalt tõkestatud vektori päisesse elemendi lisamine {\tt _∷bv_} lisab selle elemendi täpse pikkusega vektori päisesse. Uue lõtku tõestus saadakse vanast kasutades asjaolu, et võrratus jääb kehtima, kui mõlemale poole liita 1.
 Vektorite liitmisel {\tt _++bv_} liidetakse täpse pikkusega vektorid omavahel ja elementide lõtku tõestus koostatakse liitmise monotoonsusega kummagi vektori lõtkude tõestusest.
 
 \begin{figure}
@@ -1405,12 +1405,12 @@ x ∷bv (bv xs p) = bv (x ∷ xs) (s≤s p)
 _++bv_ : {X : Set} {m n : ℕ} → BVec X m → BVec X n → BVec X (m + n)
 bv xs p ++bv bv xs' q = bv (xs ++ xs') (mon+ p q)    
   \end{BVerbatim}
-  \caption{Ülalt tõkestatud vektor.}
+  \caption{Ülalt tõkestatud pikkusega vektor.}
   \label{fig:nd.bvec}
 \end{figure}
 
 Eeljärjestatud monoid {\tt ℕ*} ja parametriseeritud tüübikonstruktor {\tt TBV}, mis annab vastava ülalt tõkestatud vektori tüübi, rahuldavad gradeeritud monaadi omadusi (alaptk~\ref{sssec:graded-monad}). Tagastamine {\tt ηBV} koostab üheelemendilise ülalt tõkestatud ja ilma lõtkuta vektori. Sidumine {\tt bindBV} rakendab antud funktsiooni igale vektori elemendile ja liidab saadud ülalt tõkestatud vektorid.
-Vastav gradeeritud monaadi instants {\tt NDBV} on toodud joonisel~\ref{fig:nd.graded-monad}.
+Vastav gradeeritud monaadi definitsioon {\tt NDBV} on toodud joonisel~\ref{fig:nd.graded-monad}.
 
 
 \begin{figure}
@@ -1450,9 +1450,9 @@ Kuna see definitsioon on sama, mis eranditega keele puhul (alaptk~\ref{ssec:exc.
 
 Osa arvutustermide tüübituletusest on esitatud joonisel~\ref{fig:nd.refine}.
 \begin{itemize}
-\item {\tt VAL x} on hästi tüübitud, kui väärtusterm {\tt x} on antud kontekstis tüübitud. Arvutuse efekt {\tt 1} tähistab ühte tulemust, mille tüüp {\tt σ} vastab väärtustermile tuletatud tüübile.
+\item {\tt VAL x} on hästi tüübitud, kui väärtusterm {\tt x} on antud kontekstis tüübitud. Arvutuse efekt {\tt 1} tähistab ühte tulemust, mille tüüp {\tt σ} vastab väärtustermile tuletatud tüübile. See on ülehinnang, kuna hinnang {\tt 1} lubab ka 0 tulemust.
 \item {\tt FAIL σ} korral on efektiks {\tt 0}, kuna ühtki {\tt σ} tüüpi tulemust ei teki.
-\item {\tt CHOOSE t t'} on hästi tüübitud, kui mõlemad arvutustermid {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüüp on määratud vastavalt tuletatud tüüpide {\tt τ} ja {\tt τ'} kombinatsiooniga {\tt τ ⊹C τ'}: efektid liidetakse {\tt _⊹_}-ga ning väärtustüübiks on väärtustüüpide ülemine raja. Kui ülemine raja puudub, siis pole arvutus hästi tüübitud.
+\item {\tt CHOOSE t t'} on hästi tüübitud, kui mõlemad arvutustermid {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüüp on määratud vastavalt tuletatud tüüpide {\tt τ} ja {\tt τ'} kombinatsiooniga {\tt τ ⊹C τ'}: efektid liidetakse {\tt _+_}-ga, sest kogu arvutusel on nii palju tulemusi, kui arvutustel {\tt t} ja {\tt t'} kokku. Väärtustüübiks on väärtustüüpide ülemine raja. Kui ülemine raja puudub, siis pole arvutus hästi tüübitud.
 \end{itemize}
 
 Rafineeritud arvutustermid on toodud joonisel~\ref{fig:nd.cterms}.
@@ -1504,9 +1504,9 @@ refine-cterm Γ (CHOOSE t t')
 Väärtustermide semantika on antud samamoodi nagu eranditega keeles (alaptk~\ref{ssec:exc.semantics}).
 Joonisel~\ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 \begin{itemize}
-\item {\tt VAL x} korral tagastab {\tt η}-ga väärtustermi {\tt x} interpretatsiooni.
+\item {\tt VAL x} korral rakendatatakse väärtustermi {\tt x} interpretatsioonile ühikut {\tt η} ehk moodustatakse temast lõtkuta vektor pikkusega {\tt 1}.
 \item {\tt FAIL σ} korral koostatakse tühi ülalt tõkestatud vektor funktsiooniga {\tt sfail}. Selle vektori elementide tüüp on määratud väärtustüübi {\tt σ} interpretatsiooniga.
-\item {\tt CHOOSE t t'} interpretatsioon vastab mitte-determistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpretatsioonidega koostatud vektorite liitmisega.
+\item {\tt CHOOSE t t'} interpretatsioon vastab mitte-determistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpreteerimisel saadud vektorite liitmisega.
 \item Ülejäänud arvutustermi konstruktorite semantika on nii nagu eranditega keeles.
 \end{itemize}
 \begin{figure}
@@ -1514,7 +1514,7 @@ Joonisel~\ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 sfail : {X : Set} → T 0 X
 sfail = bv []V z≤n
 
-sor : (e e' : E) {X : Set} → T e X → T e' X → T (e ⊹ e') X
+sor : (e e' : ) {X : Set} → T e X → T e' X → T (e + e') X
 sor e e' = _++bv_
 
 ⟦_⟧C : {Γ : Ctx} {τ : CType} → CTerm Γ τ → ⟪ Γ ⟫X → ⟪ τ ⟫C
@@ -1531,12 +1531,12 @@ sor e e' = _++bv_
 
 Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mitte-deterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis~\ref{ssec:exc.optimizations} joonistel~\ref{fig:weakening} ja~\ref{fig:contraction} esitatud.
 
-Mitte-determinismi monaadi spetsiifilised, kuid konkreetsest efektist sõltumatud optimisatsioonid on toodud joonisel~\ref{fig:nd.opt1}.
+Näited mittedeterminismi monaadi jaoks spetsiifilistest, kuid efekti-geneerilistest optimisatsioonidest on toodud joonisel~\ref{fig:nd.opt1}.
 Lihtsustus {\tt fail-or-m} näitab, et valides mitte-determistlikult arvutuste {\tt FAIL X} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
 
 Mitte-deterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel~\ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivusel, mis on tõestatud töö lähtekoodis.
 
-Lihtsustus {\tt fails-earlier} (jn~\ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestunuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL X} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
+Lihtsustus {\tt fails-earlier} (jn~\ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL X} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
 \begin{figure}
   \begin{BVerbatim}
 fail-or-m : {Γ : Ctx} {X : VType} {e : ℕ} (m : CTerm Γ (e / X)) →
@@ -1563,7 +1563,7 @@ fails-earlier m = refl
   \label{fig:nd.opt1}
 \end{figure}
 
-Joonisel~\ref{fig:nd.opt2} on toodud mitte-determinismi efekti spetsiifilised teisendused. Lihtsustus {\tt failure} näitab, et iga arvutuse {\tt m}, mille arvutuse tulemusena ei teki mitte ühtegi väärtust (teisisõnu: arvutusel on ülimalt {\tt 0} väärtust), võib samaväärsena asendada arvutuse ebaõnnestumise konstruktsiooniga {\tt FAIL}. Kuna arvutustermi {\tt m} interpretatsioon antud konteksti interpretatsioonis {\tt ρ} on tühi ülalt {\tt 0}-ga tõkestatud vektor, siis tõestus on triviaalne.
+Joonisel~\ref{fig:nd.opt2} on toodud mõned mittedeterminismi efekti-spetsiifilised teisendused. Lihtsustus {\tt failure} näitab, et iga arvutuse {\tt m}, mille arvutuse tulemusena ei teki mitte ühtegi väärtust (teisisõnu: arvutusel on ülimalt {\tt 0} väärtust), võib samaväärsena asendada arvutuse ebaõnnestumise konstruktsiooniga {\tt FAIL}. Kuna arvutustermi {\tt m} interpretatsioon antud konteksti interpretatsioonis {\tt ρ} on tühi ülalt {\tt 0}-ga tõkestatud vektor, siis tõestus on triviaalne.
 
 Samaväärsus {\tt dup-comp} (jn~\ref{fig:nd.opt2}) näitab, et iga arvutust {\tt m}, mille efekt on ülimalt {\tt 1}, pole vaja topelt arvutada. Põhjendus on järgnev: kui {\tt m} tulemuseks on täpselt üks väärtus, siis {\tt LET_IN_} sidumisel {\tt m}-iga ei teki väärtuseid juurde ja võib kohe selle väärtuse siduda {\tt n}-iga; kui {\tt m} arvutuse tulemusel ühtegi väärtust ei teki, siis pole ka järgnevatesse arvutustesse midagi siduda. Tõestus on antud töö lähtekoodis.
 \begin{figure}
