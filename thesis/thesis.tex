@@ -96,7 +96,7 @@
 \g@addto@macro\@floatboxreset\centering
 \makeatother
 
-\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow.. sometimes
+%\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow.. sometimes
 
 \usepackage{tikz}
 \usepackage[nounderscore]{syntax}
@@ -511,7 +511,7 @@ record OrderedMonoid : Set where
 
     mon : {e e' e'' e''' : E} → e ⊑ e'' → e' ⊑ e''' → e · e' ⊑ e'' · e'''
   \end{BVerbatim}
-  \caption{Eeljärjestatud monoid.}
+  \caption{Eeljärjestatud monoidi andmetüüp.}
   \label{fig:ordered-monoid}
 \end{figure}
 
@@ -592,7 +592,7 @@ record GradedMonad : Set where
             (f : X → T e' Y) → (g : Y → T e'' Z) → (c : T e X) → 
             sub-eq ass (bind g (bind f c)) ≡ bind (bind g ∘ f) c 
   \end{BVerbatim}
-  \caption{Gradeeritud monaad.}
+  \caption{Gradeeritud monaadi andmetüüp.}
   \label{fig:graded-monad}
 \end{figure}
 
@@ -676,11 +676,16 @@ mutual
 \end{figure}
 
 Väärtus- ja arvutustüüpide alamtüüpimise transitiivsus on tõestatud vastastikku joonisel~\ref{fig:exc.subtypes}.
-Kui kahe väärtustüüpide alamtüüpimise väite tõestusest üks on alamtüüpimise refleksiivsuse aksioom {\tt st-refl} kujul, siis transitiivsuse tõestuseks on teine etteantud tõestus.
-Kui üks etteantud tõestustest on koostatud reeglist {\tt st-prod}, siis ka teine tõestus peab olema paratamatult samal kujul.
-Sellisel juhul on transitiivsuse tõestus saadav reegli {\tt st-prod} rakendamisega rekursiivelt määratud transitiivsuse {\tt st-trans} tõestustele.
-Kui üks argument on funktsiooni alamtüüpide {\tt st-func} kujul, siis on samal kujul ka teine argument. Transitiivsuseks on funktsiooni argumentide alamtüüpide kontravariantne transitiivsus {\tt st-trans} ja kehade arvutustüüpide transitiivsus {\tt sct-trans}.
-Arvutustüüpide transitiivsuse {\tt sct-trans} argumendid saavad olla ainult arvutuste alamtüüpide {\tt st-comp} kujul. Vastav transitiivsus koostatakse arvutuste efektide järjestuse transitiivsusest {\tt ⊑-trans} ja väärtustüüpide transitiivsusest {\tt st-trans}.
+Kui kahe väärtustüüpide alamtüüpimise väite tõestusest üks on alamtüüpimise refleksiivsuse aksioomi {\tt st-refl} kujul, siis transitiivsuse tõestuseks on teine etteantud tõestus.
+Kui üks etteantud tõestustest on koostatud reeglist {\tt st-prod},
+siis ka teine tõestus peab olema paratamatult samal kujul.
+Sellisel juhul on transitiivsuse tõestus saadav reegli {\tt st-prod} rakendamisega rekursiivelt määratud tegurite transitiivsuste {\tt st-trans} tõestustele.
+Kui üks etteantud tõestustest on koostatud reeglist {\tt st-func},
+siis on seda paratamatult ka teine tõestus.
+Sellisel juhul tõestatakse transitiivsus reegli {\tt st-func} rakendamisega rekursiivselt väljakutsutud argumentide transitiivsuse {\tt st-trans} ja kehade arvutustüüpide transitiivsuse {\tt sct-trans} tõestustele.
+Tähelepanu tuleb seejuures pöörata funktsiooni argumentide alamtüüpimise transitiivsusele, kuna funktsiooni argumendid on kontravariantsed.
+
+Arvutustüüpide alamtüüpimise transitiivsuse {\tt sct-trans} (jn~\ref{fig:exc.subtypes}) argumendid saavad olla ainult reegli {\tt st-comp} kujul. Transitiivsuse tõestus saadakse reegli {\tt st-comp} rakendamisega efektide järjestuse transitiivsuse {\tt ⊑-trans} ja väärtustüüpide alamtüüpimise transitiivsuse {\tt st-trans} tõestustele.
 
 \subsubsection{Rafineeritud keel}
 
@@ -876,7 +881,7 @@ refined-cterm Γ t with infer-ctype Γ t
 Väärtustermide rafineerimine etteantud kontekstis (jn~\ref{fig:exc.refine-vterm}) matkib väärtustermide tüübituletust (alaptk~\ref{sssec:exc.infer-type}).
 \begin{itemize}
 \item {\tt TT} ja {\tt FF} korral konstrueeritakse vastav rafineeritud väärtusterm.
-\item {\tt ZZ} puhul konstrueeritakse rafineeritud väärtusterm null {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud järgarv {\tt SS} koostatakse termi {\tt t} rafineeringust {\tt u}. Kui väärtustermi {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks on tüübi {\tt ⊤} ainus element {\tt tt}.
+\item {\tt ZZ} puhul konstrueeritakse nullile vastav rafineeritud väärtusterm {\tt ZZ}. {\tt SS t} korral kontrollitakse, et väärtusterm {\tt t} on hästi tüübitud ja on naturaalarvu tüüpi. Rafineeritud järgarv {\tt SS} koostatakse termi {\tt t} rafineeringust {\tt u}. Kui väärtustermi {\tt t} tüübituletus ei õnnestu või tuletatud tüüp ei ole naturaalarvu tüüpi, siis rafineeringu tulemuseks on tüübi {\tt ⊤} ainus element {\tt tt}.
 \item {\tt ⟨ t , t' ⟩} korral kontrollitakse, et mõlemad väärtustermid {\tt t} ja {\tt t'} on kontekstis hästi tüübitud ja rafineeritud paar koostatakse rafineeritud termidest {\tt u} ja {\tt u'}.
 \item {\tt FST t} puhul peab väärtustermile {\tt t} tuletatud tüüp olema korrutistüüp. Rafineeritud projektsiooni saab koostada {\tt t} rafineeringust {\tt u}. {\tt SND t} juhtum on analoogne.
 \item {\tt VAR x} korral koostatakse tõestusest {\tt p}, mis näitab, et naturaalarv {\tt x} on väiksem kui konteksti {\tt Γ} pikkus, rafineeritud muutuja tõestusega, et {\tt x}-ile määratud kohal kontekstis {\tt Γ} on {\tt VAR x} jaoks tuletatud tüüp.
