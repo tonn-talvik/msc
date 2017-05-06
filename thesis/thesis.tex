@@ -80,7 +80,6 @@
 \patchcmd{\ttlh@hang}{\parindent\z@}{\parindent\z@\leavevmode}{}{}
 \patchcmd{\ttlh@hang}{\noindent}{}{}{}
 \makeatother
-%\titleformat{\section}[block]{\color{blue}\Large\bfseries\filcenter}{}{1em}{}
 \titlespacing*{\section}{0pt}{60pt}{18pt}
 \titlespacing*{\subsection}{0pt}{24pt}{12pt}
 \titlespacing*{\subsubsection}{0pt}{12pt}{12pt}
@@ -220,11 +219,11 @@ The thesis is in Estonian and contains 39 pages of text, 4 chapters, \totalfigur
 \section{Sissejuhatus}
 
 \subsection{Taust}
-Tüübisüsteemid võimaldavad vältida programmides teatud käitusvigu.
-Efektisüsteeme võib vaadelda tüübisüsteemide edasiarendusena, kus lisaks tüüpidele on programm annoteeritud täiendava informatsiooniga, mis kirjeldab programmi käitumist ehk tema efekti käitusfaasis.
+Tüübisüsteem võimaldab vältida programmides teatud käitusvigu.
+Efektisüsteemi võib vaadelda tüübisüsteemi edasiarendusena, kus lisaks tüüpidele on programm annoteeritud täiendava informatsiooniga, mis kirjeldab programmi käitumist ehk tema efekti käitusfaasis.
 
 Efektisüsteeme on edukalt kasutatud avaldiste rehkendamise ajastamiseks paralleelarvutamisel, kus efektid piiravad arvutuste võimalikku skoopi \cite{Lucassen1988}.
-Lihtne efektisüsteem on kasutusel ka Java's, kus meetodid on sildistatud eranditega, mis võivad tekkida vastava meetodi käitusel. 
+Lihtne efektisüsteem on kasutusel ka Javas, kus meetodid on sildistatud eranditega, mis võivad tekkida vastava meetodi käitusel. 
 
 Staatilise programmianalüüsiga saab hinnata arvutuste võimalikke efekte.
 See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
@@ -333,7 +332,7 @@ Järgnevalt on selgitatud väärtustermi {\tt vTerm} konstruktorite tähendust.
 \item {\tt ZZ} koostab naturaalarvu 0 ja konstruktor {\tt SS} oma argumendist järgneva naturaalarvu.
 \item {\tt ⟨_,_⟩} koostab oma argumentide paari.
 \item {\tt FST} ja {\tt SND} koostavad vastavalt argumendina antud korrutise esimese ja teise projektsiooni.
-\item {\tt VAR} koostab de~Bruijn'i indeksiga määratud muutuja. Iga selline indeks on naturaalarv, mis näitab seestpoolt mitmendale lambda-sidumisele antud muutuja viitab. Antud töös loendatakse sidumisi alates nullist.
+\item {\tt VAR} koostab de~Bruijn'i indeksiga määratud muutuja. Iga selline indeks on naturaalarv, mis näitab seestpoolt mitmendale sidumisele antud muutuja viitab. Antud töös loendatakse sidumisi alates nullist.
 \item {\tt LAM} on funktsiooniabstraktsiooni konstruktor, seejuures on funktsiooni parameetri väärtustüüp eksplitsiitselt annoteeritud. Funktsiooni kehaks on arvutusterm üle täiendava muutujaga laiendatud skoobi. St lambda seob funktsiooni kehas funktsiooni parameetrile vastava muutuja.
 \end{itemize}
 \begin{figure}
@@ -534,7 +533,7 @@ record OrderedMonoid : Set where
   \label{fig:ordered-monoid}
 \end{figure}
 
-Saab näidata, et erandite efekti hinnag {\tt Exc},
+Saab näidata, et erandite efekti hinnang {\tt Exc},
 korrutamine {\tt _·_}, mille ühikuks on konstruktor {\tt ok},
 ja osaline järjestusseos {\tt _⊑_} moodustavad eeljärjestatud monoidi.
 Vasakühiku tõestus tuleneb vahetult korrutamise definitsioonist.
@@ -718,7 +717,7 @@ Kontekst {\tt Ctx} on defineeritud kui väärtusttüüpide list, mille elementid
 \item {\tt FST} ja {\tt SND} projekteerivad paari tüüpi termist vastavalt esimese või teise korrutatava tüüpi termi.
 \item {\tt VAR} konstrueerib vaba muutuja ja võtab tõestuse, et mingi tüüp on konteksti element, ning annab väärtustermi, mille tüüp on kõnealuse elemendiga määratud tüüp.
 \item {\tt LAM} võtab väärtustüübi ja arvutustermi, mille konteksti on parameetriga antud kontekstiga võrreldes väärtustüübiga laiendatud, ning annab funktsioonile vastava väärtustermi.
-\item {\tt VCAST} suurendab ettantud väärtustermi tüüpi vastavalt etteantud alamtüüpimis tõestusele. See võimaldab eri tüüpi väärtustermide tüüpe ühtlustada, mis on vajalik rafineeritud arvutustermide koostamisel.
+\item {\tt VCAST} suurendab etteantud väärtustermi tüüpi vastavalt etteantud alamtüüpimise tõestusele. See võimaldab eri tüüpi väärtustermide tüüpe ühtlustada, mis on vajalik rafineeritud arvutustermide koostamisel.
 \end{itemize}
 
 \begin{figure}
@@ -769,7 +768,7 @@ Rafineeritud arvutustermid (jn~\ref{fig:exc.refined}) määravad täpselt osaarv
 \item {\tt _\$_} rakendab esimese väärtustermiga antud funktsiooni teise väärtustermiga antud argumendile, seejuures peavad funktsiooni parameetri ja argumendi väärtustüübid ühtima. Saadud arvutuse efekt ja väärtustüüp on määratud funktsiooni keha arvutustüübiga. 
 \item {\tt PREC} eeldab sammude arvuna naturaalarvude tüüpi väärtustermi. Baasarvutuse väärtustüüp on lisatud koos naturaalarvu tüüpi sammuloenduriga sammu arvutustermi konteksti. Täiendava kitsendusena on nõutud, et baasi efekt oleks sammu efektiga korrutamise püsipunkt.
 \item {\tt LET_IN_} lisab esimese arvutustermi väärtustüübi teise arvutustermi konteksti. Kogu arvutuse efektiks on kahe arvutustermi efektide korrutis ning väärtustüüp on määratud teise arvutustermi tüübiga.
-\item {\tt CCAST} suurendab etteantud arvutustermi tüüpi vastavalt alamtüüpimis tõestusele.
+\item {\tt CCAST} suurendab etteantud arvutustermi tüüpi vastavalt alamtüüpimise tõestusele.
 \end{itemize}
 
 
