@@ -173,7 +173,7 @@ Defineeritakse vastav gradeeritud monaad ja viiakse läbi tüübi- ja efektitule
 Näitekeelele antakse semantika ning tuuakse programmiteisenduste näited, ühtlasi tõestades viimaste korrektsust.
 
 
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 38 leheküljel, 4 peatükki, \totalfigures~joonist.
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 39 leheküljel, 4 peatükki, \totalfigures~joonist.
 \clearpage\vspace*{0pt}
 
 \section*{\centering Abstract\\
@@ -200,11 +200,15 @@ A suitable graded monad is also defined.
 Proven optimizing transformations include failed computation and duplicate computation removal.
 Since the base language is the same as for exceptions, much of the framework developed for exceptions can be reused.
 
-The thesis is in Estonian and contains 38 pages of text, 4 chapters, \totalfigures~figures.
+The thesis is in Estonian and contains 39 pages of text, 4 chapters, \totalfigures~figures.
 \clearpage\vspace*{0pt}
 
+\vspace*{60pt}
+\begingroup
 \addtocontents{toc}{\protect\setstretch{0}}
+\def\addvspace#1{}
 \tableofcontents
+\endgroup
 
 \clearpage\vspace*{0pt}
 
@@ -215,10 +219,24 @@ The thesis is in Estonian and contains 38 pages of text, 4 chapters, \totalfigur
 
 \section{Sissejuhatus}
 
-Efektisüsteemid on staatilised programmianalüüsid, mis hindavad arvutuste võimalikke efekte.
+\subsection{Taust}
+Tüübisüsteemid võimaldavad vältida programmides teatud käitusvigu.
+Efektisüsteeme võib vaadelda tüübisüsteemide edasiarendusena, kus lisaks tüüpidele on programm annoteeritud täiendava informatsiooniga, mis kirjeldab programmi käitumist ehk tema efekti käitusfaasis.
+
+Efektisüsteeme on edukalt kasutatud avaldiste rehkendamise ajastamiseks paralleelarvutamisel, kus efektid piiravad arvutuste võimalikku skoopi \cite{Lucassen1988}.
+Lihtne efektisüsteem on kasutusel ka Java's, kus meetodid on sildistatud eranditega, mis võivad tekkida vastava meetodi käitusel. 
+
+Staatilise programmianalüüsiga saab hinnata arvutuste võimalikke efekte.
 See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
 Näiteks saab jälgida, milliseid mälupesasid loetakse ja kirjutatakse, ning selle teadmise alusel eemaldada ``surnud'' (\emph{dead computation}) või liiased arvutused (\emph{duplicated computation}) \cite{Benton2006}.
 
+Klassikaliselt kasutatakse funktsionaalprogrammeerimises mittepuhaste arvutuse tüüpimiseks monaade, st tüübitud on ka arvutused, mitte ainult väärtused.
+See lubab arutleda erinevate arvutuste üle nagu näiteks mittedeterminism, erandid, olek jne, mis ei ole võimalik tavalises lambdaarvutuses \cite{Moggi1989}.
+
+Efektisüsteeme saab kohandada ka monaadide jaoks \cite{Wadler1998}.
+Süstemaatiline lähenemine monaadide ja efektide kokkupanekuks põhineb parameetrilistel efekti monaadidel ehk gradeeritud monaadidel, mis kasutavad eeljärjestatud monoidi efektide võrdlemiseks \cite{Katsumata2014}.
+
+\subsection{Ülesande püstitus}
 % https://courses.cs.ttu.ee/pages/Problem_Statement
 
 % Sissejuhatuses tutvustab autor töö teemat, töö eesmärke, lahendatavat probleemistikku,
@@ -246,6 +264,7 @@ Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaeva
 
 Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toimivad keele juures, mis toetab andmetüüpe, milleks antud töös on naturaalarvud lihtsaima näitena.
 
+\subsection{Ülevaade tööst}
 Teises peatükis realiseeritakse näitekeel, mille efektiks on erandid.
 Järgmiseks defineeritakse selliste efektide hindamine.
 Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt lisades selle arvutustele efektid ja tüübid.
@@ -1628,7 +1647,7 @@ Defineeriti termide tüübituletus ja keele rafineerimine.
 Esitati ebaõnnestunud arvutuse ja korduva arvutuse eemaldamise optimisatsioonid ning näidati selliste teisenduste korrektsust.
 
 Sertifitseeritud programmeerimine on mahukas ettevõtmine, kuna arutelu isegi intuitiivselt õige aritmeetika üle võib osutuda ajakulukaks.
-Kõigele vaatamata õnnestus efektianalüüside ja programmiteisenduste raamistu realiseerimine.
+Kõigele vaatamata õnnestus efektianalüüside ja programmiteisenduste raamistu realiseerimine Agdas andmetüüpe toetavatele keeltele.
 
 \clearpage\vspace*{0pt}
 
