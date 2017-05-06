@@ -825,11 +825,11 @@ Arvutustüübi tuletamisel lähtutakse arvutustüübi kujust.
 \item {\tt TRY t WITH t'} on tüübitud, kui arvutustermid {\tt t} ja {\tt t'} on hästi tüübitud. Kogu arvutuse tüübiks on põhiarvutuse tüübi {\tt τ} parandamine erandikäsitleja tüübiga {\tt τ'}. Arvutustüüpide parandus _⊹C_ on defineeritud efektide paranduse _⊹_ ja väärtustüüpide ülemise raja _⊔V_ abil.
 \item {\tt IF x THEN t ELSE t'} eeldab, et väärtusterm {\tt x} on tõeväärtustüüpi. Kogu arvutuse tüüp on määratud harude tüüpide {\tt τ} ja {\tt τ'} ülemise rajaga {\tt τ ⊔C τ'}.
 \item {\tt f \$ t} korral kontrollitakse, et väärtustermi {\tt f} tüübiks on funktsiooniruum ja väärtustermile {\tt t} tuletatud tüüp on {\tt f} parameetri (ehk uusima vaba muutuja) alamtüüp. Ülejäänud juhtudel ei ole funktsiooni rakendamine hästi tüübitud.
-\item {\tt PREC x t t'} korral kontollitakse viit tingimust.
+\item {\tt PREC x t t'} korral kontrollitakse viit tingimust.
   \begin{itemize}
   \item Väärtusterm {\tt x} peab olema antud kontekstis naturaalarvu tüüpi.
   \item Baasi arvutusterm {\tt t} peab olema antud kontekstis hästi tüübitud.
-  \item Sammu arvutusterm {\tt t'} peab olema tüübitud kontekstis, kuhu on lisatud naturaalarvu tüübi sammuloendur ja arvutustermi {\tt t} väärtustüüpi {\tt σ} akumulaator.
+  \item Sammu arvutusterm {\tt t'} peab olema tüübitud kontekstis, kuhu on lisatud naturaalarvu tüüpi sammuloendur ja arvutustermi {\tt t} väärtustüüpi {\tt σ} akumulaator.
   \item Osaarvutustele {\tt t} ja {\tt t'} tuletatud väärtustüübid peavad olema samad. Selleks kasutatakse lahendajat {\tt _≡V?_}.
   \item Osaarvutuste {\tt t} ja {\tt t'} efektide korrutis ei tohi olla suurem kui baasi {\tt t} efekt. Seda kontrollitakse lahendajaga {\tt _⊑?_}.
   \end{itemize}
@@ -1053,7 +1053,7 @@ Joonisel~\ref{fig:type-semantics} on toodud vastastikku defineeritud väärtus- 
 \item {\tt σ ● σ'} korral tehakse rekursiivsed väljakutsed korrutatavatele ning tulemused korrutatakse Agdas {\tt _×_}.
 \item {\tt σ ⇒ τ} interpretatsioon vastab Agda funktsiooniruumile, mille parameetri ja tulemuse tüüp on interpreteeritud vastavalt väärtustüübist {\tt σ} ja arvutustüübist {\tt τ}.
 \item Arvutustüübi {\tt e / σ} interpreteerimiseks rakendatakse gradeeritud monaadi tüübikonstruktorit {\tt T} efektile {\tt e} ja väärtustüübi {\tt σ} interpretatsioonile.
-\item Tühi kontekst vastab üheelemendilisele tüübile {\tt ⊤}. Mitte-tühja konteksti pea interpreteeritakse ja korrutatakse rekursiivselt interpreteeritud sabaga.
+\item Tühi kontekst vastab üheelemendilisele tüübile {\tt ⊤}. Mittetühja konteksti pea interpreteeritakse ja korrutatakse rekursiivselt interpreteeritud sabaga.
 \end{itemize}
 
 \begin{figure}
@@ -1108,10 +1108,10 @@ Joonisel~\ref{fig:exc.vterm-semantics} on toodud rafineeritud väärtustermi int
 Rafineeritud arvutustermi semantiline interpretatsioon etteantud konteksti interpretatsioonis on toodud joonisel~\ref{fig:exc.cterm-semantics}.
 \begin{itemize}
 \item {\tt VAL x} interpreteerib väärtustermi {\tt x} antud kontekstis ja rakendab sellele gradeeritud monaadi ühikut {\tt η}.
-\item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on tipp-tüüp {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
+\item Kuna arvutustüübi, mille efekt on {\tt err}, interpretatsioon erandite gradeeritud monaadis on üheelemendiline hulk {\tt ⊤}, siis {\tt FAIL σ} koostab selle ainsa elemendi {\tt tt}.
 \item {\tt TRY_WITH_ {e} {e'} t t'} kombineerib osaarvutuste {\tt t} ja {\tt t'} interpretatsioonid vastavalt arvutuste efektidele. Semantiline erandikäsitlus {\tt or-else} käitub järgnevalt. Kui esimese osaarvutuse efektiks on ebaõnnestumine {\tt err}, siis kogu arvutus on määratud erandikäsitlejaga. Kui esimene arvutus õnnestub efektiga {\tt ok}, siis kogu arvutuseks ongi esimene arvutus. Kui esimese arvutuse õnnestumine pole teada, st efektiks on {\tt errok}, siis analüüsitakse ka erandikäsitleja efekti. Kui erandikäsitleja efekt on {\tt err}, siis on kogu arvutus määratud põhiarvutusega. Ülejäänud juhtudel analüüsitakse esimese arvutuse tulemuse kuju: kui esimene arvutus ikkagi õnnestus (konstruktor {\tt just}), siis saab sealt ka kogu arvutuse tulemuse; vastasel korral on kogu arvutuse tulemuseks erandikäsitleja tulemus.
 \item {\tt IF_THEN_ELSE_} korral interpreteeritakse tingimus ja harud tingimuslauses, kusjuures kummagi haru efekt neeldub efektide ülemises rajas.
-\item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtustermi {\tt x} interpretatsioon, baas on arvutustermi {\tt t} interpretatsioon ja sammuks on arvutustermi {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. Semantiline primitiivne rekursioon {\tt primrecT} on defineeritud induktsiooniga sammude arvul. Nulli korral on tulemuseks baasile vastav arvutus {\tt z}. Sammu korral rakendatakse sammule vastavat funktsiooni {\tt s} sammuloendurile {\tt n} ja saadud funktsioon seotakse rekursiive väljakutsega gradeeritud monaadi {\tt bind}-tehte abil. Tulemuse efekt neeldub efektide püsipunkti tõestuse {\tt p} tõttu baasarvutuse efektis.
+\item {\tt PREC x t t' p} interpretatsioon vastab primitiivsele rekursioonile, mille sammude arv on on väärtustermi {\tt x} interpretatsioon, baas on arvutustermi {\tt t} interpretatsioon ja sammuks on arvutustermi {\tt t'} interpretatsioon kontekstis, kuhu on lisatud sammuloendur ja vahetulemuse akumulaator. Semantiline primitiivne rekursioon {\tt primrecT} on defineeritud induktsiooniga sammude arvul. Nulli korral on tulemuseks baasile vastav arvutus {\tt z}. Sammu korral rakendatakse sammule vastavat funktsiooni {\tt s} sammuloendurile {\tt n} ja saadud funktsioon seotakse rekursiivse väljakutsega gradeeritud monaadi {\tt bind}-tehte abil. Tulemuse efekt neeldub efektide püsipunkti tõestuse {\tt p} tõttu baasarvutuse efektis.
 \item {\tt f \$ x} korral rakendatakse väärtustermi {\tt f} interpretatsiooni väärtustermi {\tt x} interpretatsioonile.
 \item {\tt LET_IN_} seob arvutuste interpretatsioonid, kasutades gradeeritud monaadi {\tt bind}-tehet.
 \item {\tt CCAST t p} puhul interpreteeritakse arvutusterm {\tt t} ja konverteeritakse see vastavalt alamtüüpimise tõestusele {\tt p}.
@@ -1289,7 +1289,7 @@ Lihtsustus {\tt dead-comp} (jn~\ref{fig:exc.opt2}) näitab, et kui kindlasti õn
 Lihtsustus {\tt dup-comp} (jn~\ref{fig:exc.opt2}) võimaldab arvutuse {\tt m} topelt arvutamise asendada ühekordse arvutamisega, kui arvutuse {\tt m} efektiks on {\tt errok}. Tõestuses analüüsitakse kõigepealt arvutuse {\tt n} efekti kuju.
 \begin{itemize}
 \item Kui see arvutus ebaõnnestub, siis kogu arvutuse interpretatsioon on paratamatult {\tt tt} ja seega tõestus on triviaalne.
-\item Kui arvutuse {\tt n} efektiks on {\tt ok}, siis analüüsitakse arvutuse {\tt m} interpretatsiooni. Õnnestunud arvutuse {\tt just x} korral näidatakse ülesande tüüpi nõrgendamise {\tt lemma-wkC} ja {\tt m}-i uuritud interpretatsooni {\tt eq}-ga ümberkirjutades, et tulemus järeldub lemmast {\tt lemma-ctrC}. Ebaõnnestunud arvutuse korral pole arvutusse {\tt n} ühtegi väärtust siduda ja kogu arvutuse interpretatsiooniks on {\tt nothing}.
+\item Kui arvutuse {\tt n} efektiks on {\tt ok}, siis analüüsitakse arvutuse {\tt m} interpretatsiooni. Õnnestunud arvutuse {\tt just x} korral näidatakse ülesande tüüpi nõrgendamise {\tt lemma-wkC} ja {\tt m}-i uuritud interpretatsiooni {\tt eq}-ga ümberkirjutades, et tulemus järeldub lemmast {\tt lemma-ctrC}. Ebaõnnestunud arvutuse korral pole arvutusse {\tt n} ühtegi väärtust siduda ja kogu arvutuse interpretatsiooniks on {\tt nothing}.
 \item Kui efektiks on {\tt errok}, siis on tõestus analoogne efekti {\tt ok} juhtumiga, v.a. asjaolu, et arvutuse {\tt n} interpretatsioon on {\tt Maybe} tüüpi.
 \end{itemize}
 
@@ -1336,7 +1336,7 @@ dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ
 \section{Mittedeterminism}
 
 Selles peatükis vaadeldakse keele laiendust mittedeterministliku valikuga.
-Baaskeeleks on tüübitud lambda-arvutus koos tõeväärtuste, naturaalarvude ja paaridega.
+Baaskeeleks on tüübitud lambdaarvutus koos tõeväärtuste, naturaalarvude ja paaridega.
 Kuna baaskeel on sama, mis peatükis~\ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja ainult olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
 
 
@@ -1527,7 +1527,7 @@ refine-cterm Γ (CHOOSE t t')
          (CCAST u' (⊔V-subtype-sym {σ} p))
 -- rest of definition omitted
   \end{BVerbatim}
-  \caption{Mittedetermistliku keele tüübituletus ja rafineerimine.}
+  \caption{Mittedeterministliku keele tüübituletus ja rafineerimine.}
   \label{fig:nd.refine}
 \end{figure}
 
@@ -1537,9 +1537,9 @@ refine-cterm Γ (CHOOSE t t')
 Väärtustermide semantika on antud samamoodi nagu eranditega keeles (alaptk~\ref{ssec:exc.semantics}).
 Joonisel~\ref{fig:nd.semantics} on toodud osa arvutustermide semantikast.
 \begin{itemize}
-\item {\tt VAL x} korral rakendatatakse väärtustermi {\tt x} interpretatsioonile ühikut {\tt η} ehk moodustatakse temast lõtkuta vektor pikkusega {\tt 1}.
+\item {\tt VAL x} korral rakendatakse väärtustermi {\tt x} interpretatsioonile ühikut {\tt η} ehk moodustatakse temast lõtkuta vektor pikkusega {\tt 1}.
 \item {\tt FAIL σ} korral koostatakse tühi ülalt tõkestatud vektor funktsiooniga {\tt sfail}. Selle vektori elementide tüüp on määratud väärtustüübi {\tt σ} interpretatsiooniga.
-\item {\tt CHOOSE t t'} interpretatsioon vastab mittedetermistlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpreteerimisel saadud vektorite liitmisega.
+\item {\tt CHOOSE t t'} interpretatsioon vastab mittedeterministlikule valikule arvutuste {\tt t} ja {\tt t'} vahel. See on realiseeritud vastavate arvutustermide interpreteerimisel saadud vektorite liitmisega.
 \item Ülejäänud arvutustermi konstruktorite semantika on nii nagu eranditega keeles.
 \end{itemize}
 \begin{figure}
@@ -1565,9 +1565,9 @@ sor e e' = _++bv_
 Struktuursed teisendused -- lõdvendamine ja kontraheerimine -- toimivad mittedeterministliku keele puhul analoogselt eranditega keelega. Vastavad tüübisignatuurid on samad, mis alapeatükis~\ref{ssec:exc.optimizations} joonistel~\ref{fig:weakening} ja~\ref{fig:contraction} esitatud.
 
 Näited mittedeterminismi monaadi jaoks spetsiifilistest, kuid efekti-geneerilistest optimisatsioonidest on toodud joonisel~\ref{fig:nd.opt1}.
-Lihtsustus {\tt fail-or-m} näitab, et valides mittedetermistlikult arvutuste {\tt FAIL σ} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
+Lihtsustus {\tt fail-or-m} näitab, et valides mittedeterministlikult arvutuste {\tt FAIL σ} ja {\tt m} vahel on tulemus sama nagu ainult {\tt m} arvutamisel. Kuna konstruktori {\tt CHOOSE} interpretatsioonile vastab osaarvutuste interpreteerimisel saadud tõkestatud vektorite liitmine ja konstruktori {\tt FAIL} interpretatsioon on lihtsalt tühi vektor, siis ekvivalentsi tõestus taandub ülalt tõkestatud vektorite liitmise definitsioonile.
 
-Mittedeterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel~\ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivusel, mis on tõestatud töö lähtekoodis.
+Mittedeterministlik valik on assotsiatiivne. Selline teisendus {\tt choose-ass} on näidatud joonisel~\ref{fig:nd.opt1}. Tõestus tugineb ülalt tõkestatud vektorite liitmise assotsiatiivsusel, mis on tõestatud töö lähtekoodis.
 
 Lihtsustus {\tt fails-earlier} (jn~\ref{fig:nd.opt1}) näitab, et kui siduda ebaõnnestuv arvutus mingi arvutusega {\tt m}, siis tulemus on sama kui kogu arvutus ebaõnnestuks. Sidumise konstruktori {\tt LET_IN_} interpretatsioon seob kõik väärtused esimese osaarvutuse interpretatsioonist, milleks arvutuse {\tt FAIL σ} korral on tühi vektor, teise osaarvutusega. Kuna esimesest osaarvutusest ei tekkinud ühtegi väärtust, siis sidumisel ei saa ka ühtegi väärtust tekkida. Seega on samaväärsus triviaalne.
 \begin{figure}
@@ -1619,9 +1619,9 @@ dup-comp : {e : ℕ} {Γ : Ctx} {σ σ' : VType}
   \label{fig:nd.opt2}
 \end{figure}
 
-Antud töös on mittedetermistliku keele semantika antud ülalt tõkestatud vektoriga,
+Antud töös on mittedeterministliku keele semantika antud ülalt tõkestatud vektoriga,
 kuid seda võib teha ka multihulkadel, kus pole tulemuste järjekord oluline.
-Lisada võib ka nt alumised tõkked, st hinnata listi või mulithulka intervalliga.
+Lisada võib ka nt alumised tõkked, st hinnata listi või multihulka intervalliga.
 Minnes pisut ebatäpsemaks, võib multihulgad asendada ka hulkadega (nt {\tt 0} -- ebaõnnestumine, {\tt 1} -- deterministlik, {\tt 01} -- pooldeterministlik, {\tt 1+} -- mitmikdeterministlik, {\tt N} -- mittedeterministlik), siis saab tõestada surnud arvutuse eemaldamise (\emph{dead computation}) ja arvutuse väljatõstmise (\emph{pure lambda hoist}) lihtsustused \cite{Benton2016}.
 
 \clearpage\vspace*{0pt}
