@@ -62,7 +62,7 @@ run-benton-1 =
         IN (LET (CHOOSE (VAL (natify 3)) (VAL (natify 4))) -- let y ⇐ val 3 or val 4
             IN (LET (LET ADD $ varify 1
                      IN (varify 0 $ varify 1))             --     x + y
-                IN varify 3 $ varify 0))) ⟧c tt             -- in f(...)
+                IN varify 3 $ varify 0))) ⟧C tt             -- in f(...)
 
 tst-benton-1 : run-benton-1 ≡ bv (4 ∷ 5 ∷ 5 ∷ []) (s≤s (s≤s (s≤s z≤n))) -- our list has duplicates too!
 tst-benton-1 = refl
