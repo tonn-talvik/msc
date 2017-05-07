@@ -7,7 +7,7 @@ open import Data.Maybe
 open import Data.Nat
 open import Data.Product
 open import Data.Unit
-open import Relation.Binary.Core
+open import Relation.Binary.PropositionalEquality hiding ([_])
 
 open import Finiteness
 open import Raw
@@ -23,6 +23,7 @@ open Grading.OrderedMonoid ExcEffOM
 
 open import Optimization
 
+-- example valua and computation terms
 ADD : vTerm
 ADD = LAM nat
           (VAL (LAM nat
@@ -37,13 +38,57 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
 BAD-ONE : cTerm
 BAD-ONE = ZZ $ TT
 
+CMPLX : cTerm
+CMPLX = LET TRY
+               IF VAR 0
+               THEN VAL (VAR 0)
+               ELSE FAIL nat
+            WITH VAL ZZ
+        IN VAL (VAR 1)
+
+SMPL : cTerm
+SMPL = VAL (VAR 0)
+
+------------------------------------------
+-- type inference
+
+typing-add : infer-vtype [] ADD ≡ just (nat ⇒ ok / (nat ⇒ ok / nat))
+typing-add = refl
+
+typing-add-3-and-4 : infer-ctype [] ADD-3-and-4 ≡ just (ok / nat)
+typing-add-3-and-4 = refl
+
+typing-bad-one : infer-ctype [] BAD-ONE ≡ nothing
+typing-bad-one = refl
+
+Γ₀ = [ bool ]
+
+typing-cmplx : infer-ctype Γ₀ CMPLX ≡ just (ok / bool)
+typing-cmplx = refl
+
+typing-smpl : infer-ctype Γ₀ SMPL ≡ just (ok / bool)
+typing-smpl = refl
+
+----------------------------------------------
+-- term refinment
+
 refine-add = refine-vterm [] ADD
 refine-add-3-and-4 = refine-cterm [] ADD-3-and-4
 
 sem-add = ⟦ refine-add ⟧V tt
 sem-add-3-and-4 = ⟦ refine-add-3-and-4 ⟧C tt
 
+cmplx-refined = refine-cterm Γ₀ CMPLX -- = ... complex ...
+smpl-refined = refine-cterm Γ₀ SMPL  -- = VAL (VAR (here' refl))
 
+-- optimization
+cmplx-smpl : {ρ : ⟪ Γ₀ ⟫X} →
+            ⟦ refine-cterm Γ₀ CMPLX ⟧C ρ ≡ ⟦ refine-cterm Γ₀ SMPL ⟧C ρ
+cmplx-smpl = refl -- degenerate dead computation
+
+
+-------------------------------------
+--- some other examples
 
 raw1 raw2 raw3 : cTerm
 raw1 = IF FF THEN VAL ZZ ELSE (FAIL nat)
@@ -72,29 +117,3 @@ pp = refl
 ⟦_⟧' t Γ {p = refl} | just τ | t' = ⟦ t' ⟧C
 ⟦_⟧' t Γ {p = ()} | nothing | t'
 
-
-
--------------------------------------
-
-CMPLX SMPL : cTerm
-CMPLX = LET TRY
-               IF VAR 0
-               THEN VAL (VAR 0)
-               ELSE FAIL nat
-            WITH VAL ZZ
-        IN VAL (VAR 1)
-SMPL = VAL (VAR 0)
-
-
-
-Γ₀ = [ bool ]
-
-cmplx-type = infer-ctype Γ₀ CMPLX     -- = just (ok / bool)
-cmplx-refined = refine-cterm Γ₀ CMPLX -- = ... complex ...
-
-smpl-type = infer-ctype Γ₀ SMPL      -- = just (ok / bool)
-smpl-refined = refine-cterm Γ₀ SMPL  -- = VAL (VAR (here' refl))
-
-opt-cplx : {ρ : ⟪ Γ₀ ⟫X} →
-           ⟦ cmplx-refined ⟧C ρ ≡ ⟦ smpl-refined ⟧C ρ
-opt-cplx = refl -- degenerate dead computation

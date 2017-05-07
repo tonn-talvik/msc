@@ -44,6 +44,7 @@
 \newunicodechar{⊑}{$\sqsubseteq$}
 \newunicodechar{ℕ}{$\mathbb{N}$}
 \newunicodechar{∘}{$\circ$}
+\newunicodechar{₀}{\textsubscript{0}}
 \newunicodechar{₁}{\textsubscript{1}}
 \newunicodechar{₂}{\textsubscript{2}}
 \newunicodechar{₃}{\textsubscript{3}}
@@ -95,7 +96,7 @@
 \g@addto@macro\@floatboxreset\centering
 \makeatother
 
-%\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow.. sometimes
+\usepackage{flafter} % this is required by TTU template, but makes figures hard to follow.. sometimes
 
 \usepackage{tikz}
 \usepackage[nounderscore]{syntax}
@@ -114,7 +115,7 @@
 \iffalse
 \begin{BVerbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ● → ⇒ ⟹ _ ℕ 
-∘ ₁ ₂ ₃ ⊤
+∘ ₀ ₁ ₂ ₃ ⊤
 \end{BVerbatim}
 \fi
 % ------------------------------------------------------------
@@ -172,7 +173,7 @@ Defineeritakse vastav gradeeritud monaad ja viiakse läbi tüübi- ja efektitule
 Näitekeelele antakse semantika ning tuuakse programmiteisenduste näited, ühtlasi tõestades viimaste korrektsust.
 
 
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 39 leheküljel, 4 peatükki, \totalfigures~joonist.
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 43 leheküljel, 4 peatükki, \totalfigures~joonist.
 \clearpage\vspace*{0pt}
 
 \section*{\centering Abstract\\
@@ -207,7 +208,7 @@ A suitable graded monad is also defined.
 Proven optimizing transformations include failed computation and duplicate computation removal.
 Since the base language is the same as for exceptions, much of the framework developed for exceptions can be reused.
 
-The thesis is in Estonian and contains 39 pages of text, 4 chapters, \totalfigures~figures.
+The thesis is in Estonian and contains 43 pages of text, 4 chapters, \totalfigures~figures.
 \clearpage\vspace*{0pt}
 
 \vspace*{60pt}
@@ -398,6 +399,17 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
 
 BAD-ONE : cTerm
 BAD-ONE = ZZ $ TT
+
+CMPLX : cTerm
+CMPLX = LET TRY
+               IF VAR 0
+               THEN VAL (VAR 0)
+               ELSE FAIL nat
+            WITH VAL ZZ
+        IN VAL (VAR 1)
+
+SMPL : cTerm
+SMPL = VAL (VAR 0)
   \end{BVerbatim}
   \caption{Näidisavaldised eranditega keeles.}
   \label{fig:exc.raw.ex1}
@@ -417,6 +429,14 @@ Harilikus tüübitud lambdaarvutuses, kus de~Bruijn'i indeksite asemel kasutatak
 \end{split}
 \end{equation*}
 
+Arvutusterm {\tt CMPLX} (jn~\ref{fig:exc.raw.ex1}) eeldab, et kontekstis on vähemalt üks tõeväärtustüüpi muutuja.
+Vastavalt selle muutuja väärtusele arvutatakse tingimuslause üks harudest: tõese korral tagastatakse selle muutuja väärtus, väära korral aga naturaalarvu tüüpi arvutus ebaõnnestub.
+Antud töös loetakse tõeväärtused naturaalarvude alamtüübiks ja seega on selline tingimuslause hästi tüübitud.
+Edasi lisatakse sellele tingimuslause arvutusel erandikäsitleja, mis tagastab väärtuse null.
+Kogu erandikäsitlejaga arvutus on seotud arvutusse, mis tagastab konteksti teise muutuja, milleks on esialgse konteksti esimene muutuja.
+
+Arvutusterm {\tt SMPL} (jn~\ref{fig:exc.raw.ex1}) tagastab lihtsalt kontekstis oleva esimese muutuja.
+Alapeatükis~\ref{ssec:exc.optimizations} näidatakse, et termid {\tt CMPLX} ja {\tt SMPL} on semantiliselt ekvivalentsed kontekstis, kus on ainult tõeväärtustüüpi muutuja.
 
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
@@ -887,6 +907,39 @@ infer-ctype Γ (LET t IN t') with infer-ctype Γ t
   \label{fig:exc.infer-ctype}
 \end{figure}
 
+Alapeatükis~\ref{ssec:exc.raw} toodud näidisavaldiste (jn~\ref{fig:exc.raw.ex1}) tüüpimised on esitatud joonisel~\ref{fig:exc.typing}.
+Tüüpimine {\tt typing-add} väidab, et väärtusterm {\tt ADD} on hästi tüübitud. Väärtustermi tüübiks on naturaalarvu tüüpi parameetriga funktsiooniruum, mis omakorda tagastab kindlasti funktsiooniruumi, mille parameeter on naturaalarv ja tagastab kindlasti naturaalarvu. Curry'mise tõttu võib seega väärtustermi {\tt ADD} vaadelda kui funktsiooni, mis võtab kaks naturaalarvu ja tagastab naturaalarvu.
+
+Tüüpimine {\tt typing-add-3-and-4} (jn~\ref{fig:exc.typing}) väidab, et arvutusterm {\tt ADD-3-and-4} on hästi tüübitud ning kindlasti tagastab naturaalarvu.
+Tüüpimine {\tt typing-bad-one} väidab, et arvutustermile {\tt BAD-ONE} ei õnnestunud tüüpi tuletada.
+
+Tüüpimised {\tt typing-cmplx} ja {\tt typing-smpl} väidavad, et termid {\tt CMPLX} ja {\tt SMPL} on hästi tüübitud ning tagastavad kindlasti tõeväärtuse. Kumbki tüübitules teostati kontekstis {\tt Γ₀}, mis koosneb ühest ainsast tõeväärtustüüpi muutujast.
+
+Kõik mainitud tüüpimise tõestused tulenevad vahetult väärtus- ja arvutustermide tüübituletuste {\tt infer-vtype} ja {\tt infer-ctype} definitsioonidest.
+
+\begin{figure}
+  \begin{BVerbatim}
+typing-add : infer-vtype [] ADD ≡ just (nat ⇒ ok / (nat ⇒ ok / nat))
+typing-add = refl
+
+typing-add-3-and-4 : infer-ctype [] ADD-3-and-4 ≡ just (ok / nat)
+typing-add-3-and-4 = refl
+
+typing-bad-one : infer-ctype [] BAD-ONE ≡ nothing
+typing-bad-one = refl
+
+Γ₀ = [ bool ]
+
+typing-cmplx : infer-ctype Γ₀ CMPLX ≡ just (ok / bool)
+typing-cmplx = refl
+
+typing-smpl : infer-ctype Γ₀ SMPL ≡ just (ok / bool)
+typing-smpl = refl
+  \end{BVerbatim}
+  \caption{Eranditega keele näidisavaldiste tüüpimine.}
+  \label{fig:exc.typing}
+\end{figure}
+
 \subsubsection{Termide rafineerimine}
 
 Kui n-ö ``toorele'' termile õnnestub mingis kontekstis tuletada tüüp, siis saab sellest termist konstrueerida n-ö ``rafineeritud'' termi, mis ``teab'' oma konteksti ja tüüpi.
@@ -1343,12 +1396,24 @@ dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ
 ... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
                   = lemma-ctrC (x , ρ) here n
 ... | nothing | _ = refl
+
+                  
+cmplx-smpl : {ρ : ⟪ Γ₀ ⟫X} →
+            ⟦ refine-cterm Γ₀ CMPLX ⟧C ρ ≡ ⟦ refine-cterm Γ₀ SMPL ⟧C ρ
+cmplx-smpl = refl
   \end{BVerbatim}
   \caption{Erandite monaadi efekti-spetsiifilised optimisatsioonid.}
   \label{fig:exc.opt2}
 \end{figure}
 
 On ka monaadist sõltumatuid optimisatsioone, mille korrektsus järeldub juba üldistest monaadi seadustest ning mis seetõttu kehtivad mitte ainult erandite vaid ka iga teise monaadi jaoks.
+
+Alapeatükis~\ref{ssec:exc.raw} toodud näitetermidele {\tt CMPLX} ja {\tt SMPL} (jn~\ref{fig:exc.raw.ex1}) tuletati tüübid alapeatükis~\ref{sssec:exc.infer-type}.
+Kuna tüübituletus õnnestus kontekstis {\tt Γ₀}, siis saab neid arvutusterme selles samas kontekstis rafineerida.
+Lihtsustus {\tt cmplx-smpl} (jn~\ref{fig:exc.opt2}) väidab, et saadud rafineeritud termide interpretatsioonid sellises kontekstis on ekvivalentsed.
+Tõestus tuleneb triviaalselt arvutustermide interpreteerimise definitsioonist.
+Selgitusena tasub märkida, et tegu on degenereerunud näitena lihtsustusest {\tt dead-comp}, kuna tingimuslause ja erandikäsitlejaga arvutuse tulemust ei pruugita.
+Siiski, eelnevalt peab efektisüsteem veenduma, et see arvutus kindlasti õnnestub, kuna vastasel juhul poleks lihtsustus korrektne.
 
 \clearpage\vspace*{0pt}
 
