@@ -1295,6 +1295,9 @@ Mõned erandite monaadi spetsiifilised, efekti-spetsiifilised optimisatsioonid o
 Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL σ}.
 Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
 
+Kuna tingimuslause {\tt IF_THEN_ELSE_} arvutuse efektiks on harude efektide ülemine raja, siis juhul kui mõlemad harud ebaõnnestuvad, on ka kogu arvutuse efektiks {\tt err} ja seega saab seda lihtsustada analoogselt {\tt failure} arutelule.
+Samaväärsus on näidatud tõestusega {\tt both-fail} (jn~\ref{fig:exc.opt2}).
+
 Lihtsustus {\tt dead-comp} (jn~\ref{fig:exc.opt2}) näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemma-wkC} rakendus.
 
 Lihtsustus {\tt dup-comp} (jn~\ref{fig:exc.opt2}) võimaldab arvutuse {\tt m} topelt arvutamise asendada ühekordse arvutamisega, kui arvutuse {\tt m} efektiks on {\tt errok}. Tõestuses analüüsitakse kõigepealt arvutuse {\tt n} efekti kuju.
@@ -1310,13 +1313,17 @@ failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (err / σ)) →
           ⟦ m ⟧C ≡ ⟦ FAIL σ ⟧C
 failure m = refl
 
+both-fail : {Γ : Ctx} {σ : VType}
+            (m : VTerm Γ bool) (n n' : CTerm Γ (err / σ)) →
+            (ρ : ⟪ Γ ⟫X) → 
+            ⟦ IF m THEN n ELSE n' ⟧C ρ ≡ ⟦ FAIL σ ⟧C ρ
+both-fail m n n' ρ = refl
 
 dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
             (m : CTerm Γ (ok / σ)) (n : CTerm Γ (e / σ' ) ) →
             (ρ : ⟪ Γ ⟫X) → 
             ⟦ LET m IN (wkC zero n) ⟧C ρ ≡ ⟦ n ⟧C ρ
 dead-comp m n ρ = lemma-wkC ρ (⟦ m ⟧C ρ) zero n
-
 
 errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
 errok-seq e = sym (ass {errok} {errok} {e})

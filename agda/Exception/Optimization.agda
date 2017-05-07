@@ -144,6 +144,13 @@ failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (err / σ)) →
 failure m = refl
 
 
+both-fail : {Γ : Ctx} {σ : VType}
+            (m : VTerm Γ bool) (n n' : CTerm Γ (err / σ)) →
+            (ρ : ⟪ Γ ⟫X) → 
+            ⟦ IF m THEN n ELSE n' ⟧C ρ ≡ ⟦ FAIL σ ⟧C ρ
+both-fail m n n' ρ = refl
+
+
 dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
             (m : CTerm Γ (ok / σ)) (n : CTerm Γ (e / σ')) →
             (ρ : ⟪ Γ ⟫X) → 

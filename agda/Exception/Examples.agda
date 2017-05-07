@@ -36,11 +36,11 @@ ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
 BAD-ONE : cTerm
 BAD-ONE = ZZ $ TT
 
-infer-add = refine-vterm [] ADD
-infer-add-3-and-4 = refine-cterm [] ADD-3-and-4
+refine-add = refine-vterm [] ADD
+refine-add-3-and-4 = refine-cterm [] ADD-3-and-4
 
-sem-add = ⟦ infer-add ⟧V tt
-sem-add-3-and-4 = ⟦ infer-add-3-and-4 ⟧C tt
+sem-add = ⟦ refine-add ⟧V tt
+sem-add-3-and-4 = ⟦ refine-add-3-and-4 ⟧C tt
 
 
 
@@ -70,10 +70,6 @@ pp = refl
 ⟦_⟧' t Γ {p = p} with infer-ctype Γ t | refine-cterm Γ t
 ⟦_⟧' t Γ {p = refl} | just τ | t' = ⟦ t' ⟧C
 ⟦_⟧' t Γ {p = ()} | nothing | t'
-
-
---xxx : {e : Exc} → T e ℕ
---xxx = ⟦ raw3 ⟧ [] tt
 
 
 
