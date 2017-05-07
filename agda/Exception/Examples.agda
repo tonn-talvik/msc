@@ -9,6 +9,7 @@ open import Data.Product
 open import Data.Unit
 open import Relation.Binary.Core
 
+open import Finiteness
 open import Raw
 open import Types
 open import Refined
@@ -73,3 +74,27 @@ pp = refl
 
 
 
+-------------------------------------
+
+CMPLX SMPL : cTerm
+CMPLX = LET TRY
+               IF VAR 0
+               THEN VAL (VAR 0)
+               ELSE FAIL nat
+            WITH VAL ZZ
+        IN VAL (VAR 1)
+SMPL = VAL (VAR 0)
+
+
+
+Γ₀ = [ bool ]
+
+cmplx-type = infer-ctype Γ₀ CMPLX     -- = just (ok / bool)
+cmplx-refined = refine-cterm Γ₀ CMPLX -- = ... complex ...
+
+smpl-type = infer-ctype Γ₀ SMPL      -- = just (ok / bool)
+smpl-refined = refine-cterm Γ₀ SMPL  -- = VAL (VAR (here' refl))
+
+opt-cplx : {ρ : ⟪ Γ₀ ⟫X} →
+           ⟦ cmplx-refined ⟧C ρ ≡ ⟦ smpl-refined ⟧C ρ
+opt-cplx = refl -- degenerate dead computation
