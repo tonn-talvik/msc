@@ -281,7 +281,11 @@ Mainitud tarkvarapaketid on tasuta installeeritavad Ubuntu 16.04 LTS või teiste
 \section{Erandid}\label{sec:exc}
 
 Selles töös vaadeldavaks baaskeeleks on tüübitud lambdaarvutus koos tõeväärtuste, naturaalarvude ja paaridega.
-Selles peatükis vaadeldakse keele laiendust eranditega. 
+Selles peatükis vaadeldakse keele laiendust eranditega.
+
+Keele efekt seisneb selles, et arvutus kas õnnestub, mille korral tagastatakse väärtus, või ebaõnnestub, mille korral väärtust ei teki.
+Staatilise analüüsiga saab iga arvutuse efekti hinnata järgnevalt: kindel õnnestumine, kindel ebaõnnestumine või staatiliselt teadmata, kas arvutus õnnestub või mitte.
+Edaspidi öeldakse efekti hinnangu kohta ka lihtsalt efekt.
 
 Järgnevates alapeatükkides defineeritakse selline keel Agdas,
 konstrueeritakse tüübituletus koos efektianalüüsiga,
@@ -1329,12 +1333,16 @@ dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ
   \label{fig:exc.opt2}
 \end{figure}
 
-\clearpage\vspace*{0pt}
+On ka monaadist sõltumatuid optimisatsioone, mille korrektsus järeldub juba üldistest monaadi seadustest ning mis seetõttu kehtivad mitte ainult erandite vaid ka iga teise monaadi jaoks.
 
+\clearpage\vspace*{0pt}
 
 \section{Mittedeterminism}
 
 Selles peatükis vaadeldakse keele laiendust mittedeterministliku valikuga.
+Keele efekt seisneb selles, et arvutuse tulemuseks võib olla null või rohkem väärtust.
+Staatilise hinnanguna tõkestatakse väärtuste arvu ülevalt.
+
 Baaskeeleks on tüübitud lambdaarvutus koos tõeväärtuste, naturaalarvude ja paaridega.
 Kuna baaskeel on sama, mis peatükis~\ref{sec:exc}, siis järgnevates alapeatükkides on toodud välja ainult olulisemad muudatused keele laienduse, tüübituletuse, semantika ja efektianalüüsi osas.
 
@@ -1360,6 +1368,7 @@ Sellise keele rafineeritud ja rafineerimata arvutustermid on toodud joonisel~\re
 Väärtustermid on mõlemal keelel defineeritud samamoodi.
 Muutunud on arvutuste efektide tüüp {\tt E}, mis defineeritakse alapeatükis~\ref{ssec:nd.grading}.
 Deterministliku rafineeritud arvutustermi {\tt VAL v}, millel on täpselt üks tulemus, efekti hinnanguks on {\tt 1} ja tulemuseta arvutustermi {\tt FAIL} hinnanguks on {\tt 0}.
+Tasub märkida, et {\tt 1} on ülehinnang, kuna lubab nii null kui ka täpselt üks tulemust.
 
 \begin{figure}
   \begin{BVerbatim}
