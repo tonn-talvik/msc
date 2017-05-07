@@ -1658,12 +1658,19 @@ Töö käigus valmisid programmiteisendused, mh ``surnud'' arvutuse ja korduva a
 
 Töö teises pooles kasutati mittedeterminismi toetavat näitekeelt.
 Keele semantika andmiseks loodi ülalt tõkestatud vektori andmestruktuur.
-Sellega koos anti naturaalarvude korrutamise jaoks gradeeritud monaadi instants.
+Sellega koos anti naturaalarvude korrutamise jaoks sobiv gradeeritud monaad.
 Defineeriti termide tüübituletus ja keele rafineerimine.
 Esitati ebaõnnestunud arvutuse ja korduva arvutuse eemaldamise optimisatsioonid ning näidati selliste teisenduste korrektsust.
 
 Sertifitseeritud programmeerimine on mahukas ettevõtmine, kuna arutelu isegi intuitiivselt õige aritmeetika üle võib osutuda ajakulukaks.
-Kõigele vaatamata õnnestus efektianalüüside ja programmiteisenduste raamistu realiseerimine Agdas andmetüüpe toetavatele keeltele.
+Antud töö käigus ei jõutud tõestada tüübituletuste ja rafineerimiste korrektsust.
+Kuna optimeerimine eeldas, et semantika on antud rafineeritud keelele, siis on kriitilise tähtsusega kontrollida, et rafineerimine säilitab ``toores'' keeles kirjutatud programmi, mida tahetakse optimeerida.
+
+Lisaks tüübituletuste ja rafineerimiste korrektsuse tõestamisele saab tööd jätkata, lisades monaadi seadustele tuginevad optimeerimised või hinnata mittedeterministliku keele tulemuste arvu nii ülevalt kui ka alt.
+Erandite ja mittedeterminismi näidetele sarnaselt on võimalik baaskeelt laiendada muteeritava olekuga, mille efektiks on oleku lugemine ja kirjutamine, ja tuua sellele keelele spetsiifilised optimisatsioonid.
+
+
+Kõigele vaatamata õnnestus efektianalüüside ja programmiteisenduste raamistu realiseerimine Agdas andmetüüpe toetavatele keeltele ja seega saab idee tõestuse lugeda edukaks.
 
 \clearpage\vspace*{0pt}
 
