@@ -179,10 +179,18 @@ Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 39 leheküljel, 4 pea
 Certification of effect-analysis based program~transformations}
 
 Type-and-effect systems are used to statically analyze program dynamic behaviour.
-This allows to perform program optimizations.
+This allows to perform certain program optimizations.
+
+Functional languages distinguish between value types and computation types.
+Monads are used to reason about the latter.
+
+Recent research marries monadic computations and effect systems.
+A systematic approach has been given using graded monads, which employs preordered monoids.
 
 The goal of this thesis is to give a proof-of-concept framework for effect-analysis based program transformations.
 The work is carried out in a dependently typed functional programming language called Agda.
+Such expressive type system allows to provide a proof of program's certification as it is written.
+Also, Agda itself is an experimental language and such task has not been tried earlier in this language.
 
 The first example language considered is a typed lambda calculus extended with exceptions.
 The starting point is raw terms for which types and effects can be inferred.
