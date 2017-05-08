@@ -139,29 +139,31 @@ pp = refl
 
 --------------------------------
 
-good-raw : cTerm
-good-raw = LET (VAR 0) $ ZZ
-           IN LET (VAR 1) $ ZZ
-              IN VAL ⟨ VAR 0 , VAR 1 ⟩
-better-raw : cTerm
-better-raw = LET (VAR 0) $ ZZ
-             IN VAL ⟨ VAR 0 , VAR 0 ⟩
+CLC2-n-PAIR : cTerm
+CLC2-n-PAIR = LET (VAR 0) $ ZZ
+              IN LET (VAR 1) $ ZZ
+                 IN VAL ⟨ VAR 0 , VAR 1 ⟩
+CLC1-n-PAIR : cTerm
+CLC1-n-PAIR = LET (VAR 0) $ ZZ
+              IN VAL ⟨ VAR 0 , VAR 0 ⟩
 
-init-Γ = [ nat ⇒ errok / nat ]
+Γ₁ = [ nat ⇒ errok / nat ]
 
-good-typing : infer-ctype init-Γ good-raw ≡ just (errok / (nat ● nat))
-good-typing = refl
-better-typing : infer-ctype init-Γ better-raw ≡ just (errok / (nat ● nat))
-better-typing = refl
+typing-clc2-n-pair : infer-ctype Γ₁ CLC2-n-PAIR
+                     ≡ just (errok / (nat ● nat))
+typing-clc2-n-pair = refl
 
-refined-good = refine-cterm init-Γ good-raw
-refined-better = refine-cterm init-Γ better-raw
+typing-clc1-n-pair : infer-ctype Γ₁ CLC1-n-PAIR
+                     ≡ just (errok / (nat ● nat))
+typing-clc1-n-pair = refl
 
-optimize : (ρ : ⟪ init-Γ ⟫X) →
-           ⟦ refined-good ⟧C ρ ≡ ⟦ refined-better ⟧C ρ
-optimize ρ = dup-comp (refine-cterm init-Γ
-                                    ((VAR 0) $ ZZ))
-                      (refine-cterm (nat ∷ nat ∷ init-Γ)
-                                    (VAL ⟨ VAR 0 , VAR 1 ⟩))
-                      ρ
+
+clc-twice : (ρ : ⟪ Γ₁ ⟫X) →
+            ⟦ refine-cterm Γ₁ CLC2-n-PAIR ⟧C ρ
+            ≡ ⟦ refine-cterm Γ₁ CLC1-n-PAIR ⟧C ρ
+clc-twice ρ = dup-comp (refine-cterm Γ₁
+                                     ((VAR 0) $ ZZ))
+                       (refine-cterm (nat ∷ nat ∷ Γ₁)
+                                     (VAL ⟨ VAR 0 , VAR 1 ⟩))
+                       ρ
 

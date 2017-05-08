@@ -174,7 +174,7 @@ Defineeritakse vastav gradeeritud monaad ja viiakse läbi tüübi- ja efektitule
 Näitekeelele antakse semantika ning tuuakse programmiteisenduste näited, ühtlasi tõestades viimaste korrektsust.
 
 
-Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 44 leheküljel, 4 peatükki, \totalfigures~joonist.
+Lõputöö on kirjutatud eesti keeles ning sisaldab teksti 46 leheküljel, 4 peatükki, \totalfigures~joonist.
 \clearpage\vspace*{0pt}
 
 \section*{\centering Abstract\\
@@ -209,7 +209,7 @@ A suitable graded monad is also defined.
 Proven optimizing transformations include failed computation and duplicate computation removal.
 Since the base language is the same as for exceptions, much of the framework developed for exceptions can be reused.
 
-The thesis is in Estonian and contains 44 pages of text, 4 chapters, \totalfigures~figures.
+The thesis is in Estonian and contains 46 pages of text, 4 chapters, \totalfigures~figures.
 \clearpage\vspace*{0pt}
 
 \vspace*{60pt}
@@ -398,8 +398,10 @@ ADD-3-and-4 : cTerm
 ADD-3-and-4 = LET ADD $ (SS (SS (SS ZZ)))
               IN VAR 0 $ (SS (SS (SS (SS ZZ))))
 
+              
 BAD-ONE : cTerm
 BAD-ONE = ZZ $ TT
+
 
 CMPLX : cTerm
 CMPLX = LET TRY
@@ -411,6 +413,16 @@ CMPLX = LET TRY
 
 SMPL : cTerm
 SMPL = VAL (VAR 0)
+
+
+CLC2-n-PAIR : cTerm
+CLC2-n-PAIR = LET (VAR 0) $ ZZ
+              IN LET (VAR 1) $ ZZ
+                 IN VAL ⟨ VAR 0 , VAR 1 ⟩
+
+CLC1-n-PAIR : cTerm
+CLC1-n-PAIR = LET (VAR 0) $ ZZ
+              IN VAL ⟨ VAR 0 , VAR 0 ⟩
   \end{BVerbatim}
   \caption{Näidisavaldised eranditega keeles.}
   \label{fig:exc.raw.ex1}
@@ -449,6 +461,21 @@ Samaväärsust on parem märgata, kui esitada need termid harjumuspärases sünt
   SMPL  & := & val x   & &\\
 \end{tabular}
 \end{center}
+
+Arvutustermid {\tt CLC2-n-PAIR} ja {\tt CLC1-n-PAIR} (jn~\ref{fig:exc.raw.ex1}) eeldavad, et kontekstis on vähemalt üks funktsioon, mis võtab naturaalarvu ja tagastab naturaalarvu.
+Seejuures pole oluline, kas see funktsioon õnnestub või mitte.
+Arvutusterm {\tt CLC2-n-PAIR} rakendab kontekstis olevat funktsiooni 2 korda argumendile null.
+Saadud tulemustest koostatakse paar.
+Arvutusterm {\tt CLC1-n-PAIR} rakendab seda funktsiooni 1 korra argumendile null ning koostab paari, kus mõlemaks komponendiks on rakendamise tulemus.
+Harjumuspärases süntaksis saab need termid esitada järgnevalt:
+\begin{equation*}
+\begin{split}
+  \text{CLC2-n-PAIR} &:= \text{let}~x=f~0~\text{in}~\text{let}~y=f~0~\text{in}~\text{val}~(x,y)\\
+  \text{CLC1-n-PAIR} &:= \text{let}~x=f~0~\text{in}~\text{val}~(x,x)
+\end{split}
+\end{equation*}
+Nende arvutustermide samaväärsust näidatakse alapeatükis~\ref{ssec:exc.optimizations}.
+
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
 Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestus.
@@ -930,7 +957,11 @@ Tüüpimine {\tt typing-add} väidab, et väärtusterm {\tt ADD} on hästi tüü
 Tüüpimine {\tt typing-add-3-and-4} (jn~\ref{fig:exc.typing}) väidab, et arvutusterm {\tt ADD-3-and-4} on hästi tüübitud ning kindlasti tagastab naturaalarvu.
 Tüüpimine {\tt typing-bad-one} väidab, et arvutustermile {\tt BAD-ONE} ei õnnestunud tüüpi tuletada.
 
-Tüüpimised {\tt typing-cmplx} ja {\tt typing-smpl} väidavad, et termid {\tt CMPLX} ja {\tt SMPL} on hästi tüübitud ning tagastavad kindlasti tõeväärtuse. Kumbki tüübituletus teostati kontekstis {\tt Γ₀}, mis koosneb ühest ainsast tõeväärtustüüpi muutujast.
+Tüüpimised {\tt typing-cmplx} ja {\tt typing-smpl} väidavad, et termid {\tt CMPLX} ja {\tt SMPL} on hästi tüübitud ning tagastavad kindlasti tõeväärtuse.
+Kumbki tüübituletus teostati kontekstis {\tt Γ₀}, mis koosneb ühest ainsast tõeväärtustüüpi muutujast.
+
+Tüüpimised {\tt typing-clc2-n-pair} ja {\tt typing-clc1-n-pair} väidavad, et termid on hästi tüübitud ning tagastavad naturaalarvude paari.
+Kumbki tüübituletus teostati kontekstis {\tt Γ₁}, mis koosneb ühest ainsast funktsioonist, mis võtab ja tagastab naturaalarvu ning mille õnnestumine pole staatiliselt teada.
 
 Kõik mainitud tüüpimise tõestused tulenevad vahetult väärtus- ja arvutustermide tüübituletuste {\tt infer-vtype} ja {\tt infer-ctype} definitsioonidest.
 
@@ -952,6 +983,16 @@ typing-cmplx = refl
 
 typing-smpl : infer-ctype Γ₀ SMPL ≡ just (ok / bool)
 typing-smpl = refl
+
+Γ₁ = [ nat ⇒ errok / nat ]
+
+typing-clc2-n-pair : infer-ctype Γ₁ CLC2-n-PAIR
+                     ≡ just (errok / (nat ● nat))
+typing-clc2-n-pair = refl
+
+typing-clc1-n-pair : infer-ctype Γ₁ CLC1-n-PAIR
+                     ≡ just (errok / (nat ● nat))
+typing-clc1-n-pair = refl
   \end{BVerbatim}
   \caption{Eranditega keele näidisavaldiste tüüpimine.}
   \label{fig:exc.typing}
@@ -1430,11 +1471,13 @@ failure : {Γ : Ctx} {σ : VType} (m : CTerm Γ (err / σ)) →
           ⟦ m ⟧C ≡ ⟦ FAIL σ ⟧C
 failure m = refl
 
+
 both-fail : {Γ : Ctx} {σ : VType}
             (m : VTerm Γ bool) (n n' : CTerm Γ (err / σ)) →
             (ρ : ⟪ Γ ⟫X) → 
             ⟦ IF m THEN n ELSE n' ⟧C ρ ≡ ⟦ FAIL σ ⟧C ρ
 both-fail m n n' ρ = refl
+
 
 dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
             (m : CTerm Γ (ok / σ)) (n : CTerm Γ (e / σ')) →
@@ -1442,9 +1485,20 @@ dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
             ⟦ LET m IN (wkC here n) ⟧C ρ ≡ ⟦ n ⟧C ρ
 dead-comp m n ρ = lemma-wkC (⟦ m ⟧C ρ , ρ) here n
 
+
 cmplx-smpl : {ρ : ⟪ Γ₀ ⟫X} →
             ⟦ refine-cterm Γ₀ CMPLX ⟧C ρ ≡ ⟦ refine-cterm Γ₀ SMPL ⟧C ρ
 cmplx-smpl = refl
+
+
+clc-twice : (ρ : ⟪ Γ₁ ⟫X) →
+            ⟦ refine-cterm Γ₁ CLC2-n-PAIR ⟧C ρ
+            ≡ ⟦ refine-cterm Γ₁ CLC1-n-PAIR ⟧C ρ
+clc-twice ρ = dup-comp (refine-cterm Γ₁
+                                     ((VAR 0) $ ZZ))
+                       (refine-cterm (nat ∷ nat ∷ Γ₁)
+                                     (VAL ⟨ VAR 0 , VAR 1 ⟩))
+                       ρ
   \end{BVerbatim}
   \caption{Erandite monaadi efekti-spetsiifilised optimisatsioonid.}
   \label{fig:exc.opt2}
@@ -1459,6 +1513,16 @@ Tõestus tuleneb triviaalselt arvutustermide interpreteerimise definitsioonist.
 Selgitusena tasub märkida, et tegu on näitega lihtsustusest {\tt dead-comp}, kuna tingimuslause ja erandikäsitlejaga arvutuse tulemust ei pruugita.
 Siiski eelnevalt peab efektisüsteem veenduma, et see arvutus kindlasti õnnestub, kuna vastasel juhul poleks lihtsustus korrektne.
 Teoreemi {\tt dead-comp} tõestust ei lähe antud juhul tarvis, kuna võrrandi mõlemad pooled lihtsustuvad võrdseteks avaldisteks.
+
+Arvutustermid {\tt CLC2-n-PAIR} ja {\tt CLC1-n-PAIR} (jn~\ref{fig:exc.raw.ex1}) olid hästi tüübitud kontekstis {\tt Γ₁} (alaptk~\ref{sssec:exc.infer-type}, jn~\ref{fig:exc.typing}).
+Seega saab neid terme selles kontekstis rafineerida.
+Lihtsustus {\tt clc-twice} (jn~\ref{fig:exc.opt2}) väidab, et saadud rafineeritud termide interpretatsioonid on selles kontekstis samaväärsed.
+Tõestus on lihtsustuse {\tt dup-comp} (jn~\ref{fig:exc.opt3}) rakendus kolmele argumendile:
+\begin{itemize}
+\item arvutusele, mis rakendab kontekstis olevat funktsiooni nullile, ja mida on selles samas kontekstis rafineeritud;
+\item arvutusele, mis koostab kontekstis olevatest naturaalarvudest paari, ja mida rafineeritakse kontekstis, kuhu on lisatud kaks naturaalarvu võrreldes esialgse kontekstiga;
+\item algse konteksti interpretatsioonile {\tt ρ}.
+\end{itemize}
 
 \clearpage\vspace*{0pt}
 
