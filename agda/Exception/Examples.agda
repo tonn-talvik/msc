@@ -139,9 +139,6 @@ pp = refl
 
 --------------------------------
 
-foo-raw : cTerm
-foo-raw = (VAR 0) $ ZZ
-
 good-raw : cTerm
 good-raw = LET (VAR 0) $ ZZ
            IN LET (VAR 1) $ ZZ
@@ -149,15 +146,22 @@ good-raw = LET (VAR 0) $ ZZ
 better-raw : cTerm
 better-raw = LET (VAR 0) $ ZZ
              IN VAL ⟨ VAR 0 , VAR 0 ⟩
-good-Γ = [ nat ⇒ errok / nat ]
 
-good-typing : infer-ctype good-Γ good-raw ≡ just (errok / (nat ● nat))
+init-Γ = [ nat ⇒ errok / nat ]
+
+good-typing : infer-ctype init-Γ good-raw ≡ just (errok / (nat ● nat))
 good-typing = refl
-better-typing : infer-ctype good-Γ better-raw ≡ just (errok / (nat ● nat))
+better-typing : infer-ctype init-Γ better-raw ≡ just (errok / (nat ● nat))
 better-typing = refl
 
-{-
-optimize : (ρ : ⟪ good-Γ ⟫X) →
-           ⟦ refine-cterm good-Γ good-raw ⟧C ρ ≡ ⟦ refine-cterm good-Γ better-raw ⟧C ρ
-optimize ρ = dup-comp {!!} ({!!}) ρ
--}
+refined-good = refine-cterm init-Γ good-raw
+refined-better = refine-cterm init-Γ better-raw
+
+optimize : (ρ : ⟪ init-Γ ⟫X) →
+           ⟦ refined-good ⟧C ρ ≡ ⟦ refined-better ⟧C ρ
+optimize ρ = dup-comp (refine-cterm init-Γ
+                                    ((VAR 0) $ ZZ))
+                      (refine-cterm (nat ∷ nat ∷ init-Γ)
+                                    (VAL ⟨ VAR 0 , VAR 1 ⟩))
+                      ρ
+
