@@ -49,6 +49,17 @@ CMPLX = LET TRY
 SMPL : cTerm
 SMPL = VAL (VAR 0)
 
+CMPLX2 : cTerm
+CMPLX2 = LET TRY
+               IF VAR 0
+               THEN VAL (VAR 0)
+               ELSE FAIL nat
+            WITH VAL ZZ
+         IN (VAR 2) $ (VAR 1)
+        
+SMPL2 : cTerm
+SMPL2 = (VAR 1) $ (VAR 0)
+
 ------------------------------------------
 -- type inference
 
@@ -63,11 +74,16 @@ typing-bad-one = refl
 
 Γ₀ = [ bool ]
 
+Γ2 = bool ∷ bool ⇒ errok / bool ∷ []
+
 typing-cmplx : infer-ctype Γ₀ CMPLX ≡ just (ok / bool)
 typing-cmplx = refl
 
 typing-smpl : infer-ctype Γ₀ SMPL ≡ just (ok / bool)
 typing-smpl = refl
+
+typing-cmplx2 : infer-ctype Γ2 CMPLX2 ≡ just (ok · errok / bool)
+typing-cmplx2 = refl
 
 ----------------------------------------------
 -- term refinment
@@ -86,7 +102,10 @@ cmplx-smpl : {ρ : ⟪ Γ₀ ⟫X} →
             ⟦ refine-cterm Γ₀ CMPLX ⟧C ρ ≡ ⟦ refine-cterm Γ₀ SMPL ⟧C ρ
 cmplx-smpl = refl -- degenerate dead computation
 
-
+cmplx-smpl2 : {ρ : ⟪ Γ2 ⟫X} →
+            ⟦ refine-cterm Γ2 CMPLX2 ⟧C ρ
+            ≡ ⟦ refine-cterm Γ2 SMPL2 ⟧C ρ
+cmplx-smpl2 = refl
 -------------------------------------
 --- some other examples
 

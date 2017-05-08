@@ -166,49 +166,29 @@ dead-comp m n ρ = lemma-wkC (⟦ m ⟧C ρ , ρ) here n
 
 lemma : (e e' : Exc) → e · (e · e') ≡ e · e'
 lemma e e' = begin
-                e · (e · e')
-              ≡⟨ sym (ass {e}) ⟩
-                (e · e) · e'
-              ≡⟨ cong (λ e → e · e') (·-idemp e) ⟩
-                e · e'
-              ∎
+               e · (e · e')
+             ≡⟨ sym (ass {e}) ⟩
+               (e · e) · e'
+             ≡⟨ cong (λ e → e · e') (·-idemp e) ⟩
+               e · e'
+             ∎
 
-dup-comp' : {e e' : Exc} {Γ : Ctx} {σ σ' : VType} 
+dup-comp : {e e' : Exc} {Γ : Ctx} {σ σ' : VType} 
            (m : CTerm Γ (e / σ)) (n : CTerm (dupX here) (e' / σ')) →
            (ρ : ⟪ Γ ⟫X) → 
            sub-eq (lemma e e')
                   (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
            ≡ ⟦ LET m IN ctrC here n ⟧C ρ
-dup-comp' {err} m n ρ = refl
-dup-comp' {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
-... | x | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq = lemma-ctrC (x , ρ) here n
-dup-comp' {errok} {err} m n ρ = refl
-dup-comp' {errok} {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
-... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
-                  = cong just (lemma-ctrC (x , ρ) here n)
-... | nothing | _ = refl
-dup-comp' {errok} {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
-... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
-                  = lemma-ctrC (x , ρ) here n
-... | nothing | _ = refl
-
-
-errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
-errok-seq e = sym (ass {errok} {errok} {e})
-
-dup-comp : {e : Exc} {Γ : Ctx} {σ σ' : VType} 
-           (m : CTerm Γ (errok / σ)) (n : CTerm (dupX here) (e / σ')) →
-           (ρ : ⟪ Γ ⟫X) → 
-           sub-eq (errok-seq e)
-                  (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
-           ≡ ⟦ LET m IN ctrC here n ⟧C ρ
 dup-comp {err} m n ρ = refl
 dup-comp {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
+... | x | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                       = lemma-ctrC (x , ρ) here n
+dup-comp {errok} {err} m n ρ = refl
+dup-comp {errok} {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
 ... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
                   = cong just (lemma-ctrC (x , ρ) here n)
 ... | nothing | _ = refl
-dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
+dup-comp {errok} {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
 ... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
                   = lemma-ctrC (x , ρ) here n
 ... | nothing | _ = refl
-

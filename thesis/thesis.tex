@@ -43,6 +43,7 @@
 \newunicodechar{≰}{$\nleq$}
 \newunicodechar{⊑}{$\sqsubseteq$}
 \newunicodechar{ℕ}{$\mathbb{N}$}
+\newunicodechar{∎}{$\mdblksquare$}
 \newunicodechar{∘}{$\circ$}
 \newunicodechar{₀}{\textsubscript{0}}
 \newunicodechar{₁}{\textsubscript{1}}
@@ -115,7 +116,7 @@
 \iffalse
 \begin{BVerbatim}
 λ ⟦ ⟧ ⟪ ⟫ ⟨ ⟩ · ⊹ ∷ ⊔ ⊓ Γ ρ ε σ τ η ∈ ¬ ≡ ≢ ≤ ≰ ⊑ ● → ⇒ ⟹ _ ℕ 
-∘ ₀ ₁ ₂ ₃ ⊤
+∘ ₀ ₁ ₂ ₃ ⊤ ∎
 \end{BVerbatim}
 \fi
 % ------------------------------------------------------------
@@ -1350,6 +1351,60 @@ handler-ass {errok} {errok} {errok} {ρ = ρ} m₁ m₂ m₃ with ⟦ m₁ ⟧C 
   \label{fig:exc.opt1}
 \end{figure}
 
+Lihtsustus {\tt dup-comp} (jn~\ref{fig:exc.opt3}) võimaldab arvutuse {\tt m} topelt arvutamise asendada ühekordse arvutamisega.
+Tõestuses analüüsitakse kõigepealt arvutuse {\tt m} efekti kuju.
+\begin{itemize}
+\item Kui see arvutus ebaõnnestub, siis kogu arvutuse interpretatsioon on paratamatult {\tt tt} ja seega tõestus on triviaalne.
+\item Kui arvutuse {\tt m} efektiks on {\tt ok}, siis analüüsitakse arvutuse {\tt m} interpretatsiooni. Õnnestunud arvutuse {\tt just x} korral näidatakse ülesande tüüpi nõrgendamise {\tt lemma-wkC} ja {\tt m}-i uuritud interpretatsiooni {\tt eq}-ga ümberkirjutades, et tulemus järeldub lemmast {\tt lemma-ctrC}. Ebaõnnestunud arvutuse korral pole arvutusse {\tt n} ühtegi väärtust siduda ja kogu arvutuse interpretatsiooniks on {\tt nothing}.
+\item Kui efektiks on {\tt errok}, siis vaadatakse läbi arvutuse {\tt n} efekti kuju:
+  \begin{itemize}
+  \item Kui arvutus {\tt n} ebaõnnestub, siis kogu arvutuse interpretatsioon on paratamatult {\tt tt} ja seega tõestus on triviaalne.
+  \item Kui arvutuse {\tt n} efektiks on {\tt ok}, siis arutelu on sarnane nagu juhtumis, kus arvutuse {\tt m} efekt oli {\tt ok}.
+  \item Kui efektiks on {\tt errok}, siis on tõestus analoogne efekti {\tt ok} juhtumiga, v.a. asjaolu, et arvutuse {\tt n} interpretatsioon on {\tt Maybe} tüüpi.
+  \end{itemize}
+\end{itemize}
+
+\begin{figure}
+  \begin{BVerbatim}
+·-idemp : (e : Exc) → e · e ≡ e
+·-idemp err = refl
+·-idemp ok = refl
+·-idemp errok = refl
+
+lemma : (e e' : Exc) → e · (e · e') ≡ e · e'
+lemma e e' = begin
+               e · (e · e')
+             ≡⟨ sym (ass {e}) ⟩
+               (e · e) · e'
+             ≡⟨ cong (λ e → e · e') (·-idemp e) ⟩
+               e · e'
+             ∎
+
+dup-comp : {e e' : Exc} {Γ : Ctx} {σ σ' : VType} 
+           (m : CTerm Γ (e / σ)) (n : CTerm (dupX here) (e' / σ')) →
+           (ρ : ⟪ Γ ⟫X) → 
+           sub-eq (lemma e e')
+                  (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
+           ≡ ⟦ LET m IN ctrC here n ⟧C ρ
+dup-comp {err} m n ρ = refl
+dup-comp {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
+... | x | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                       = lemma-ctrC (x , ρ) here n
+dup-comp {errok} {err} m n ρ = refl
+dup-comp {errok} {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = cong just (lemma-ctrC (x , ρ) here n)
+... | nothing | _ = refl
+dup-comp {errok} {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
+... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
+                  = lemma-ctrC (x , ρ) here n
+... | nothing | _ = refl
+  \end{BVerbatim}
+  \caption{Erandite monaadi spetsiifiline liiase arvutuse eemaldamise lihtsustus.}
+  \label{fig:exc.opt3}
+\end{figure}
+
+
 Mõned erandite monaadi spetsiifilised, efekti-spetsiifilised optimisatsioonid on toodud joonisel~\ref{fig:exc.opt2}.
 Iga arvutuse {\tt m}, mille efekt on {\tt err}, saab samaväärselt asendada arvutusega {\tt FAIL σ}.
 Samaväärsus {\tt failure m} põhineb asjaolul, et ebaõnnestunud arvutuse semantiline interpretatsioon erandite gradeeritud monaadis on tüüp {\tt ⊤}, milles ongi ainult üks element ja seetõttu on tõestus triviaalne.
@@ -1358,13 +1413,6 @@ Kuna tingimuslause {\tt IF_THEN_ELSE_} arvutuse efektiks on harude efektide üle
 Samaväärsus on näidatud tõestusega {\tt both-fail} (jn~\ref{fig:exc.opt2}).
 
 Lihtsustus {\tt dead-comp} (jn~\ref{fig:exc.opt2}) näitab, et kui kindlasti õnnestuvat osaarvutust {\tt m} ei pruugita osaarvutuses {\tt n}, siis nende sidumisel pole mõtet ja võib kasutada lihtsalt osaarvutust {\tt n}. Tõestus on eespool antud arvutustermi lõdvenduse {\tt lemma-wkC} rakendus.
-
-Lihtsustus {\tt dup-comp} (jn~\ref{fig:exc.opt2}) võimaldab arvutuse {\tt m} topelt arvutamise asendada ühekordse arvutamisega, kui arvutuse {\tt m} efektiks on {\tt errok}. Tõestuses analüüsitakse kõigepealt arvutuse {\tt n} efekti kuju.
-\begin{itemize}
-\item Kui see arvutus ebaõnnestub, siis kogu arvutuse interpretatsioon on paratamatult {\tt tt} ja seega tõestus on triviaalne.
-\item Kui arvutuse {\tt n} efektiks on {\tt ok}, siis analüüsitakse arvutuse {\tt m} interpretatsiooni. Õnnestunud arvutuse {\tt just x} korral näidatakse ülesande tüüpi nõrgendamise {\tt lemma-wkC} ja {\tt m}-i uuritud interpretatsiooni {\tt eq}-ga ümberkirjutades, et tulemus järeldub lemmast {\tt lemma-ctrC}. Ebaõnnestunud arvutuse korral pole arvutusse {\tt n} ühtegi väärtust siduda ja kogu arvutuse interpretatsiooniks on {\tt nothing}.
-\item Kui efektiks on {\tt errok}, siis on tõestus analoogne efekti {\tt ok} juhtumiga, v.a. asjaolu, et arvutuse {\tt n} interpretatsioon on {\tt Maybe} tüüpi.
-\end{itemize}
 
 \begin{figure}
   \begin{BVerbatim}
@@ -1384,26 +1432,6 @@ dead-comp : {Γ : Ctx} {σ σ' : VType} {e : Exc}
             ⟦ LET m IN (wkC here n) ⟧C ρ ≡ ⟦ n ⟧C ρ
 dead-comp m n ρ = lemma-wkC (⟦ m ⟧C ρ , ρ) here n
 
-errok-seq : (e : Exc) → errok · (errok · e) ≡ errok · e
-errok-seq e = sym (ass {errok} {errok} {e})
-
-dup-comp : {e : Exc} {Γ : Ctx} {σ σ' : VType} 
-           (m : CTerm Γ (errok / σ)) (n : CTerm (dupX here) (e / σ')) →
-           (ρ : ⟪ Γ ⟫X) → 
-           sub-eq (errok-seq e)
-                  (⟦ LET m IN LET wkC here m IN n ⟧C ρ)
-           ≡ ⟦ LET m IN ctrC here n ⟧C ρ
-dup-comp {err} m n ρ = refl
-dup-comp {ok} m n ρ with ⟦ m ⟧C ρ | inspect ⟦ m ⟧C ρ
-... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
-                  = cong just (lemma-ctrC (x , ρ) here n)
-... | nothing | _ = refl
-dup-comp {errok} m n ρ with ⟦ m ⟧C ρ | inspect (⟦ m ⟧C) ρ 
-... | just x  | [ eq ] rewrite lemma-wkC (x , ρ) here m | eq
-                  = lemma-ctrC (x , ρ) here n
-... | nothing | _ = refl
-
-                  
 cmplx-smpl : {ρ : ⟪ Γ₀ ⟫X} →
             ⟦ refine-cterm Γ₀ CMPLX ⟧C ρ ≡ ⟦ refine-cterm Γ₀ SMPL ⟧C ρ
 cmplx-smpl = refl
