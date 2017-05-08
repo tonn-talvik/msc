@@ -201,9 +201,9 @@ ru++ [] (z≤n {n}) = subeq-air ru+ []
 ru++ (x ∷ xs) (s≤s p) = subeq∷ ru+ (ru++ xs p)
 
 
-blaw1 : {e : E} {X Y : Set} (f : X → BVec Y e) (x : X) →
+mlaw1BV : {e : E} {X Y : Set} (f : X → BVec Y e) (x : X) →
         subeq {T = TBV} lu (bindBV f (ηBV x)) ≡ f x
-blaw1 f x with f x
+mlaw1BV f x with f x
 ...       | bv xs p = ru++ xs p
 
 
@@ -212,16 +212,16 @@ head-bv : {X : Set} {n : ℕ} (x : X) (xs : BVec X n) →
 head-bv x (bv xs p) = refl
 
 
-blaw2 : {e : E} {X : Set} (c : TBV e X) → subeq {T = TBV} ru c ≡ bindBV ηBV c
-blaw2 (bv [] (z≤n {n})) = subeq-air (ru {n}) []
-blaw2 (bv (x ∷ xs) (s≤s {m} {n} p)) = 
+mlaw2BV : {e : E} {X : Set} (c : TBV e X) → subeq {T = TBV} ru c ≡ bindBV ηBV c
+mlaw2BV (bv [] (z≤n {n})) = subeq-air (ru {n}) []
+mlaw2BV (bv (x ∷ xs) (s≤s {m} {n} p)) = 
   begin
     subeq {T = TBV} ru (bv (x ∷ xs) (s≤s p))
   ≡⟨ refl ⟩
     subeq {T = TBV} ru (x ∷bv bv xs p)
   ≡⟨ subeq∷ {xs = bv xs p} ru refl ⟩
     x ∷bv (subeq {T = TBV} ru (bv xs p))
-  ≡⟨ cong (_∷bv_ x) (blaw2 (bv xs p)) ⟩
+  ≡⟨ cong (_∷bv_ x) (mlaw2BV (bv xs p)) ⟩
     x ∷bv (bindBV ηBV (bv xs p))
   ≡⟨ head-bv x (bindBV ηBV (bv xs p)) ⟩
     ηBV x ++bv bindBV ηBV (bv xs p)
@@ -368,12 +368,12 @@ lemma-dist {suc e} {e'} {e''} (bv (x ∷ xs) (s≤s p)) (bv xs' p') f =
   ∎
 
 
-blaw3 : {e e' e'' : E} {X Y Z : Set} (f : X → TBV e' Y)
+mlaw3BV : {e e' e'' : E} {X Y Z : Set} (f : X → TBV e' Y)
         (g : Y → TBV e'' Z) (c : TBV e X) →
         subeq {T = TBV} (ass {e} {e'} {e''}) (bindBV g (bindBV f c)) ≡
         bindBV (λ x → bindBV g (f x)) c
-blaw3 {e} {e'} {e''} f g (bv [] z≤n) = subeq-air (ass {e} {e'} {e''}) []
-blaw3 {suc e} {e'} {e''} f g (bv (x ∷ xs) (s≤s p)) = 
+mlaw3BV {e} {e'} {e''} f g (bv [] z≤n) = subeq-air (ass {e} {e'} {e''}) []
+mlaw3BV {suc e} {e'} {e''} f g (bv (x ∷ xs) (s≤s p)) = 
   begin
     subeq {T = TBV} (ass {suc e} {e'} {e''}) (bindBV g (bindBV f (bv (x ∷ xs) (s≤s p))))
   ≡⟨ refl ⟩
@@ -392,7 +392,7 @@ blaw3 {suc e} {e'} {e''} f g (bv (x ∷ xs) (s≤s p)) =
   ≡⟨ subeq-lemma (_+_ (e' · e'')) (_++bv_ (bindBV g (f x))) (ass {e} {e'} {e''}) _ ⟩
     bindBV g (f x) ++bv subeq {T = TBV} (ass {e} {e'} {e''})
                                         (bindBV g (bindBV f (bv xs p)))
-  ≡⟨ cong (_++bv_ (bindBV g (f x))) (blaw3 f g (bv xs p)) ⟩
+  ≡⟨ cong (_++bv_ (bindBV g (f x))) (mlaw3BV f g (bv xs p)) ⟩
     bindBV g (f x) ++bv bindBV (λ x → bindBV g (f x)) (bv xs p)
   ≡⟨ refl ⟩
     bindBV (λ x → bindBV g (f x)) (bv (x ∷ xs) (s≤s p))
@@ -407,9 +407,9 @@ NDBV = record { OM = ℕ*
               ; sub-mon = subBV-mon
               ; sub-refl = subBV-refl
               ; sub-trans = subBV-trans
-              ; mlaw1 = blaw1
-              ; mlaw2 = blaw2
-              ; mlaw3 = blaw3
+              ; mlaw1 = mlaw1BV
+              ; mlaw2 = mlaw2BV
+              ; mlaw3 = mlaw3BV
               }
 
 

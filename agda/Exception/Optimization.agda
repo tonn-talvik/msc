@@ -26,17 +26,17 @@ open import Structural
 
 -- choice
 
-⊹-itself : (e : Exc) → e ⊹ e ≡ e
-⊹-itself err = refl
-⊹-itself ok = refl
-⊹-itself errok = refl
+⊹-idemp : (e : Exc) → e ⊹ e ≡ e
+⊹-idemp err = refl
+⊹-idemp ok = refl
+⊹-idemp errok = refl
 
-the-same : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ : VType}
-           (m : CTerm Γ (e / σ)) →
-           sub-eq (⊹-itself e) (⟦ TRY m WITH m ⟧C ρ) ≡ ⟦ m ⟧C ρ
-the-same {err} m = refl
-the-same {ok} m = refl
-the-same {errok} {ρ = ρ} m with ⟦ m ⟧C ρ
+handler-idemp : {e : Exc} {Γ : Ctx} {ρ : ⟪ Γ ⟫X} {σ : VType}
+                (m : CTerm Γ (e / σ)) →
+                sub-eq (⊹-idemp e) (⟦ TRY m WITH m ⟧C ρ) ≡ ⟦ m ⟧C ρ
+handler-idemp {err} m = refl
+handler-idemp {ok} m = refl
+handler-idemp {errok} {ρ = ρ} m with ⟦ m ⟧C ρ
 ... | just _ = refl
 ... | nothing = refl
 

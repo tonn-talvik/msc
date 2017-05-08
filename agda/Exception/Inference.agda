@@ -165,8 +165,8 @@ mutual
            with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
   ...      | nothing | _ = tt
   ...      | just _ | [ p ] =
-      TRY  CCAST u (⊔V-subtype p)
-      WITH CCAST u' (⊔V-subtype-sym {σ} p)
+                             TRY  CCAST u (⊔V-subtype p)
+                             WITH CCAST u' (⊔V-subtype-sym {σ} p)
 
   refine-cterm Γ (IF x THEN t ELSE t')
       with infer-vtype Γ x | refine-vterm Γ x
@@ -184,8 +184,8 @@ mutual
                      with σ ⊔V σ' | inspect (_⊔V_ σ) σ'
   ...                | nothing | _     = tt
   ...                | just ⊔σ | [ p ] =
-      IF x' THEN CCAST u (⊔V-subtype p)
-            ELSE CCAST u' (⊔V-subtype-sym {σ} p)
+                                 IF x' THEN CCAST u (⊔V-subtype p)
+                                       ELSE CCAST u' (⊔V-subtype-sym {σ} p)
 
   refine-cterm Γ (f $ x)
       with infer-vtype Γ f | refine-vterm Γ f |

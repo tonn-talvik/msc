@@ -26,10 +26,10 @@ open import Structural
 -- choice 1, 2: works on sets, not on vecs
 
 -- choice 3
-fail-or-m : {Γ : Ctx} {σ : VType} {e : ℕ} (m : CTerm Γ (e / σ)) →
+choose-lu : {Γ : Ctx} {σ : VType} {e : ℕ} (m : CTerm Γ (e / σ)) →
             (ρ : ⟪ Γ ⟫X) → 
             ⟦ CHOOSE (FAIL σ) m ⟧C ρ ≡ ⟦ m ⟧C ρ
-fail-or-m m ρ with ⟦ m ⟧C ρ
+choose-lu m ρ with ⟦ m ⟧C ρ
 ... | bv xs p = refl
 
 -- choice 4
