@@ -101,9 +101,9 @@ private
 
   bind : {e e' : Exc} {X Y : Set} →
          (X → T e' Y) → T e X → T (e · e') Y
-  bind {err} f x = tt
-  bind {ok} f x = f x
-  bind {errok} {err} f x = tt
+  bind {err} f c = tt
+  bind {ok} f c = f c
+  bind {errok} {err} f c = tt
 --  bind {errok} {ok} f x = map f x
   bind {errok} {ok} f (just x) = just (f x)
   bind {errok} {ok} f nothing = nothing
