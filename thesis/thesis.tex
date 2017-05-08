@@ -161,10 +161,10 @@ Autor: Tõnn Talvik
 
 Tüübi- ja efektisüsteemid võimaldavad programmide dünaamilist käitumist analüüsida staatiliste tehnikatega. Analüüsi tulemust saab kasutada näiteks programmi optimeerimiseks.
 
-Selle töö eesmärgiks on luua sõltuvate tüüpidega programmeerimiskeeles Agda idee tõestuse (\emph{proof-of-concept}) raamistu efektide analüüsiks ja nendel põhinevateks programmiteisendusteks.
+Selle töö eesmärgiks on luua sõltuvate tüüpidega programmeerimiskeeles Agda gradeeritud monaadidel põhinev idee tõestuse (\emph{proof-of-concept}) raamistu efektide analüüsiks ja nendel põhinevateks programmiteisendusteks.
 
 Töös vaadeldakse esimese näitekeelena tüübitud lambdaarvutust, mida on laiendatud eranditega.
-Keele termidele tuletatakse tüübid ning hinnatakse nende võimalikku efekti: õnnestumist, ebaõnnestumist ja staatiliselt määramata efektiga arvutused.
+Keele termidele tuletatakse tüübid ning hinnatakse nende võimalikku efekti: õnnestuvad, ebaõnnestuvad ja staatiliselt määramata efektiga arvutused.
 Selleks defineeritakse arvutustüübid gradeeritud monaadi abil.
 Defineeritakse keele semantika ning tuuakse mõned programmilihtsustused tõestades, et need teisendused ei muuda programmi semantilist interpretatsiooni.
 
@@ -186,17 +186,17 @@ This allows to perform certain program optimizations.
 Functional languages distinguish between value types and computation types.
 Monads are used to reason about the latter.
 
-Recent research marries monadic computations and effect systems.
+Recent research marries monadic types and effect systems.
 A systematic approach has been given using graded monads, which employs preordered monoids.
 
-The goal of this thesis is to give a proof-of-concept framework for effect-analysis based program transformations.
+The goal of this thesis is to give a proof-of-concept framework for effect analyses and program transformations based on such analyses.
 The work is carried out in a dependently typed functional programming language called Agda.
-Such expressive type system allows to provide a proof of program's certification as it is written.
-Also, Agda itself is an experimental language and such task has not been tried earlier in this language.
+Agda's expressive type system allows to provide a proof of program's functional correctness as it is written.
+Also, Agda itself is an experimental language and this task has not been tried earlier in this language.
 
 The first example language considered is a typed lambda calculus extended with exceptions.
 The starting point is raw terms for which types and effects can be inferred.
-Computation types are defined using a graded monad specifically adapted to capture exception effects.
+Computation types are defined using a graded monad specifically constructed to capture exception effects.
 The language semantics is given for refined terms.
 Structural transformations, i.e. weakening and contraction, are described next.
 Using those, a few example program optimizations, e.g. dead computation and duplicate computation removal, are defined.
@@ -239,11 +239,11 @@ Staatilise programmianalüüsiga saab hinnata arvutuste võimalikke efekte.
 See võimaldab mh viia läbi optimeerivaid programmiteisendusi.
 Näiteks saab jälgida, milliseid mälupesasid loetakse ja kirjutatakse, ning selle teadmise alusel eemaldada ``surnud'' (\emph{dead computation}) või liiased arvutused (\emph{duplicated computation}) \cite{Benton2006}.
 
-Klassikaliselt kasutatakse funktsionaalprogrammeerimises mittepuhaste arvutuse tüüpimiseks monaade, st tüübitud on ka arvutused, mitte ainult väärtused.
+Klassikaliselt kasutatakse funktsionaalprogrammeerimises mittepuhaste arvutuse tüüpimiseks monaade, st tüübitud on ka väärtusteni jõudmiseks tehtavad arvutused, mitte ainult väärtused.
 See lubab arutleda erinevate arvutuste üle nagu näiteks mittedeterminism, erandid, olek jne, mis ei ole võimalik tavalises lambdaarvutuses \cite{Moggi1989}.
 
 Efektisüsteeme saab kohandada ka monaadide jaoks \cite{Wadler1998}.
-Süstemaatiline lähenemine monaadide ja efektide kokkupanekuks põhineb parameetrilistel efekti monaadidel ehk gradeeritud monaadidel, mis kasutavad eeljärjestatud monoidi efektide võrdlemiseks \cite{Katsumata2014}.
+Süstemaatiline lähenemine monaadide ja efektide kokkupanekuks põhineb parameetrilistel efekti monaadidel ehk uuemas terminoloogias gradeeritud monaadidel, mis kasutavad eeljärjestatud monoidi efektide võrdlemiseks \cite{Katsumata2014}.
 
 \subsection{Ülesande püstitus}
 % https://courses.cs.ttu.ee/pages/Problem_Statement
@@ -264,11 +264,11 @@ mis põhineb intuitsionistlikul tüübiteoorial.
 Selles kirjutatud programm on tõlgendatav ja automaatselt kontrollitav kui matemaatiline tõestus.
 
 % Goal
-Selle töö eesmärgiks on realiseerida programmeerimiskeeles Agda idee tõendamise (\emph{proof-of-concept}) 
+Selle töö eesmärgiks on realiseerida programmeerimiskeeles Agda gradeeritud monaadidel põhinev idee tõendamise (\emph{proof-of-concept}) 
 raamistu efektide analüüsiks ja nendele põhinevateks programmiteisendusteks.
 Samas raamistus peab saama näidata, et need teisendused on korrektsed.
 
-Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne.
+Agda on eksperimentaalne keel ja sedalaadi ülesande realisatsioon selles keeles on uudne -- gradeeritud monaade pole enne Agdas programmeeritud.
 Uurimuse käigus tahame teada, kas niisugune töö on teostatav mõistliku vaevaga, kui õppimisele kuluv aeg maha arvata.
 
 Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toimivad keele juures, mis toetab andmetüüpe, milleks antud töös on naturaalarvud lihtsaima näitena.
@@ -276,7 +276,7 @@ Teoreetilisel tasemel on uudne, et efektide analüüsid ja optimisatsioonid toim
 \subsection{Ülevaade tööst}
 Teises peatükis realiseeritakse näitekeel, mille efektiks on erandid.
 Järgmiseks defineeritakse selliste efektide hindamine.
-Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt lisades selle arvutustele efektid ja tüübid.
+Seejärel arendatakse näitekeelele tüübisüsteem, mille käigus rafineeritakse keelt: tüübitud termid ``teavad'' oma konteksti ja tüüpi, sh tüübitud arvutustermid ka oma efektihinnangut.
 Edasi antakse rafineeritud keele semantika ning tuuakse mõningased programmiteisendused, näidates, et semantiliselt on algne ja teisendatud programm ekvivalentsed.
 
 Kolmandas peatükis tuuakse efektianalüüs ja optimeerimise näited mittedeterminismi toetava keele kohta, kasutades ära teises peatükis arendatud raamistut.
@@ -319,7 +319,7 @@ Näitekeele grammatika saab esitada Backus-Naur kujul (BNF) järgnevalt, kus {\t
 \end{adjustwidth}
 Agdas vastastikku defineeritud väärtus- ja arvutustüübid on toodud joonisel~\ref{fig:exc.types}.
 Lubatud väärtustüübid {\tt VType} on naturaalarvud, tõeväärtused, teiste väärtustüüpide korrutised ja funktsiooniruumid.
-Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efekt {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
+Arvutustüüpideks on efektiga {\tt E} annoteeritud väärtustüübid. Efektide tüüp {\tt E} on defineeritud alapeatükis~\ref{sssec:exc.exc}.
 \begin{figure}
   \begin{BVerbatim}
 mutual
@@ -438,7 +438,17 @@ Kogu erandikäsitlejaga arvutus on seotud arvutusse, mis tagastab konteksti teis
 
 Arvutusterm {\tt SMPL} (jn~\ref{fig:exc.raw.ex1}) tagastab lihtsalt kontekstis oleva esimese muutuja.
 Alapeatükis~\ref{ssec:exc.optimizations} näidatakse, et termid {\tt CMPLX} ja {\tt SMPL} on semantiliselt ekvivalentsed kontekstis, kus on ainult tõeväärtustüüpi muutuja.
-
+Samaväärsust on parem märgata, kui esitada need termid harjumuspärases süntaksis:
+\begin{center}
+\begin{tabular}{ r c l l l }
+  CMPLX & := & let y = & try &if x \\
+        &    &         &    &then val x\\
+        &    &         &    &else fail$^\mathbb{N}$\\
+        &    &         & with& val 0\\
+        &    & in val &x &\\
+  SMPL  & := & val x   & &\\
+\end{tabular}
+\end{center}
 \subsection{Erandite gradeering}\label{ssec:exc.grading}
 
 Selles alapeatükis defineeritakse erandite efekti hinnangud, operatsioonid hinnangutel ja hinnangute omavaheline järjestus.
@@ -920,7 +930,7 @@ Tüüpimine {\tt typing-add} väidab, et väärtusterm {\tt ADD} on hästi tüü
 Tüüpimine {\tt typing-add-3-and-4} (jn~\ref{fig:exc.typing}) väidab, et arvutusterm {\tt ADD-3-and-4} on hästi tüübitud ning kindlasti tagastab naturaalarvu.
 Tüüpimine {\tt typing-bad-one} väidab, et arvutustermile {\tt BAD-ONE} ei õnnestunud tüüpi tuletada.
 
-Tüüpimised {\tt typing-cmplx} ja {\tt typing-smpl} väidavad, et termid {\tt CMPLX} ja {\tt SMPL} on hästi tüübitud ning tagastavad kindlasti tõeväärtuse. Kumbki tüübitules teostati kontekstis {\tt Γ₀}, mis koosneb ühest ainsast tõeväärtustüüpi muutujast.
+Tüüpimised {\tt typing-cmplx} ja {\tt typing-smpl} väidavad, et termid {\tt CMPLX} ja {\tt SMPL} on hästi tüübitud ning tagastavad kindlasti tõeväärtuse. Kumbki tüübituletus teostati kontekstis {\tt Γ₀}, mis koosneb ühest ainsast tõeväärtustüüpi muutujast.
 
 Kõik mainitud tüüpimise tõestused tulenevad vahetult väärtus- ja arvutustermide tüübituletuste {\tt infer-vtype} ja {\tt infer-ctype} definitsioonidest.
 
@@ -1446,8 +1456,9 @@ Alapeatükis~\ref{ssec:exc.raw} toodud näitetermidele {\tt CMPLX} ja {\tt SMPL}
 Kuna tüübituletus õnnestus kontekstis {\tt Γ₀}, siis saab neid arvutusterme selles samas kontekstis rafineerida.
 Lihtsustus {\tt cmplx-smpl} (jn~\ref{fig:exc.opt2}) väidab, et saadud rafineeritud termide interpretatsioonid sellises kontekstis on ekvivalentsed.
 Tõestus tuleneb triviaalselt arvutustermide interpreteerimise definitsioonist.
-Selgitusena tasub märkida, et tegu on degenereerunud näitena lihtsustusest {\tt dead-comp}, kuna tingimuslause ja erandikäsitlejaga arvutuse tulemust ei pruugita.
-Siiski, eelnevalt peab efektisüsteem veenduma, et see arvutus kindlasti õnnestub, kuna vastasel juhul poleks lihtsustus korrektne.
+Selgitusena tasub märkida, et tegu on näitega lihtsustusest {\tt dead-comp}, kuna tingimuslause ja erandikäsitlejaga arvutuse tulemust ei pruugita.
+Siiski eelnevalt peab efektisüsteem veenduma, et see arvutus kindlasti õnnestub, kuna vastasel juhul poleks lihtsustus korrektne.
+Teoreemi {\tt dead-comp} tõestust ei lähe antud juhul tarvis, kuna võrrandi mõlemad pooled lihtsustuvad võrdseteks avaldisteks.
 
 \clearpage\vspace*{0pt}
 
@@ -1756,14 +1767,14 @@ Minnes pisut ebatäpsemaks, võib multihulgad asendada ka hulkadega (nt {\tt 0} 
 Käesoleva töö eesmärgiks oli realiseerida sõltuvate tüüpidega programmeerimiskeeles Agda efektianalüüside ja neil põhinevate programmiteisenduste raamistu.
 
 Esitati erandeid toetav näitekeel.
-Seejärel defineeriti erandite efektide hindamine, tuues sisse gradeeritud monaadi mõiste.
+Seejärel defineeriti erandite efektide hindamine, tuues sisse eeljärjestatud monoidi ja gradeeritud monaadi mõiste.
 Gradeeringu abil määrati alamtüübid ja -efektid, millele tugines keele rafineerimine.
 Keele semantika defineeriti juba rafineeritud keelele.
 Töö käigus valmisid programmiteisendused, mh ``surnud'' arvutuse ja korduva arvutuse eemaldamise optimisatsioonid.
 Ühtlasi näidati, et need teisendused on korrektsed.
 
 Töö teises pooles kasutati mittedeterminismi toetavat näitekeelt.
-Keele semantika andmiseks loodi ülalt tõkestatud vektori andmestruktuur.
+Keele semantika andmiseks loodi ülalt tõkestatud pikkusega vektori andmestruktuur.
 Sellega koos anti naturaalarvude korrutamise jaoks sobiv gradeeritud monaad.
 Defineeriti termide tüübituletus ja keele rafineerimine.
 Esitati ebaõnnestunud arvutuse ja korduva arvutuse eemaldamise optimisatsioonid ning näidati selliste teisenduste korrektsust.
@@ -1771,8 +1782,9 @@ Esitati ebaõnnestunud arvutuse ja korduva arvutuse eemaldamise optimisatsioonid
 Sertifitseeritud programmeerimine on mahukas ettevõtmine, kuna arutelu isegi intuitiivselt õige aritmeetika üle võib osutuda ajakulukaks.
 Antud töö käigus ei jõutud tõestada tüübituletuste ja rafineerimiste korrektsust.
 Kuna optimeerimine eeldas, et semantika on antud rafineeritud keelele, siis on kriitilise tähtsusega kontrollida, et rafineerimine säilitab ``toores'' keeles kirjutatud programmi, mida tahetakse optimeerida.
+Samuti peaks tüübituletus efekte hindama võimalikult täpselt.
 
-Lisaks tüübituletuste ja rafineerimiste korrektsuse tõestamisele saab tööd jätkata, lisades monaadi seadustele tuginevad optimeerimised või hinnata mittedeterministliku keele tulemuste arvu nii ülevalt kui ka alt.
+Lisaks tüübituletuste ja rafineerimiste korrektsuse tõestamisele saab tööd jätkata, lisades puhtalt monaadi seadustele tuginevad optimeerimised või hinnata mittedeterministliku keele tulemuste arvu nii ülevalt kui ka alt.
 Erandite ja mittedeterminismi näidetele sarnaselt on võimalik baaskeelt laiendada muteeritava olekuga, mille efektiks on oleku lugemine ja kirjutamine, ja tõestada sellele keelele spetsiifilised optimisatsioonid.
 
 
